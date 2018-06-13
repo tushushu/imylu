@@ -1,3 +1,11 @@
+# -*- coding: utf-8 -*-
+"""
+@Author: liutienan 
+@Date: 2018-06-13 12:01:16 
+@Last Modified by: liutienan 
+@Last Modified time: 2018-06-13 12:01:16 
+"""
+
 from math import log2
 from collections import namedtuple
 from copy import copy, deepcopy
@@ -126,6 +134,13 @@ class DecisionTree(object):
         Returns:
             tuple -- The best choice of feature, split and split effect
         """
+        # Feature cannot be splited if there's only one unique element.
+        unique = set([X[i][feature] for i in idx])
+        if len(unique) == 1:
+            return None
+        # In case of empty split
+        unique.remove(min(unique))
+
         def f(split):
             """Auxiliary function of _choose_split_poin
             """
@@ -136,10 +151,7 @@ class DecisionTree(object):
             gain = info - cond_info
             return gain, split, se
 
-        unique = set([X[i][feature] for i in idx])
-        # In case of empty split
-        unique.remove(min(unique))
-        #
+        # Get split point which has max gain
         gain, split, se = max((f(split)
                                for split in unique), key=lambda x: x[0])
         return gain, feature, split, se
@@ -158,8 +170,12 @@ class DecisionTree(object):
 
         m = len(X[0])
         # Compare the info gain of each feature and choose best one.
-        _, feature, split, se = max((self._choose_split_point(
-            X, y, idx, _feature) for _feature in range(m)), key=lambda x: x[0])
+        split_rets = [x for x in map(lambda x: self._choose_split_point(
+            X, y, idx, x), range(m)) if x is not None]
+        # Terminate if no feature can be splited
+        if split_rets == []:
+            return None
+        _, feature, split, se = max(split_rets, key=lambda x: x[0])
         # Get split idx into two pieces and empty idx
         while idx:
             i = idx.pop()
@@ -172,6 +188,7 @@ class DecisionTree(object):
 
     def get_rules(self):
         """Get the rules of all the decision tree leaf nodes. 
+            Expr: 1D list like [Feature, op, split]
             Rule: 2D list like [[Feature, op, split], prob]
             Op: -1 means less than, 1 means equal or more than
         """
@@ -180,23 +197,26 @@ class DecisionTree(object):
         self.rules = []
         # Breadth-First Search
         while que:
-            nd, rule = que.pop(0)
+            nd, expr = que.pop(0)
             # Generate a rule when the current node is leaf node
             if nd.left is None and nd.right is None:
-                self.rules.append([rule, nd.prob])
+                self.rules.append([expr, nd.prob])
             # Expand when the current node has left child
             if nd.left is not None:
-                rule_left = copy(rule)
+                rule_left = copy(expr)
                 rule_left.append([nd.feature, -1, nd.split])
                 que.append([nd.left, rule_left])
             # Expand when the current node has right child
             if nd.right is not None:
-                rule_right = copy(rule)
+                rule_right = copy(expr)
                 rule_right.append([nd.feature, 1, nd.split])
                 que.append([nd.right, rule_right])
 
     def fit(self, X, y, max_depth=3, min_samples_split=2):
         """Build a decision tree classifier.
+        Note:
+            At least there's one column in X has more than 2 unique elements
+            y cannot be all 1 or all 0
 
         Arguments:
             X {list} -- 2d list object with int or float
@@ -219,8 +239,12 @@ class DecisionTree(object):
             # Stop split when number of node samples is less than min_samples_split or Node is 100% pure.
             if len(nd.idx) < min_samples_split or nd.prob == 1 or nd.prob == 0:
                 continue
+            # Stop split if no feature has more than 2 unique elements
+            feature_rets = self._choose_feature(X, y, nd.idx)
+            if feature_rets is None:
+                continue
             # Split
-            nd.feature, nd.split, se = self._choose_feature(X, y, nd.idx)
+            nd.feature, nd.split, se = feature_rets
             nd.left = Node(se.idx[0], se.prob[0])
             nd.right = Node(se.idx[1], se.prob[1])
             que.append([depth+1, nd.left])
@@ -229,31 +253,37 @@ class DecisionTree(object):
         clf.height = depth
         clf.get_rules()
 
+    def _expr2text(self, expr):
+        """Auxiliary function of print_rules.
+
+        Arguments:
+            expr {list} -- 1D list like [Feature, op, split]
+
+        Returns:
+            str
+        """
+
+        feature, op, split = expr
+        op = ">=" if op == 1 else "<"
+        return "Feature%d %s %.4f" % (feature, op, split)
+
     def print_rules(self):
         """Print the rules of all the decision tree leaf nodes.
         """
-        def f(expr):
-            """Auxiliary function of print_rules.
-            """
-
-            feathure, op, split = expr
-            op = ">=" if op == 1 else "<"
-            return "Feature%d %s %.4f" % (feathure, op, split)
 
         for i, rule in enumerate(self.rules):
             exprs, prob = rule
             print("Rule %d: " % i, ' | '.join(
-                map(f, exprs)) + ' => Prob %.4f' % prob)
+                map(self._expr2text, exprs)) + ' => Prob %.4f' % prob)
 
-    def Expr(self, expr, row):
-        """[summary]
-
+    def _apply_expr(self, expr, row):
+        """Apply the expression to sample
         Arguments:
-            expr {[type]} -- [description]
-            row {[type]} -- [description]
+            expr {list} -- 1D list like [Feature, op, split]
+            row {list} -- 1d list object with int or float
 
         Returns:
-            [type] -- [description]
+            bool
         """
 
         feathure, op, split = expr
@@ -273,7 +303,7 @@ class DecisionTree(object):
         for row in X:
             for rule in self.rules:
                 exprs, prob = rule
-                if all(self.Expr(expr, row) for expr in exprs):
+                if all(self._apply_expr(expr, row) for expr in exprs):
                     y.append(prob)
                     break
         return y
@@ -295,8 +325,10 @@ class DecisionTree(object):
 
 
 if __name__ == "__main__":
-    # Load data
+    from time import time
     from load_data import load_breast_cancer
+    start = time()
+    # Load data
     X, y = load_breast_cancer()
     # Train model
     clf = DecisionTree()
@@ -306,3 +338,5 @@ if __name__ == "__main__":
     # Model accuracy
     acc = sum((y_hat == y for y_hat, y in zip(clf.predict(X), y))) / len(y)
     print("Accuracy is %.2f%%!" % (acc * 100))
+    # Show run time, you can try it in Pypy
+    print("Total run time is %.2f s" % (time() - start))
