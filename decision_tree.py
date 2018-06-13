@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-@Author: liutienan 
-@Date: 2018-06-13 12:01:16 
-@Last Modified by: liutienan 
-@Last Modified time: 2018-06-13 12:01:16 
+@Author: tushushu 
+@Date: 2018-06-13 14:55:11 
+@Last Modified by: tushushu 
+@Last Modified time: 2018-06-13 14:55:11 
 """
 
 from math import log2
@@ -338,5 +338,5 @@ if __name__ == "__main__":
     # Model accuracy
     acc = sum((y_hat == y for y_hat, y in zip(clf.predict(X), y))) / len(y)
     print("Accuracy is %.2f%%!" % (acc * 100))
-    # Show run time, you can try it in Pypy
+    # Show run time, you can try it in Pypy which might be 10x faster.
     print("Total run time is %.2f s" % (time() - start))
