@@ -197,7 +197,7 @@ class DecisionTree(object):
         op = ">=" if op == 1 else "<"
         return "Feature%d %s %.4f" % (feature, op, split)
 
-    def get_rules(self):
+    def _get_rules(self):
         """Get the rules of all the decision tree leaf nodes. 
             Expr: 1D list like [Feature, op, split]
             Rule: 2D list like [[Feature, op, split], prob]
@@ -263,8 +263,8 @@ class DecisionTree(object):
             que.append([depth+1, nd.left])
             que.append([depth+1, nd.right])
         # Update tree depth and rules
-        clf.height = depth
-        clf.get_rules()
+        self.height = depth
+        self._get_rules()
 
     def print_rules(self):
         """Print the rules of all the decision tree leaf nodes.
