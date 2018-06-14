@@ -8,7 +8,7 @@
 
 from math import log2
 from collections import namedtuple
-from copy import copy, deepcopy
+from copy import copy
 
 
 class Node(object):
@@ -17,10 +17,7 @@ class Node(object):
 
         Keyword Arguments:
             idx {list} -- 1d list object with int (default: {None})
-            left {Node Object} -- Left child
-            right {Node Object} -- Right child
-            feature {int} -- Feature number
-            split {float} -- Split point of x
+            prob {float} -- positive probability (default: {None})
         """
         self.idx = idx
         self.prob = prob
@@ -157,7 +154,7 @@ class DecisionTree(object):
         return gain, feature, split, se
 
     def _choose_feature(self, X, y, idx):
-        """Choose the feature which has max info gain).
+        """Choose the feature which has max info gain.
 
         Arguments:
             X {list} -- 2d list object with int or float
@@ -186,6 +183,20 @@ class DecisionTree(object):
                 se.idx[1].append(i)
         return feature, split, se
 
+    def _expr2literal(self, expr):
+        """Auxiliary function of print_rules.
+
+        Arguments:
+            expr {list} -- 1D list like [Feature, op, split]
+
+        Returns:
+            str
+        """
+
+        feature, op, split = expr
+        op = ">=" if op == 1 else "<"
+        return "Feature%d %s %.4f" % (feature, op, split)
+
     def get_rules(self):
         """Get the rules of all the decision tree leaf nodes. 
             Expr: 1D list like [Feature, op, split]
@@ -197,18 +208,20 @@ class DecisionTree(object):
         self.rules = []
         # Breadth-First Search
         while que:
-            nd, expr = que.pop(0)
+            nd, exprs = que.pop(0)
             # Generate a rule when the current node is leaf node
-            if nd.left is None and nd.right is None:
-                self.rules.append([expr, nd.prob])
+            if not(nd.left or nd.right):
+                # Convert expression to text
+                literals = list(map(self._expr2literal, exprs))
+                self.rules.append([literals, nd.prob])
             # Expand when the current node has left child
-            if nd.left is not None:
-                rule_left = copy(expr)
+            if nd.left:
+                rule_left = copy(exprs)
                 rule_left.append([nd.feature, -1, nd.split])
                 que.append([nd.left, rule_left])
             # Expand when the current node has right child
-            if nd.right is not None:
-                rule_right = copy(expr)
+            if nd.right:
+                rule_right = copy(exprs)
                 rule_right.append([nd.feature, 1, nd.split])
                 que.append([nd.right, rule_right])
 
@@ -253,41 +266,32 @@ class DecisionTree(object):
         clf.height = depth
         clf.get_rules()
 
-    def _expr2text(self, expr):
-        """Auxiliary function of print_rules.
-
-        Arguments:
-            expr {list} -- 1D list like [Feature, op, split]
-
-        Returns:
-            str
-        """
-
-        feature, op, split = expr
-        op = ">=" if op == 1 else "<"
-        return "Feature%d %s %.4f" % (feature, op, split)
-
     def print_rules(self):
         """Print the rules of all the decision tree leaf nodes.
         """
 
         for i, rule in enumerate(self.rules):
-            exprs, prob = rule
+            literals, prob = rule
             print("Rule %d: " % i, ' | '.join(
-                map(self._expr2text, exprs)) + ' => Prob %.4f' % prob)
+                literals) + ' => Prob %.4f' % prob)
 
-    def _apply_expr(self, expr, row):
-        """Apply the expression to sample
+    def _predict_prob(self, row):
+        """Auxiliary function of predict_prob.
+
         Arguments:
-            expr {list} -- 1D list like [Feature, op, split]
-            row {list} -- 1d list object with int or float
+            row {list} -- 1D list with int or float
 
         Returns:
-            bool
+            float
         """
 
-        feathure, op, split = expr
-        return (row[feathure] - split) * op >= 0
+        nd = self.root
+        while nd.left and nd.right:
+            if row[nd.feature] < nd.split:
+                nd = nd.left
+            else:
+                nd = nd.right
+        return nd.prob
 
     def predict_prob(self, X):
         """Get the probability that y is positive.
@@ -299,14 +303,7 @@ class DecisionTree(object):
             list -- 1d list object with float
         """
 
-        y = []
-        for row in X:
-            for rule in self.rules:
-                exprs, prob = rule
-                if all(self._apply_expr(expr, row) for expr in exprs):
-                    y.append(prob)
-                    break
-        return y
+        return [self._predict_prob(row) for row in X]
 
     def predict(self, X, threshold=0.5):
         """Get the prediction of y.
