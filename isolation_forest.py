@@ -4,6 +4,7 @@
 @Date: 2018-06-15 11:19:44
 @Last Modified by: tushushu
 @Last Modified time: 2018-06-15 11:19:44
+The paper links: http://cs.nju.edu.cn/zhouzh/zhouzh.files/publication/tkdd11.pdf
 """
 
 from random import sample, random, choice
@@ -11,20 +12,19 @@ from math import ceil, log
 
 
 class Node(object):
-    def __init__(self, idx=None, features=None):
+    def __init__(self, size):
         """Node class to build tree leaves
 
         Keyword Arguments:
             idx {list} -- 1d list with int (default: {None})
         """
-        # Sample indexes of dataset
-        self.idx = idx
-        # Feature indexes of dataset
-        self.features = features
+
+        # Node size
+        self.size = size
         # Feature to split
-        self.feature = None
+        self.split_feature = None
         # Split point
-        self.split = None
+        self.split_point = None
         # Left child node
         self.left = None
         # Right child node
@@ -43,56 +43,43 @@ class IsolationTree(object):
         self.height = 0
         # Randomly selected sample points into the root node of the tree
         n = len(X)
-        m = len(X[0])
+        # In case of n_samples is greater than n
+        if n_samples > n:
+            n_samples = n
+        # Sampling without replacement
         idx = sample(range(n), n_samples)
-        features = list(range(m))
-        self.root = Node(idx, features)
+        # Root node
+        self.root = Node(idx)
         # Build isolation tree
         self._build_tree(X, max_depth)
 
-    def _get_feature(self, X, nd):
-        """Randomly choose a feature from X
-
-        Arguments:
-            X {list} -- 2d list object with int or float
-            nd {node class} -- Current node to split
-
-        Returns:
-            int -- feature
-        """
-
-        # Filter out columns that cannot be splitted
-        nd.features = [j for j in nd.features if len(set(
-            map(lambda i: X[i][j], nd.idx))) > 1]
-        # Randomly choose a feature from X
-        if nd.features == []:
-            return None
-        else:
-            return choice(nd.features)
-
-    def _get_split(self, X, nd):
+    def _get_split(self, X, idx, split_feature):
         """Randomly choose a split point
 
         Arguments:
             X {list} -- 2d list object with int or float
-            nd {node class} -- Current node to split
+            idx {list} -- 1d list object with int
+            split_feature {int} -- Column index of X
 
         Returns:
             int -- split point
         """
 
         # The split point should be greater than min(X[feature])
-        unique = set(map(lambda i: X[i][nd.feature], nd.idx))
+        unique = set(map(lambda i: X[i][split_feature], idx))
+        # Cannot split
+        if len(unique) == 1:
+            return None
         unique.remove(min(unique))
         x_min, x_max = min(unique), max(unique)
         # Caution: random() -> x in the interval [0, 1).
         return random() * (x_max - x_min) + x_min
 
     def _build_tree(self, X, max_depth):
-        """The current node data space is divided into 2 sub space: less than the 
-        split point in the specified dimension on the left child of the current node, 
+        """The current node data space is divided into 2 sub space: less than the
+        split point in the specified dimension on the left child of the current node,
         put greater than or equal to split point data on the current node's right child.
-        Recursively construct new child nodes until the data cannot be splitted in the 
+        Recursively construct new child nodes until the data cannot be splitted in the
         child nodes or the child nodes have reached the max_depth.
 
         Arguments:
@@ -100,33 +87,35 @@ class IsolationTree(object):
             max_depth {int} -- Maximum depth of IsolationTree
         """
 
+        # Dataset shape
+        m = len(X[0])
+        n = len(X)
+        # Depth, Node and idx
+        que = [[0, self.root, list(range(n))]]
         # BFS
-        que = [[0, self.root]]
-        while que:
-            depth, nd = que.pop(0)
-            if depth == max_depth:
-                break
+        while que and que[0][0] != max_depth:
+            depth, nd, idx = que.pop(0)
             # Stop split if X cannot be splitted
-            nd.feature = self._get_feature(X, nd)
-            if nd.feature is None:
+            nd.split_feature = choice(range(m))
+            nd.split_point = self._get_split(X, idx, nd.split_feature)
+            if nd.split_point is None:
                 continue
-            nd.split = self._get_split(X, nd)
+            # Split
             idx_left = []
             idx_right = []
-            # Split
-            while nd.idx:
-                i = nd.idx.pop()
-                xi = X[i][nd.feature]
-                if xi < nd.split:
+            while idx:
+                i = idx.pop()
+                xi = X[i][nd.split_feature]
+                if xi < nd.split_point:
                     idx_left.append(i)
                 else:
                     idx_right.append(i)
             # Generate left and right child
-            nd.left = Node(idx_left, nd.features)
-            nd.right = Node(idx_right, nd.features)
+            nd.left = Node(len(idx_left))
+            nd.right = Node(len(idx_right))
             # Put the left and child into the que and depth plus one
-            que.append([depth+1, nd.left])
-            que.append([depth+1, nd.right])
+            que.append([depth+1, nd.left, idx_left])
+            que.append([depth+1, nd.right, idx_right])
         # Update the height of IsolationTree
         self.height = depth
 
@@ -144,72 +133,105 @@ class IsolationTree(object):
         nd = self.root
         depth = 0
         while nd.left and nd.right:
-            if row[nd.feature] < nd.split:
+            if row[nd.split_feature] < nd.split_point:
                 nd = nd.left
             else:
                 nd = nd.right
             depth += 1
-        return depth, len(nd.idx)
+        return depth, nd.size
 
 
 class IsolationForest(object):
     def __init__(self):
+        """IsolationForest
+
+        Attributes:
+        trees {IsolationTree}
+        ajustment {float}
+        """
+
         self.trees = None
         self.ajustment = None
 
-    def fit(self, X, n_samples=10, max_depth=10, n_trees=100):
-        n = len(X)
-        self.ajustment = self._get_adjustment(n_samples, n)
+    def fit(self, X, n_samples=1000, max_depth=10, n_trees=256):
+        """Build IsolationForest with dataset X
+
+        Arguments:
+            X {list} -- 2d list with int or float
+
+        Keyword Arguments:
+            n_samples {int} -- According to paper, set number of samples to 256 (default: {256})
+            max_depth {int} -- Tree height limit (default: {10})
+            n_trees {int} --  According to paper, set number of trees to 100 (default: {100})
+        """
+
+        self.ajustment = self._get_adjustment(n_samples)
         self.trees = [IsolationTree(X, n_samples, max_depth)
                       for _ in range(n_trees)]
 
-    def _get_adjustment(self, n_samples, n):
-        if n_samples > 2:
-            i = n_samples - 1
-            ret = 2 * (log(i) + 0.5772156649) - 2 * i / n
-        elif n_samples == 2:
+    def _get_adjustment(self, node_size):
+        """Calculate adjustment according to the formula in the paper.
+
+        Arguments:
+            node_size {int} -- Number of leaf nodes
+
+        Returns:
+            float -- ajustment
+        """
+
+        if node_size > 2:
+            i = node_size - 1
+            ret = 2 * (log(i) + 0.5772156649) - 2 * i / node_size
+        elif node_size == 2:
             ret = 1
         else:
             ret = 0
         return ret
 
-    def _predict(self, row, n):
+    def _predict(self, row):
+        """Auxiliary function of predict.
+
+        Arguments:
+            row {list} -- 1d list object with int or float
+
+        Returns:
+            list -- 1d list object with float
+        """
+
+        # Calculate average score of row at each tree
         score = 0
         n_trees = len(self.trees)
         for tree in self.trees:
-            depth, nd_size = tree._predict(row)
-            score += (depth + self._get_adjustment(nd_size, n))
+            depth, node_size = tree._predict(row)
+            score += (depth + self._get_adjustment(node_size))
         score = score / n_trees
-        # Normalization
+        # Scale
         return 2 ** -(score / self.ajustment)
 
     def predict(self, X):
-        n = len(X)
-        return [self._predict(row, n) for row in X]
+        """Get the prediction of y.
+
+        Arguments:
+            X {list} -- 2d list object with int or float
+
+        Returns:
+            list -- 1d list object with float
+        """
+
+        return [self._predict(row) for row in X]
 
 
 if __name__ == "__main__":
-    # # Generate a dataset randomly
-    # n = 100
-    # X = [[randint(0, n), randint(0, n)] for _ in range(n)]
-    # # Add outliers
-    # X.append([n*1000]*2)
-    X = [[1+x/100 for _ in range(20)] for x in range(100)]
-    X.append([1000 for _ in range(20)])
+    from random import randint
+    # Generate a dataset randomly
+    n = 1000
+    X = [[random() for _ in range(5)] for _ in range(n)]
+    # Add outliers
+    for _ in range(10):
+        X.append([10]*5)
+    # Train model
     clf = IsolationForest()
-    clf.fit(X, n_samples=100, n_trees=100)
+    clf.fit(X)
+    # Show result
     for x, y in zip(X, clf.predict(X)):
-        print(x, y)
-    # print(clf.predict(X))
-    # print(clf.trees[0].height)
-    # print(clf.trees[0].root.feature, clf.trees[0].root.split)
-    # print(clf.trees[0].root.left.feature, clf.trees[0].root.left.split)
-    # print(clf.trees[0].root.right.feature, clf.trees[0].root.right.split)
-    # for x in X:
-    #     print(x, clf.trees[0]._predict(x))
-    # clf = IsolationTree(X, n_samples=50, max_depth=50)
-    # for row in X:
-    #     print(clf._predict(row))
-    # i = 49
-    # n = 100
-    # print(2 * (log(1) + 0.5772156649) - 2 * i / n)
+        print(' '.join(map(lambda num: "%.2f" % num, x)), "%.2f" % y)
