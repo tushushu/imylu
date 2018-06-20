@@ -43,7 +43,7 @@ class DecisionTree(object):
             "split_effect", ["idx", "cnt", "prob", "rate"])
 
     def _get_split_effect(self, X, y, idx, feature, split):
-        """List length, positive probability and rate when x is splited into two pieces.
+        """List length, positive probability and rate when x is splitted into two pieces.
 
         Arguments:
             X {list} -- 2d list object with int or float
@@ -131,7 +131,7 @@ class DecisionTree(object):
         Returns:
             tuple -- The best choice of feature, split and split effect
         """
-        # Feature cannot be splited if there's only one unique element.
+        # Feature cannot be splitted if there's only one unique element.
         unique = set([X[i][feature] for i in idx])
         if len(unique) == 1:
             return None
@@ -169,7 +169,7 @@ class DecisionTree(object):
         # Compare the info gain of each feature and choose best one.
         split_rets = [x for x in map(lambda x: self._choose_split_point(
             X, y, idx, x), range(m)) if x is not None]
-        # Terminate if no feature can be splited
+        # Terminate if no feature can be splitted
         if split_rets == []:
             return None
         _, feature, split, se = max(split_rets, key=lambda x: x[0])
@@ -323,17 +323,21 @@ class DecisionTree(object):
 
 if __name__ == "__main__":
     from time import time
-    from load_data import load_breast_cancer
+    from utils import load_breast_cancer, train_test_split
+
     start = time()
     # Load data
     X, y = load_breast_cancer()
+    # Split data randomly, train set rate 70%
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=100)
     # Train model
     clf = DecisionTree()
-    clf.fit(X, y)
+    clf.fit(X_train, y_train)
     # Show rules
     clf.print_rules()
     # Model accuracy
-    acc = sum((y_hat == y for y_hat, y in zip(clf.predict(X), y))) / len(y)
-    print("Accuracy is %.2f%%!" % (acc * 100))
+    acc = sum((y_test_hat == y_test for y_test_hat, y_test in zip(
+        clf.predict(X_test), y_test))) / len(y_test)
+    print("Test accuracy is %.2f%%!" % (acc * 100))
     # Show run time, you can try it in Pypy which might be 10x faster.
     print("Total run time is %.2f s" % (time() - start))
