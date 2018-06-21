@@ -16,7 +16,7 @@ class Node(object):
         """Node class to build tree leaves
 
         Keyword Arguments:
-            idx {list} -- 1d list with int (default: {None})
+            size {int} -- Node size (default: {None})
         """
 
         # Node size
@@ -46,10 +46,8 @@ class IsolationTree(object):
         # In case of n_samples is greater than n
         if n_samples > n:
             n_samples = n
-        # Sampling without replacement
-        idx = sample(range(n), n_samples)
         # Root node
-        self.root = Node(idx)
+        self.root = Node(n_samples)
         # Build isolation tree
         self._build_tree(X, max_depth)
 
@@ -93,7 +91,7 @@ class IsolationTree(object):
         # Depth, Node and idx
         que = [[0, self.root, list(range(n))]]
         # BFS
-        while que and que[0][0] != max_depth:
+        while que and que[0][0] <= max_depth:
             depth, nd, idx = que.pop(0)
             # Stop split if X cannot be splitted
             nd.split_feature = choice(range(m))
@@ -143,17 +141,19 @@ class IsolationTree(object):
 
 class IsolationForest(object):
     def __init__(self):
-        """IsolationForest
+        """IsolationForest, randomly build some IsolationTree instance, 
+        and the average score of each IsolationTree
+
 
         Attributes:
-        trees {IsolationTree}
+        trees {IsolationTree} -- 1d list with IsolationTree objects
         ajustment {float}
         """
 
         self.trees = None
-        self.ajustment = None
+        self.adjustment = None  # TBC
 
-    def fit(self, X, n_samples=1000, max_depth=10, n_trees=256):
+    def fit(self, X, n_samples=100, max_depth=10, n_trees=256):
         """Build IsolationForest with dataset X
 
         Arguments:
@@ -165,7 +165,7 @@ class IsolationForest(object):
             n_trees {int} --  According to paper, set number of trees to 100 (default: {100})
         """
 
-        self.ajustment = self._get_adjustment(n_samples)
+        self.adjustment = self._get_adjustment(n_samples)
         self.trees = [IsolationTree(X, n_samples, max_depth)
                       for _ in range(n_trees)]
 
@@ -206,7 +206,7 @@ class IsolationForest(object):
             score += (depth + self._get_adjustment(node_size))
         score = score / n_trees
         # Scale
-        return 2 ** -(score / self.ajustment)
+        return 2 ** -(score / self.adjustment)
 
     def predict(self, X):
         """Get the prediction of y.
@@ -223,15 +223,19 @@ class IsolationForest(object):
 
 if __name__ == "__main__":
     from random import randint
+    from time import time
     # Generate a dataset randomly
     n = 1000
     X = [[random() for _ in range(5)] for _ in range(n)]
     # Add outliers
     for _ in range(10):
         X.append([10]*5)
+
+    start = time()
     # Train model
     clf = IsolationForest()
-    clf.fit(X)
+    clf.fit(X, n_samples=500)
     # Show result
     for x, y in zip(X, clf.predict(X)):
         print(' '.join(map(lambda num: "%.2f" % num, x)), "%.2f" % y)
+    print("%.2f" % (time() - start), " s")
