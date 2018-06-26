@@ -41,15 +41,14 @@ class IsolationTree(object):
             max_depth {int} -- Maximum height of isolation tree
         """
         self.height = 0
-        # Randomly selected sample points into the root node of the tree
-        n = len(X)
         # In case of n_samples is greater than n
+        n = len(X)
         if n_samples > n:
             n_samples = n
         # Root node
         self.root = Node(n_samples)
         # Build isolation tree
-        self._build_tree(X, max_depth)
+        self._build_tree(X, n_samples, max_depth)
 
     def _get_split(self, X, idx, split_feature):
         """Randomly choose a split point
@@ -73,7 +72,7 @@ class IsolationTree(object):
         # Caution: random() -> x in the interval [0, 1).
         return random() * (x_max - x_min) + x_min
 
-    def _build_tree(self, X, max_depth):
+    def _build_tree(self, X, n_samples, max_depth):
         """The current node data space is divided into 2 sub space: less than the
         split point in the specified dimension on the left child of the current node,
         put greater than or equal to split point data on the current node's right child.
@@ -82,14 +81,17 @@ class IsolationTree(object):
 
         Arguments:
             X {list} -- 2d list object with int or float
+            n_samples {int} -- Subsample size
             max_depth {int} -- Maximum depth of IsolationTree
         """
 
         # Dataset shape
         m = len(X[0])
         n = len(X)
+        # Randomly selected sample points into the root node of the tree
+        idx = sample(range(n), n_samples)
         # Depth, Node and idx
-        que = [[0, self.root, list(range(n))]]
+        que = [[0, self.root, idx]]
         # BFS
         while que and que[0][0] <= max_depth:
             depth, nd, idx = que.pop(0)
@@ -146,7 +148,7 @@ class IsolationForest(object):
 
 
         Attributes:
-        trees {IsolationTree} -- 1d list with IsolationTree objects
+        trees {list} -- 1d list with IsolationTree objects
         ajustment {float}
         """
 
@@ -238,4 +240,4 @@ if __name__ == "__main__":
     # Show result
     for x, y in zip(X, clf.predict(X)):
         print(' '.join(map(lambda num: "%.2f" % num, x)), "%.2f" % y)
-    print("%.2f" % (time() - start), " s")
+    print("Total run time is %.2f s" % (time() - start))
