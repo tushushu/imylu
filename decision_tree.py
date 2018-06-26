@@ -7,19 +7,16 @@
 """
 
 from math import log2
-from collections import namedtuple
 from copy import copy
 
 
 class Node(object):
-    def __init__(self, idx=None, prob=None):
+    def __init__(self, prob=None):
         """Node class to build tree leaves.
 
         Keyword Arguments:
-            idx {list} -- 1d list object with int (default: {None})
             prob {float} -- positive probability (default: {None})
         """
-        self.idx = idx
         self.prob = prob
 
         self.left = None
@@ -39,8 +36,6 @@ class DecisionTree(object):
 
         self.root = Node()
         self.height = 0
-        self._split_effect = namedtuple(
-            "split_effect", ["idx", "cnt", "prob", "rate"])
 
     def _get_split_effect(self, X, y, idx, feature, split):
         """List length, positive probability and rate when x is splitted into two pieces.
@@ -59,7 +54,7 @@ class DecisionTree(object):
         n = len(idx)
         pos_cnt = [0, 0]
         cnt = [0, 0]
-        idx_split = [[], []]
+
         # Iterate each row and compare with the split point
         for i in idx:
             xi, yi = X[i][feature], y[i]
@@ -72,7 +67,8 @@ class DecisionTree(object):
         # Calculate the split effect
         prob = [pos_cnt[0] / cnt[0], pos_cnt[1] / cnt[1]]
         rate = [cnt[0] / n, cnt[1] / n]
-        return self._split_effect(idx_split, cnt, prob, rate)
+
+        return prob, rate
 
     def _get_entropy(self, p):
         """Calculate entropy
@@ -104,19 +100,20 @@ class DecisionTree(object):
         p = sum([y[i] for i in idx]) / len(idx)
         return self._get_entropy(p)
 
-    def _get_cond_info(self, se):
+    def _get_cond_info(self, prob, rate):
         """Calculate conditonal info of x
 
         Arguments:
-            se {named tuple} -- Split effect
+            prob {list} -- [left node probability, right node probability]
+            rate {list} -- [left node positive rate, right node positive rate]
 
         Returns:
             float -- Conditonal info of x
         """
 
-        info_left = self._get_entropy(se.prob[0])
-        info_right = self._get_entropy(se.prob[1])
-        return se.rate[0] * info_left + se.rate[1] * info_right
+        info_left = self._get_entropy(prob[0])
+        info_right = self._get_entropy(prob[1])
+        return rate[0] * info_left + rate[1] * info_right
 
     def _choose_split_point(self, X, y, idx, feature):
         """Iterate each xi and split x, y into two pieces,
@@ -129,7 +126,7 @@ class DecisionTree(object):
             feature {int} -- Feature number
 
         Returns:
-            tuple -- The best choice of feature, split and split effect
+            tuple -- The best choice of gain, feature, split point and probability
         """
         # Feature cannot be splitted if there's only one unique element.
         unique = set([X[i][feature] for i in idx])
@@ -143,15 +140,15 @@ class DecisionTree(object):
             """
 
             info = self._get_info(y, idx)
-            se = self._get_split_effect(X, y, idx, feature, split)
-            cond_info = self._get_cond_info(se)
+            prob, rate = self._get_split_effect(
+                X, y, idx, feature, split)
+            cond_info = self._get_cond_info(prob, rate)
             gain = info - cond_info
-            return gain, split, se
-
+            return gain, split, prob
         # Get split point which has max gain
-        gain, split, se = max((f(split)
-                               for split in unique), key=lambda x: x[0])
-        return gain, feature, split, se
+        gain, split, prob = max((f(split)
+                                 for split in unique), key=lambda x: x[0])
+        return gain, feature, split, prob
 
     def _choose_feature(self, X, y, idx):
         """Choose the feature which has max info gain.
@@ -162,7 +159,7 @@ class DecisionTree(object):
             idx {list} -- 1d list object with int
 
         Returns:
-            tuple -- (feature number, split point, split effect)
+            tuple -- (feature number, split point, probability, idx_split)
         """
 
         m = len(X[0])
@@ -172,16 +169,18 @@ class DecisionTree(object):
         # Terminate if no feature can be splitted
         if split_rets == []:
             return None
-        _, feature, split, se = max(split_rets, key=lambda x: x[0])
+        _, feature, split, prob = max(
+            split_rets, key=lambda x: x[0])
         # Get split idx into two pieces and empty idx
+        idx_split = [[], []]
         while idx:
             i = idx.pop()
             xi = X[i][feature]
             if xi < split:
-                se.idx[0].append(i)
+                idx_split[0].append(i)
             else:
-                se.idx[1].append(i)
-        return feature, split, se
+                idx_split[1].append(i)
+        return feature, split, prob, idx_split
 
     def _expr2literal(self, expr):
         """Auxiliary function of print_rules.
@@ -240,28 +239,28 @@ class DecisionTree(object):
             min_samples_split {int} -- The minimum number of samples required to split an internal node (default: {2})
         """
 
-        # Initialize with depth, node
-        self.root = Node(list(range(len(y))))
-        que = [[0, self.root]]
+        # Initialize with depth, node, indexes
+        self.root = Node()
+        que = [[0, self.root, list(range(len(y)))]]
         # Breadth-First Search
         while que:
-            depth, nd = que.pop(0)
+            depth, nd, idx = que.pop(0)
             # Terminate loop if tree depth is more than max_depth
             if depth == max_depth:
                 break
             # Stop split when number of node samples is less than min_samples_split or Node is 100% pure.
-            if len(nd.idx) < min_samples_split or nd.prob == 1 or nd.prob == 0:
+            if len(idx) < min_samples_split or nd.prob == 1 or nd.prob == 0:
                 continue
             # Stop split if no feature has more than 2 unique elements
-            feature_rets = self._choose_feature(X, y, nd.idx)
+            feature_rets = self._choose_feature(X, y, idx)
             if feature_rets is None:
                 continue
             # Split
-            nd.feature, nd.split, se = feature_rets
-            nd.left = Node(se.idx[0], se.prob[0])
-            nd.right = Node(se.idx[1], se.prob[1])
-            que.append([depth+1, nd.left])
-            que.append([depth+1, nd.right])
+            nd.feature, nd.split, prob, idx_split = feature_rets
+            nd.left = Node(prob[0])
+            nd.right = Node(prob[1])
+            que.append([depth+1, nd.left, idx_split[0]])
+            que.append([depth+1, nd.right, idx_split[1]])
         # Update tree depth and rules
         self.height = depth
         self._get_rules()
