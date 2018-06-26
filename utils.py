@@ -88,4 +88,6 @@ def train_test_split(X, y, prob=0.7, random_state=None):
         else:
             X_test.append(X[i])
             y_test.append(y[i])
+    # Make the fixed random_state random again
+    seed()
     return X_train, X_test, y_train, y_test

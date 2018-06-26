@@ -43,7 +43,7 @@ class DecisionTree(object):
         Arguments:
             X {list} -- 2d list object with int or float
             y {list} -- 1d list object with int 0 or 1
-            idx {list} -- 1d list object with int
+            idx {list} -- indexes, 1d list object with int
             feature {int} -- Feature number
             split {float} -- Split point of x
 
@@ -91,7 +91,7 @@ class DecisionTree(object):
 
         Arguments:
             y {list} -- 1d list object with int 0 or 1
-            idx {list} -- 1d list object with int
+            idx {list} -- indexes, 1d list object with int
 
         Returns:
             float -- Info of y
@@ -122,7 +122,7 @@ class DecisionTree(object):
         Arguments:
             x {list} -- 1d list object with int or float
             y {list} -- 1d list object with int 0 or 1
-            idx {list} -- 1d list object with int
+            idx {list} -- indexes, 1d list object with int
             feature {int} -- Feature number
 
         Returns:
@@ -156,7 +156,7 @@ class DecisionTree(object):
         Arguments:
             X {list} -- 2d list object with int or float
             y {list} -- 1d list object with int 0 or 1
-            idx {list} -- 1d list object with int
+            idx {list} -- indexes, 1d list object with int
 
         Returns:
             tuple -- (feature number, split point, probability, idx_split)
@@ -328,10 +328,10 @@ if __name__ == "__main__":
     # Load data
     X, y = load_breast_cancer()
     # Split data randomly, train set rate 70%
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=100)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
     # Train model
     clf = DecisionTree()
-    clf.fit(X_train, y_train)
+    clf.fit(X_train, y_train, max_depth=4)
     # Show rules
     clf.print_rules()
     # Model accuracy
