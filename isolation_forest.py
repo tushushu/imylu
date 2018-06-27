@@ -119,21 +119,21 @@ class IsolationTree(object):
         # Update the height of IsolationTree
         self.height = depth
 
-    def _predict(self, row):
+    def _predict(self, xi):
         """Auxiliary function of predict.
 
         Arguments:
-            row {list} -- 1D list with int or float
+            xi {list} -- 1D list with int or float
 
         Returns:
-            int -- the depth of the node which the row belongs to
+            int -- the depth of the node which the xi belongs to
         """
 
-        # Search row from the IsolationTree until row is at an leafnode
+        # Search xi from the IsolationTree until xi is at an leafnode
         nd = self.root
         depth = 0
         while nd.left and nd.right:
-            if row[nd.split_feature] < nd.split_point:
+            if xi[nd.split_feature] < nd.split_point:
                 nd = nd.left
             else:
                 nd = nd.right
@@ -190,21 +190,21 @@ class IsolationForest(object):
             ret = 0
         return ret
 
-    def _predict(self, row):
+    def _predict(self, xi):
         """Auxiliary function of predict.
 
         Arguments:
-            row {list} -- 1d list object with int or float
+            xi {list} -- 1d list object with int or float
 
         Returns:
             list -- 1d list object with float
         """
 
-        # Calculate average score of row at each tree
+        # Calculate average score of xi at each tree
         score = 0
         n_trees = len(self.trees)
         for tree in self.trees:
-            depth, node_size = tree._predict(row)
+            depth, node_size = tree._predict(xi)
             score += (depth + self._get_adjustment(node_size))
         score = score / n_trees
         # Scale
@@ -220,7 +220,7 @@ class IsolationForest(object):
             list -- 1d list object with float
         """
 
-        return [self._predict(row) for row in X]
+        return [self._predict(xi) for xi in X]
 
 
 if __name__ == "__main__":

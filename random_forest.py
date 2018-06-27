@@ -5,6 +5,7 @@
 @Last Modified by: tushushu 
 @Last Modified time: 2018-06-26 14:41:08 
 """
+
 from random import sample, choice
 from decision_tree import DecisionTree
 
@@ -60,11 +61,11 @@ class RandomForest(object):
             self.trees.append(clf)
             self.tree_features.append(features)
 
-    def _predict(self, row):
+    def _predict(self, xi):
         """Auxiliary function of predict.
 
         Arguments:
-            row {list} -- 1d list object with int or float
+            xi {list} -- 1d list object with int or float
 
         Returns:
             int -- 0 or 1
@@ -73,7 +74,7 @@ class RandomForest(object):
         # Count positive vote
         pos_vote = 0
         for tree, features in zip(self.trees, self.tree_features):
-            score = tree._predict_prob([row[i] for i in features])
+            score = tree._predict_prob([xi[j] for j in features])
             if score >= 0.5:
                 pos_vote += 1
         # Get negative vote
@@ -96,7 +97,7 @@ class RandomForest(object):
             list -- 1d list object with float
         """
 
-        return [self._predict(row) for row in X]
+        return [self._predict(xi) for xi in X]
 
 
 if __name__ == "__main__":
