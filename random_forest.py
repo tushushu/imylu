@@ -8,6 +8,7 @@
 
 from random import sample, choice
 from decision_tree import DecisionTree
+from utils import load_breast_cancer, train_test_split, get_acc, run_time
 
 
 class RandomForest(object):
@@ -100,11 +101,9 @@ class RandomForest(object):
         return [self._predict(xi) for xi in X]
 
 
-if __name__ == "__main__":
-    from time import time
-    from utils import load_breast_cancer, train_test_split
-
-    start = time()
+@run_time
+def main():
+    print("Comparing RandomForest with DecisionTree...")
     # Load data
     X, y = load_breast_cancer()
     # Split data randomly, train set rate 70%
@@ -114,17 +113,16 @@ if __name__ == "__main__":
     rf = RandomForest()
     rf.fit(X_train, y_train, n_samples=300, max_depth=3, n_estimators=20)
     # RandomForest Model accuracy
-    rf_acc = sum((y_test_hat == y_test for y_test_hat, y_test in zip(
-        rf.predict(X_test), y_test))) / len(y_test)
-    print("RF accuracy is %.2f%%!" % (rf_acc * 100))
+    print("RandomForest:", end=' ')
+    get_acc(rf, X_test, y_test)
 
     # Train DecisionTree model
     dt = DecisionTree()
     dt.fit(X_train, y_train, max_depth=4)
     # DecisionTree Model accuracy
-    dt_acc = sum((y_test_hat == y_test for y_test_hat, y_test in zip(
-        dt.predict(X_test), y_test))) / len(y_test)
-    print("DT accuracy is %.2f%%!" % (dt_acc * 100))
+    print("DecisionTree:", end=' ')
+    get_acc(dt, X_test, y_test)
 
-    # Show run time, you can try it in Pypy which might be 10x faster.
-    print("Total run time is %.2f s" % (time() - start))
+
+if __name__ == "__main__":
+    main()

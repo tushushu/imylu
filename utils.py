@@ -1,5 +1,6 @@
 import os
 from random import random, seed
+from time import time
 
 
 def load_data(file_name):
@@ -91,3 +92,17 @@ def train_test_split(X, y, prob=0.7, random_state=None):
     # Make the fixed random_state random again
     seed()
     return X_train, X_test, y_train, y_test
+
+
+def get_acc(clf, X, y):
+    acc = sum((y_hat == y for y_hat, y in zip(clf.predict(X), y))) / len(y)
+    print("Test accuracy is %.2f%%!" % (acc * 100))
+    return acc
+
+
+def run_time(func):
+    def wrapper():
+        start = time()
+        func()
+        print("Total run time is %.2f s" % (time() - start))
+    return wrapper

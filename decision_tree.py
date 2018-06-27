@@ -8,6 +8,7 @@
 
 from math import log2
 from copy import copy
+from utils import load_breast_cancer, train_test_split, get_acc, run_time
 
 
 class Node(object):
@@ -320,11 +321,9 @@ class DecisionTree(object):
         return [int(y >= threshold) for y in self.predict_prob(X)]
 
 
-if __name__ == "__main__":
-    from time import time
-    from utils import load_breast_cancer, train_test_split
-
-    start = time()
+@run_time
+def main():
+    print("Tesing the accuracy of DecisionTree...")
     # Load data
     X, y = load_breast_cancer()
     # Split data randomly, train set rate 70%
@@ -335,8 +334,8 @@ if __name__ == "__main__":
     # Show rules
     clf.print_rules()
     # Model accuracy
-    acc = sum((y_test_hat == y_test for y_test_hat, y_test in zip(
-        clf.predict(X_test), y_test))) / len(y_test)
-    print("Test accuracy is %.2f%%!" % (acc * 100))
-    # Show run time, you can try it in Pypy which might be 10x faster.
-    print("Total run time is %.2f s" % (time() - start))
+    get_acc(clf, X_test, y_test)
+
+
+if __name__ == "__main__":
+    main()

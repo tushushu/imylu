@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-@Author: tushushu 
-@Date: 2018-06-27 11:25:30 
-@Last Modified by: tushushu 
-@Last Modified time: 2018-06-27 11:25:30 
+@Author: tushushu
+@Date: 2018-06-27 11:25:30
+@Last Modified by: tushushu
+@Last Modified time: 2018-06-27 11:25:30
 """
 from random import sample, normalvariate
 
@@ -19,7 +19,7 @@ class LinearRegression(object):
         self.bias = None
         self.weights = None
 
-    def get_delta_gradient(self, yi, xi):
+    def get_gradient_delta(self, yi, xi):
         """[summary]
 
         Arguments:
@@ -30,10 +30,10 @@ class LinearRegression(object):
             [type] -- [description]
         """
 
-        delta_bias_grad = yi - \
+        bias_grad_delta = yi - \
             sum(wi * xij for wi, xij in zip(self.weights, xi)) - self.bias
-        delta_weights_grad = [d * xi for d in delta_bias_grad]
-        return delta_bias_grad, delta_weights_grad
+        weights_grad_delta = [d * xi for d in bias_grad_delta]
+        return bias_grad_delta, weights_grad_delta
 
     def batch_gradient_descent(self, x, y, lr, epochs):
         """[summary]
@@ -50,17 +50,17 @@ class LinearRegression(object):
         self.bias = 0
 
         for _ in range(epochs):
-            bias_gradient = 0
-            weights_gradient = [0 for _ in range(n)]
+            bias_grad = 0
+            weights_grad = [0 for _ in range(n)]
 
             for i in range(m):
-                delta_bias_gradient, delta_weights_gradient = self.get_delta_gradient(
+                bias_grad_delta, weights_grad_delta = self.get_gradient_delta(
                     x[i], y[i])
-                bias_gradient += delta_bias_gradient
-                weights_gradient += delta_weights_gradient
+                bias_grad += bias_grad_delta
+                weights_grad += weights_grad_delta
 
-            self.bias += lr * bias_gradient * 2 / m
-            self.weights += lr * weights_gradient * 2 / m
+            self.bias += lr * bias_grad * 2 / m
+            self.weights += lr * weights_grad * 2 / m
 
     def stochastic_gradient_descent(self, x, y, lr, epochs, sample_rate):
         """[summary]
@@ -81,11 +81,10 @@ class LinearRegression(object):
         for _ in range(epochs):
             sample(range(m), k)
             for i in sample(range(m), k):
-                bias_gradient, weights_gradient = self.get_delta_gradient(
-                    x[i], y[i])
+                bias_grad, weights_grad = self.get_gradient_delta(x[i], y[i])
 
-                self.bias += lr * bias_gradient
-                self.weights += lr * weights_gradient
+                self.bias += lr * bias_grad
+                self.weights += lr * weights_grad
 
     def fit(self, x, y, lr, epochs, method="batch", sample_rate=1):
         """[summary]
@@ -109,17 +108,17 @@ class LinearRegression(object):
         if method == "stochastic":
             self.stochastic_gradient_descent(x, y, lr, epochs, sample_rate)
 
-    def _predict(self, row):
+    def _predict(self, xi):
         """[summary]
 
         Arguments:
-            row {[type]} -- [description]
+            xi {[type]} -- [description]
 
         Raises:
             NotImplementedError -- [description]
         """
 
-        raise NotImplementedError
+        return sum(wi * xij for wi, xij in zip(self.weights, xi)) + self.bias
 
     def predict(self, X):
         """[summary]
@@ -131,7 +130,7 @@ class LinearRegression(object):
             NotImplementedError -- [description]
         """
 
-        raise NotImplementedError
+        return [self._predict(xi) for xi in X]
 
 
 if __name__ == "__main__":
