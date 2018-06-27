@@ -38,21 +38,23 @@ class RandomForest(object):
         self.trees = []
         self.tree_features = []
         for _ in range(n_estimators):
-
             m = len(X[0])
             n = len(y)
+            # Choose rows randomly
             if n_samples:
-                idx = sample(range(n), n_samples)
+                idx = sample(range(n), min(n, n_samples))
             else:
                 idx = range(n)
+            # Choose columns randomly
             if max_features:
                 n_features = min(m, max_features)
             else:
                 n_features = int(m ** 0.5)
-
             features = sample(range(m), choice(range(1, n_features)))
+            # Subsample of X and y
             X_sub = [[X[i][j] for j in features] for i in idx]
             y_sub = [y[i] for i in idx]
+            # Train decision tree classifier
             clf = DecisionTree()
             clf.fit(X_sub, y_sub, max_depth, min_samples_split)
             self.trees.append(clf)
@@ -65,16 +67,18 @@ class RandomForest(object):
             row {list} -- 1d list object with int or float
 
         Returns:
-            list -- 1d list object with float
+            int -- 0 or 1
         """
 
-        # Vote
+        # Count positive vote
         pos_vote = 0
         for tree, features in zip(self.trees, self.tree_features):
             score = tree._predict_prob([row[i] for i in features])
             if score >= 0.5:
                 pos_vote += 1
+        # Get negative vote
         neg_vote = len(self.trees) - pos_vote
+        # Return 1 or 0 randomly if number of positive vote equals to negative vote
         if pos_vote > neg_vote:
             return 1
         elif pos_vote < neg_vote:
@@ -104,6 +108,7 @@ if __name__ == "__main__":
     X, y = load_breast_cancer()
     # Split data randomly, train set rate 70%
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=40)
+
     # Train RandomForest model
     rf = RandomForest()
     rf.fit(X_train, y_train, n_samples=300, max_depth=3, n_estimators=20)
@@ -111,6 +116,7 @@ if __name__ == "__main__":
     rf_acc = sum((y_test_hat == y_test for y_test_hat, y_test in zip(
         rf.predict(X_test), y_test))) / len(y_test)
     print("RF accuracy is %.2f%%!" % (rf_acc * 100))
+
     # Train DecisionTree model
     dt = DecisionTree()
     dt.fit(X_train, y_train, max_depth=4)
@@ -118,5 +124,6 @@ if __name__ == "__main__":
     dt_acc = sum((y_test_hat == y_test for y_test_hat, y_test in zip(
         dt.predict(X_test), y_test))) / len(y_test)
     print("DT accuracy is %.2f%%!" % (dt_acc * 100))
+
     # Show run time, you can try it in Pypy which might be 10x faster.
     print("Total run time is %.2f s" % (time() - start))
