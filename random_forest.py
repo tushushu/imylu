@@ -34,7 +34,7 @@ class RandomForest(object):
             n_estimators {int} -- number of trees (default: {5})
             max_depth {int} -- The maximum depth of each tree. (default: {3})
             min_samples_split {int} -- The minimum number of samples required to split an internal node (default: {2})
-            n_samples {[type]} -- number of samples (default: {None})
+            n_samples {int} -- number of samples (default: {None})
         """
 
         self.trees = []
@@ -52,7 +52,7 @@ class RandomForest(object):
                 n_features = min(m, max_features)
             else:
                 n_features = int(m ** 0.5)
-            features = sample(range(m), choice(range(1, n_features)))
+            features = sample(range(m), choice(range(1, n_features+1)))
             # Subsample of X and y
             X_sub = [[X[i][j] for j in features] for i in idx]
             y_sub = [y[i] for i in idx]

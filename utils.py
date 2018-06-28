@@ -24,6 +24,7 @@ def load_data(file_name):
         yi = int(line[-1])
         X.append(xi)
         y.append(yi)
+    f.close()
     return X, y
 
 
