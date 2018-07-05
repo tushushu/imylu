@@ -34,7 +34,7 @@ class LinearRegression(object):
 
         bias_grad_delta = yi - \
             sum(wi * xij for wi, xij in zip(self.weights, Xi)) - self.bias
-        weights_grad_delta = [bias_grad_delta * x for x in Xi]
+        weights_grad_delta = [bias_grad_delta * Xij for Xij in Xi]
         return bias_grad_delta, weights_grad_delta
 
     def _batch_gradient_descent(self, X, y, lr, epochs):
