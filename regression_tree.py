@@ -1,24 +1,22 @@
 # -*- coding: utf-8 -*-
 """
 @Author: tushushu 
-@Date: 2018-06-13 14:55:11 
+@Date: 2018-07-05 17:51:04 
 @Last Modified by: tushushu 
-@Last Modified time: 2018-06-13 14:55:11 
+@Last Modified time: 2018-07-05 17:51:04 
 """
-
-from math import log2
 from copy import copy
-from utils import load_breast_cancer, train_test_split, get_acc, run_time
+from utils import load_boston_house_prices, train_test_split, get_r2, run_time, min_max_scale
 
 
 class Node(object):
-    def __init__(self, prob=None):
+    def __init__(self, avg=None):
         """Node class to build tree leaves.
 
         Keyword Arguments:
-            prob {float} -- positive probability (default: {None})
+            avg {float} -- prediction of y (default: {None})
         """
-        self.prob = prob
+        self.avg = avg
 
         self.left = None
         self.right = None
@@ -26,9 +24,9 @@ class Node(object):
         self.split = None
 
 
-class DecisionTree(object):
+class RegressionTree(object):
     def __init__(self):
-        """DecisionTree class only support binary classification with ID3.
+        """RegressionTree class.
 
         Attributes:
             root: the root node of DecisionTree
@@ -38,8 +36,9 @@ class DecisionTree(object):
         self.root = Node()
         self.height = 0
 
-    def _get_split_effect(self, X, y, idx, feature, split):
-        """List length, positive probability and rate when x is splitted into two pieces.
+    def _get_split_var(self, X, y, idx, feature, split):
+        """Calculate the average of each set when x is splitted into two pieces.
+        D(X) = E{[X-E(X)]^2} = E(X^2)-[E(X)]^2 
 
         Arguments:
             X {list} -- 2d list object with int or float
@@ -49,76 +48,32 @@ class DecisionTree(object):
             split {float} -- Split point of x
 
         Returns:
-            tuple -- prob, rate
+            list -- Average of splitted x
         """
 
-        n = len(idx)
-        pos_cnt = [0, 0]
-        cnt = [0, 0]
-
+        y_sum = [0, 0]
+        y_cnt = [0, 0]
+        y_sqr_sum = [0, 0]
         # Iterate each row and compare with the split point
         for i in idx:
             xi, yi = X[i][feature], y[i]
             if xi < split:
-                cnt[0] += 1
-                pos_cnt[0] += yi
+                y_cnt[0] += 1
+                y_sum[0] += yi
+                y_sqr_sum[0] += yi ** 2
             else:
-                cnt[1] += 1
-                pos_cnt[1] += yi
-        # Calculate the split effect
-        prob = [pos_cnt[0] / cnt[0], pos_cnt[1] / cnt[1]]
-        rate = [cnt[0] / n, cnt[1] / n]
-
-        return prob, rate
-
-    def _get_entropy(self, p):
-        """Calculate entropy
-
-        Arguments:
-            p {float} -- Positive probability
-
-        Returns:
-            float -- Entropy
-        """
-        # According to L'Hospital's rule, 0 * log2(0) equals to zero.
-        if p == 1 or p == 0:
-            return 0
-        else:
-            q = 1 - p
-            return -(p * log2(p) + q * log2(q))
-
-    def _get_info(self, y, idx):
-        """Calculate info of y
-
-        Arguments:
-            y {list} -- 1d list object with int 0 or 1
-            idx {list} -- indexes, 1d list object with int
-
-        Returns:
-            float -- Info of y
-        """
-
-        p = sum([y[i] for i in idx]) / len(idx)
-        return self._get_entropy(p)
-
-    def _get_cond_info(self, prob, rate):
-        """Calculate conditonal info of x
-
-        Arguments:
-            prob {list} -- [left node probability, right node probability]
-            rate {list} -- [left node positive rate, right node positive rate]
-
-        Returns:
-            float -- Conditonal info of x
-        """
-
-        info_left = self._get_entropy(prob[0])
-        info_right = self._get_entropy(prob[1])
-        return rate[0] * info_left + rate[1] * info_right
+                y_cnt[1] += 1
+                y_sum[1] += yi
+                y_sqr_sum[1] += yi ** 2
+        # Calculate the variance of y
+        y_avg = [y_sum[0] / y_cnt[0], y_sum[1] / y_cnt[1]]
+        y_var = [y_sqr_sum[0] - y_sum[0] * y_avg[0],
+                 y_sqr_sum[1] - y_sum[1] * y_avg[1]]
+        return sum(y_var), split, y_avg
 
     def _choose_split_point(self, X, y, idx, feature):
         """Iterate each xi and split x, y into two pieces,
-        and the best split point is the xi when we get max gain.
+        and the best split point is the xi when we get min variance.
 
         Arguments:
             x {list} -- 1d list object with int or float
@@ -127,7 +82,7 @@ class DecisionTree(object):
             feature {int} -- Feature number
 
         Returns:
-            tuple -- The best choice of gain, feature, split point and probability
+            tuple -- The best choice of variance, feature, split point and average
         """
         # Feature cannot be splitted if there's only one unique element.
         unique = set([X[i][feature] for i in idx])
@@ -135,24 +90,13 @@ class DecisionTree(object):
             return None
         # In case of empty split
         unique.remove(min(unique))
-
-        def f(split):
-            """Auxiliary function of _choose_split_poin
-            """
-
-            info = self._get_info(y, idx)
-            prob, rate = self._get_split_effect(
-                X, y, idx, feature, split)
-            cond_info = self._get_cond_info(prob, rate)
-            gain = info - cond_info
-            return gain, split, prob
-        # Get split point which has max gain
-        gain, split, prob = max((f(split)
-                                 for split in unique), key=lambda x: x[0])
-        return gain, feature, split, prob
+        # Get split point which has min var
+        y_var, split, y_avg = min((self._get_split_var(X, y, idx, feature, split)
+                                   for split in unique), key=lambda x: x[0])
+        return y_var, feature, split, y_avg
 
     def _choose_feature(self, X, y, idx):
-        """Choose the feature which has max info gain.
+        """Choose the feature which has min variance.
 
         Arguments:
             X {list} -- 2d list object with int or float
@@ -160,7 +104,7 @@ class DecisionTree(object):
             idx {list} -- indexes, 1d list object with int
 
         Returns:
-            tuple -- (feature number, split point, probability, idx_split)
+            tuple -- (feature number, split point, average, idx_split)
         """
 
         m = len(X[0])
@@ -170,7 +114,7 @@ class DecisionTree(object):
         # Terminate if no feature can be splitted
         if split_rets == []:
             return None
-        _, feature, split, prob = max(
+        _, feature, split, y_avg = min(
             split_rets, key=lambda x: x[0])
         # Get split idx into two pieces and empty idx
         idx_split = [[], []]
@@ -181,7 +125,7 @@ class DecisionTree(object):
                 idx_split[0].append(i)
             else:
                 idx_split[1].append(i)
-        return feature, split, prob, idx_split
+        return feature, split, y_avg, idx_split
 
     def _expr2literal(self, expr):
         """Auxiliary function of print_rules.
@@ -200,7 +144,7 @@ class DecisionTree(object):
     def _get_rules(self):
         """Get the rules of all the decision tree leaf nodes. 
             Expr: 1D list like [Feature, op, split]
-            Rule: 2D list like [[Feature, op, split], prob]
+            Rule: 2D list like [[Feature, op, split], avg]
             Op: -1 means less than, 1 means equal or more than
         """
 
@@ -213,7 +157,7 @@ class DecisionTree(object):
             if not(nd.left or nd.right):
                 # Convert expression to text
                 literals = list(map(self._expr2literal, exprs))
-                self.rules.append([literals, nd.prob])
+                self.rules.append([literals, nd.avg])
             # Expand when the current node has left child
             if nd.left:
                 rule_left = copy(exprs)
@@ -225,15 +169,15 @@ class DecisionTree(object):
                 rule_right.append([nd.feature, 1, nd.split])
                 que.append([nd.right, rule_right])
 
-    def fit(self, X, y, max_depth=3, min_samples_split=2):
-        """Build a decision tree classifier.
+    def fit(self, X, y, max_depth=5, min_samples_split=2):
+        """Build a regression decision tree.
         Note:
             At least there's one column in X has more than 2 unique elements
-            y cannot be all 1 or all 0
+            y cannot be all the same value
 
         Arguments:
             X {list} -- 2d list object with int or float
-            y {list} -- 1d list object with int 0 or 1
+            y {list} -- 1d list object with float
 
         Keyword Arguments:
             max_depth {int} -- The maximum depth of the tree. (default: {2})
@@ -250,16 +194,16 @@ class DecisionTree(object):
             if depth == max_depth:
                 break
             # Stop split when number of node samples is less than min_samples_split or Node is 100% pure.
-            if len(idx) < min_samples_split or nd.prob == 1 or nd.prob == 0:
+            if len(idx) < min_samples_split or set(map(lambda i: y[i], idx)) == 1:
                 continue
             # Stop split if no feature has more than 2 unique elements
             feature_rets = self._choose_feature(X, y, idx)
             if feature_rets is None:
                 continue
             # Split
-            nd.feature, nd.split, prob, idx_split = feature_rets
-            nd.left = Node(prob[0])
-            nd.right = Node(prob[1])
+            nd.feature, nd.split, y_avg, idx_split = feature_rets
+            nd.left = Node(y_avg[0])
+            nd.right = Node(y_avg[1])
             que.append([depth+1, nd.left, idx_split[0]])
             que.append([depth+1, nd.right, idx_split[1]])
         # Update tree depth and rules
@@ -267,16 +211,16 @@ class DecisionTree(object):
         self._get_rules()
 
     def print_rules(self):
-        """Print the rules of all the decision tree leaf nodes.
+        """Print the rules of all the regression decision tree leaf nodes.
         """
 
         for i, rule in enumerate(self.rules):
-            literals, prob = rule
+            literals, avg = rule
             print("Rule %d: " % i, ' | '.join(
-                literals) + ' => Prob %.4f' % prob)
+                literals) + ' => y_hat %.4f' % avg)
 
-    def _predict_prob(self, row):
-        """Auxiliary function of predict_prob.
+    def _predict(self, row):
+        """Auxiliary function of predict.
 
         Arguments:
             row {list} -- 1D list with int or float
@@ -291,50 +235,40 @@ class DecisionTree(object):
                 nd = nd.left
             else:
                 nd = nd.right
-        return nd.prob
+        return nd.avg
 
-    def predict_prob(self, X):
-        """Get the probability that y is positive.
-
-        Arguments:
-            X {list} -- 2d list object with int or float
-
-        Returns:
-            list -- 1d list object with float
-        """
-
-        return [self._predict_prob(row) for row in X]
-
-    def predict(self, X, threshold=0.5):
+    def predict(self, X):
         """Get the prediction of y.
 
         Arguments:
             X {list} -- 2d list object with int or float
 
-        Keyword Arguments:
-            threshold {float} -- Prediction = 1 when probability >= threshold (default: {0.5})
-
         Returns:
             list -- 1d list object with float
         """
 
-        return [int(y >= threshold) for y in self.predict_prob(X)]
+        return [self._predict(Xi) for Xi in X]
 
 
 @run_time
 def main():
-    print("Tesing the accuracy of DecisionTree...")
+    print("Tesing the accuracy of LinearRegression(batch)...")
     # Load data
-    X, y = load_breast_cancer()
+    X, y = load_boston_house_prices()
+    X = min_max_scale(X)
     # Split data randomly, train set rate 70%
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
     # Train model
-    clf = DecisionTree()
-    clf.fit(X_train, y_train, max_depth=4)
-    # Show rules
-    clf.print_rules()
+    reg = RegressionTree()
+    reg.fit(X=X_train, y=y_train, max_depth=3)
+
+    # _X = [[x] for x in range(10)]
+    # _y = [5.56, 5.7, 5.91, 6.4, 6.8, 7.05, 8.9, 8.7, 9, 9.05]
+    # reg.fit(_X, _y, 1)
+
     # Model accuracy
-    get_acc(clf, X_test, y_test)
+    get_r2(reg, X_test, y_test)
+    reg.print_rules()
 
 
 if __name__ == "__main__":
