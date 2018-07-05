@@ -29,10 +29,11 @@ class Node(object):
 class DecisionTree(object):
     def __init__(self):
         """DecisionTree class only support binary classification with ID3.
+
         Attributes:
-        root: the root node of DecisionTree
-        height: the height of DecisionTree
-        _split_effect: number of samples, positive probability and rate in split set of each split group
+            root: the root node of DecisionTree
+            height: the height of DecisionTree
+            _split_effect: number of samples, positive probability and rate in split set of each split group
         """
 
         self.root = Node()

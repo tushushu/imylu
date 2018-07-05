@@ -21,7 +21,11 @@ def load_data(file_name):
     for line in f:
         line = line[:-1].split(",")
         xi = [float(s) for s in line[:-1]]
-        yi = int(line[-1])
+        yi = line[-1]
+        if '.' in yi:
+            yi = float(yi)
+        else:
+            yi = int(yi)
         X.append(xi)
         y.append(yi)
     f.close()
@@ -96,7 +100,7 @@ def train_test_split(X, y, prob=0.7, random_state=None):
 
 
 def get_acc(clf, X, y):
-    acc = sum((y_hat == y for y_hat, y in zip(clf.predict(X), y))) / len(y)
+    acc = sum((yi_hat == yi for yi_hat, yi in zip(clf.predict(X), y))) / len(y)
     print("Test accuracy is %.2f%%!" % (acc * 100))
     return acc
 
@@ -107,3 +111,12 @@ def run_time(func):
         func()
         print("Total run time is %.2f s" % (time() - start))
     return wrapper
+
+
+def get_r2(reg, X, y):
+    sse = sum((yi_hat - yi) ** 2 for yi_hat, yi in zip(reg.predict(X), y))
+    y_avg = sum(y) / len(y)
+    sst = sum((yi - y_avg) ** 2 for yi in y)
+    r2 = 1 - sse/sst
+    print("Test r2 is %.3f!" % r2)
+    return r2
