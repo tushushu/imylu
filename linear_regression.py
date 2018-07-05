@@ -161,7 +161,6 @@ def main():
     X = min_max_scale(X)
     # Split data randomly, train set rate 70%
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
-    # print(X_train)
     batch()
     stochastic()
 
