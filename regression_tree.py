@@ -10,13 +10,13 @@ from utils import load_boston_house_prices, train_test_split, get_r2, run_time, 
 
 
 class Node(object):
-    def __init__(self, avg=None):
+    def __init__(self, score=None):
         """Node class to build tree leaves.
 
         Keyword Arguments:
-            avg {float} -- prediction of y (default: {None})
+            score {float} -- prediction of y (default: {None})
         """
-        self.avg = avg
+        self.score = score
 
         self.left = None
         self.right = None
@@ -42,7 +42,7 @@ class RegressionTree(object):
 
         Arguments:
             X {list} -- 2d list object with int or float
-            y {list} -- 1d list object with int 0 or 1
+            y {list} -- 1d list object with float
             idx {list} -- indexes, 1d list object with int
             feature {int} -- Feature number
             split {float} -- Split point of x
@@ -77,7 +77,7 @@ class RegressionTree(object):
 
         Arguments:
             x {list} -- 1d list object with int or float
-            y {list} -- 1d list object with int 0 or 1
+            y {list} -- 1d list object with float
             idx {list} -- indexes, 1d list object with int
             feature {int} -- Feature number
 
@@ -90,7 +90,7 @@ class RegressionTree(object):
             return None
         # In case of empty split
         unique.remove(min(unique))
-        # Get split point which has min var
+        # Get split point which has min variance
         y_var, split, y_avg = min((self._get_split_var(X, y, idx, feature, split)
                                    for split in unique), key=lambda x: x[0])
         return y_var, feature, split, y_avg
@@ -100,7 +100,7 @@ class RegressionTree(object):
 
         Arguments:
             X {list} -- 2d list object with int or float
-            y {list} -- 1d list object with int 0 or 1
+            y {list} -- 1d list object with float
             idx {list} -- indexes, 1d list object with int
 
         Returns:
@@ -108,7 +108,7 @@ class RegressionTree(object):
         """
 
         m = len(X[0])
-        # Compare the info gain of each feature and choose best one.
+        # Compare the variance of each feature and choose best one.
         split_rets = [x for x in map(lambda x: self._choose_split_point(
             X, y, idx, x), range(m)) if x is not None]
         # Terminate if no feature can be splitted
@@ -116,7 +116,7 @@ class RegressionTree(object):
             return None
         _, feature, split, y_avg = min(
             split_rets, key=lambda x: x[0])
-        # Get split idx into two pieces and empty idx
+        # Get split idx into two pieces and empty the idx.
         idx_split = [[], []]
         while idx:
             i = idx.pop()
@@ -144,7 +144,7 @@ class RegressionTree(object):
     def _get_rules(self):
         """Get the rules of all the decision tree leaf nodes. 
             Expr: 1D list like [Feature, op, split]
-            Rule: 2D list like [[Feature, op, split], avg]
+            Rule: 2D list like [[Feature, op, split], score]
             Op: -1 means less than, 1 means equal or more than
         """
 
@@ -157,7 +157,7 @@ class RegressionTree(object):
             if not(nd.left or nd.right):
                 # Convert expression to text
                 literals = list(map(self._expr2literal, exprs))
-                self.rules.append([literals, nd.avg])
+                self.rules.append([literals, nd.score])
             # Expand when the current node has left child
             if nd.left:
                 rule_left = copy(exprs)
@@ -215,9 +215,9 @@ class RegressionTree(object):
         """
 
         for i, rule in enumerate(self.rules):
-            literals, avg = rule
+            literals, score = rule
             print("Rule %d: " % i, ' | '.join(
-                literals) + ' => y_hat %.4f' % avg)
+                literals) + ' => y_hat %.4f' % score)
 
     def _predict(self, row):
         """Auxiliary function of predict.
@@ -235,7 +235,7 @@ class RegressionTree(object):
                 nd = nd.left
             else:
                 nd = nd.right
-        return nd.avg
+        return nd.score
 
     def predict(self, X):
         """Get the prediction of y.
@@ -260,15 +260,11 @@ def main():
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
     # Train model
     reg = RegressionTree()
-    reg.fit(X=X_train, y=y_train, max_depth=3)
-
-    # _X = [[x] for x in range(10)]
-    # _y = [5.56, 5.7, 5.91, 6.4, 6.8, 7.05, 8.9, 8.7, 9, 9.05]
-    # reg.fit(_X, _y, 1)
-
+    reg.fit(X=X_train, y=y_train, max_depth=4)
+    # Show rules
+    reg.print_rules()
     # Model accuracy
     get_r2(reg, X_test, y_test)
-    reg.print_rules()
 
 
 if __name__ == "__main__":
