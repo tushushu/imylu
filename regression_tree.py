@@ -42,7 +42,7 @@ class RegressionTree(object):
 
         Arguments:
             X {list} -- 2d list object with int or float
-            y {list} -- 1d list object with float
+            y {list} -- 1d list object with int or float
             idx {list} -- indexes, 1d list object with int
             feature {int} -- Feature number
             split {float} -- Split point of x
@@ -77,7 +77,7 @@ class RegressionTree(object):
 
         Arguments:
             x {list} -- 1d list object with int or float
-            y {list} -- 1d list object with float
+            y {list} -- 1d list object with int or float
             idx {list} -- indexes, 1d list object with int
             feature {int} -- Feature number
 
@@ -100,7 +100,7 @@ class RegressionTree(object):
 
         Arguments:
             X {list} -- 2d list object with int or float
-            y {list} -- 1d list object with float
+            y {list} -- 1d list object with int or float
             idx {list} -- indexes, 1d list object with int
 
         Returns:
@@ -177,7 +177,7 @@ class RegressionTree(object):
 
         Arguments:
             X {list} -- 2d list object with int or float
-            y {list} -- 1d list object with float
+            y {list} -- 1d list object with int or float
 
         Keyword Arguments:
             max_depth {int} -- The maximum depth of the tree. (default: {2})
@@ -226,7 +226,7 @@ class RegressionTree(object):
             row {list} -- 1D list with int or float
 
         Returns:
-            float
+            int or float -- prediction of yi
         """
 
         nd = self.root
@@ -244,7 +244,7 @@ class RegressionTree(object):
             X {list} -- 2d list object with int or float
 
         Returns:
-            list -- 1d list object with float
+            list -- 1d list object with int or float
         """
 
         return [self._predict(Xi) for Xi in X]

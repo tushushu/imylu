@@ -118,7 +118,7 @@ class LinearRegression(object):
             Xi {list} -- 1d list object with int or float
 
         Returns:
-            float -- prediction of yi
+            int or float -- prediction of yi
         """
 
         return sum(wi * Xij for wi, Xij in zip(self.weights, Xi)) + self.bias

@@ -6,7 +6,7 @@
 @Last Modified time: 2018-06-26 14:41:08 
 """
 
-from random import sample, choice
+from random import sample, choices, choice
 from decision_tree import DecisionTree
 from utils import load_breast_cancer, train_test_split, get_acc, run_time
 
@@ -42,12 +42,12 @@ class RandomForest(object):
         for _ in range(n_estimators):
             m = len(X[0])
             n = len(y)
-            # Choose rows randomly
+            # Choose rows randomly with replacement
             if n_samples:
-                idx = sample(range(n), min(n, n_samples))
+                idx = choices(population=range(n), k=min(n, n_samples))
             else:
                 idx = range(n)
-            # Choose columns randomly
+            # Choose columns randomly without replacement
             if max_features:
                 n_features = min(m, max_features)
             else:
