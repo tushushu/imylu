@@ -48,7 +48,7 @@ class RegressionTree(object):
             split {float} -- Split point of x
 
         Returns:
-            list -- Average of splitted x
+            tuple -- MSE, split point and average of splitted x
         """
 
         split_sum = [0, 0]

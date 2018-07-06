@@ -24,7 +24,7 @@ class GBDT(object):
         self.lr = None
 
     def fit(self, X, y, n_estimators, lr, max_depth, min_samples_split, subsample=None):
-        """[summary]
+        """Build a gradient boost decision tree.
 
         Arguments:
             X {list} -- 2d list with int or float
