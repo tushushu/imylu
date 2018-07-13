@@ -252,7 +252,7 @@ class RegressionTree(object):
 
 @run_time
 def main():
-    print("Tesing the accuracy of LinearRegression(batch)...")
+    print("Tesing the accuracy of RegressionTree(batch)...")
     # Load data
     X, y = load_boston_house_prices()
     # Split data randomly, train set rate 70%
