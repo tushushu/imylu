@@ -50,18 +50,18 @@ class LinearRegression(object):
         m, n = len(X), len(X[0])
         self.bias = 0
         self.weights = [normalvariate(0, 0.01) for _ in range(n)]
-
+        # Calculate the gradient of each epoch(iteration)
         for _ in range(epochs):
             bias_grad = 0
             weights_grad = [0 for _ in range(n)]
-
+            # Calculate and sum the gradient delta of each sample
             for i in range(m):
                 bias_grad_delta, weights_grad_delta = self._get_gradient_delta(
                     X[i], y[i])
                 bias_grad += bias_grad_delta
                 weights_grad = [w_grad + w_grad_d for w_grad,
                                 w_grad_d in zip(weights_grad, weights_grad_delta)]
-
+            # Update the bias and weight by gradient of current epoch
             self.bias += lr * bias_grad * 2 / m
             self.weights = [w + lr * w_grad * 2 / m for w,
                             w_grad in zip(self.weights, weights_grad)]
@@ -81,10 +81,12 @@ class LinearRegression(object):
         k = int(m * sample_rate)
         self.bias = 0
         self.weights = [normalvariate(0, 0.01) for _ in range(n)]
-
+        # Calculate the gradient of each epoch(iteration)
         for _ in range(epochs):
+            # Calculate the gradient delta of each sample
             for i in sample(range(m), k):
                 bias_grad, weights_grad = self._get_gradient_delta(X[i], y[i])
+                # Update the bias and weight by gradient of current sample
                 self.bias += lr * bias_grad
                 self.weights = [w + lr * w_grad for w,
                                 w_grad in zip(self.weights, weights_grad)]
@@ -121,6 +123,7 @@ class LinearRegression(object):
             int or float -- prediction of yi
         """
 
+        # Product the weighs and Xi then add the bias
         return sum(wi * Xij for wi, Xij in zip(self.weights, Xi)) + self.bias
 
     def predict(self, X):

@@ -90,11 +90,11 @@ class GaussianNB(object):
         return avgs, variances
 
     def fit(self, X, y):
-        """[summary]
+        """Build a Gauss naive bayes classifier.
 
         Arguments:
-            X {[type]} -- [description]
-            y {[type]} -- [description]
+            X {list} -- 2d list with int or float
+            y {list} -- 1d list object with int 0 or 1
         """
 
         # Calculate prior probability.

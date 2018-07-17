@@ -70,6 +70,7 @@ class GBDT(object):
             int or float -- prediction of yi
         """
 
+        # Sum y_hat with residuals of each tree
         return sum(self.lr * tree._predict(Xi) for tree in self.trees)
 
     def predict(self, X):
