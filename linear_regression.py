@@ -23,6 +23,15 @@ class LinearRegression(object):
 
     def _get_gradient_delta(self, Xi, yi):
         """Calculate the gradient delta of the partial derivative of MSE
+        L = (y - y_hat) ** 2
+        L = (y - W * X - b) ** 2
+
+        dL/dW = -2 * (y - W * X - b) * X
+        dL/dW = -2 * (y - y_hat) * X
+
+        dL/db = -2 * (y - W * X - b)
+        dL/db = -2 * (y - y_hat)
+        ----------------------------------------------------------------
 
         Arguments:
             Xi {list} -- 1d list object with int
@@ -39,6 +48,8 @@ class LinearRegression(object):
 
     def _batch_gradient_descent(self, X, y, lr, epochs):
         """Update the gradient by the whole dataset
+        b = b - learning_rate * 1/m (b_grad_i), b_grad_i <- grad
+        W = W - learning_rate * 1/m (w_grad_i), w_grad_i <- grad
 
         Arguments:
             X {list} -- 2D list with int or float
