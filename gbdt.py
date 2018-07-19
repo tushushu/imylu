@@ -22,9 +22,22 @@ class GBDT(object):
 
         self.trees = None
         self.lr = None
+        self.init_val = None
 
     def fit(self, X, y, n_estimators, lr, max_depth, min_samples_split, subsample=None):
         """Build a gradient boost decision tree.
+        Set MSE as loss function, and c is a constant:
+        L = MSE(y, c) = Sum((yi-c) ^ 2) / m, yi <- y
+
+        Get derivative of c:
+        dL / dc = Sum(2 * (yi-c)) / m
+        dL / dc = 2 * (Sum(yi) / m - Sum(c) / m)
+        dL / dc = 2 * (Mean(yi) - c)
+
+        Let derivative of y equals to zero, then we get initial constant value to minimize MSE:
+        2 * (Mean(yi) - c) = 0
+        c = Mean(yi)
+        ----------------------------------------------------------------------------------------
 
         Arguments:
             X {list} -- 2d list with int or float
@@ -42,7 +55,8 @@ class GBDT(object):
         n = len(y)
         self.trees = []
         self.lr = lr
-        residual = copy(y)
+        self.init_val = sum(y) / n
+        residual = [yi - self.init_val for yi in y]
         for _ in range(n_estimators):
             # Sampling without replacement
             if subsample is None:
@@ -71,7 +85,7 @@ class GBDT(object):
         """
 
         # Sum y_hat with residuals of each tree
-        return sum(self.lr * tree._predict(Xi) for tree in self.trees)
+        return self.init_val + sum(self.lr * tree._predict(Xi) for tree in self.trees)
 
     def predict(self, X):
         """Get the prediction of y.
