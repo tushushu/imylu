@@ -18,9 +18,24 @@ class LogisticRegression(LinearRegression):
         weights: W
     """
 
+    def _sigmoid(self, x, x_min=-100):
+        """Sigmoid(x) = 1 / (1 + e^(-x))
+
+        Arguments:
+           x {float}
+
+        Keyword Arguments:
+            x_min {int} -- It would cause math range error when x < -709 (default: {-100})
+
+        Returns:
+            float -- between 0 and 1
+        """
+
+        return 1 / (1 + exp(-x)) if x > x_min else 0
+
     def _get_gradient_delta(self, Xi, yi):
         """Calculate the gradient delta of the partial derivative of Loss
-        Estimation function:
+        Estimation function (Maximize the likelihood):
         z = WX + b
         y = 1 / (1 + e**(-z))
 
@@ -45,6 +60,7 @@ class LogisticRegression(LinearRegression):
         dlog(L)/dW = (y - y_hat) * X
 
         According to 2,3,4:
+        dlog(L)/db = dlog(L)/dy_hat * dy_hat/dz * dz/db
         dlog(L)/db = y - y_hat
         ------------------------------------------------------------------
 
@@ -56,8 +72,8 @@ class LogisticRegression(LinearRegression):
             tuple -- Gradient delta of bias and weight
         """
 
-        z = sum(wi * xij for wi, xij in zip(self.weights, Xi)) + self.bias
-        y_hat = 1 / (1 + exp(-z))
+        z = self._linear(Xi)
+        y_hat = self._sigmoid(z)
         bias_grad_delta = yi - y_hat
         weights_grad_delta = [bias_grad_delta * Xij for Xij in Xi]
         return bias_grad_delta, weights_grad_delta
@@ -72,8 +88,8 @@ class LogisticRegression(LinearRegression):
             float -- prediction of yi
         """
 
-        z = sum(wi * Xij for wi, Xij in zip(self.weights, Xi)) + self.bias
-        return 1 / (1 + exp(-z))
+        z = self._linear(Xi)
+        return self._sigmoid(z)
 
     def predict(self, X, threshold=0.5):
         """Get the prediction of y.

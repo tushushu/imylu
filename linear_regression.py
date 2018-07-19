@@ -11,7 +11,7 @@ from utils import load_boston_house_prices, train_test_split, get_r2, run_time, 
 
 class LinearRegression(object):
     def __init__(self):
-        """Linear regression class, y = WX + b
+        """Linear regression class
 
         Attributes:
             bias: b
@@ -20,6 +20,18 @@ class LinearRegression(object):
 
         self.bias = None
         self.weights = None
+
+    def _linear(self, Xi):
+        """y = WX + b
+
+        Arguments:
+            Xi {list} -- 1d list object with int or float
+
+        Returns:
+            float -- y
+        """
+
+        return sum(wi * xij for wi, xij in zip(self.weights, Xi)) + self.bias
 
     def _get_gradient_delta(self, Xi, yi):
         """Calculate the gradient delta of the partial derivative of MSE
@@ -44,8 +56,8 @@ class LinearRegression(object):
             tuple -- Gradient delta of bias and weight
         """
 
-        bias_grad_delta = yi - \
-            sum(wi * xij for wi, xij in zip(self.weights, Xi)) - self.bias
+        y_hat = self._linear(Xi)
+        bias_grad_delta = yi - y_hat
         weights_grad_delta = [bias_grad_delta * Xij for Xij in Xi]
         return bias_grad_delta, weights_grad_delta
 
@@ -140,7 +152,7 @@ class LinearRegression(object):
         """
 
         # Product the weighs and Xi then add the bias
-        return sum(wi * Xij for wi, Xij in zip(self.weights, Xi)) + self.bias
+        return self._linear(Xi)
 
     def predict(self, X):
         """Get the prediction of y.
