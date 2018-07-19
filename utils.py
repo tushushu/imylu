@@ -1,6 +1,7 @@
 import os
 from random import random, seed
 from time import time
+from math import exp
 
 
 def load_data(file_name):
@@ -120,3 +121,19 @@ def get_r2(reg, X, y):
     r2 = 1 - sse/sst
     print("Test r2 is %.3f!" % r2)
     return r2
+
+
+def sigmoid(x, x_min=-100):
+    """Sigmoid(x) = 1 / (1 + e^(-x))
+
+    Arguments:
+        x {float}
+
+    Keyword Arguments:
+        x_min {int} -- It would cause math range error when x < -709 (default: {-100})
+
+    Returns:
+        float -- between 0 and 1
+    """
+
+    return 1 / (1 + exp(-x)) if x > x_min else 0

@@ -6,7 +6,7 @@
 @Last Modified time: 2018-07-05 16:41:03 
 """
 from linear_regression import LinearRegression
-from utils import min_max_scale, load_breast_cancer, run_time, get_acc, train_test_split
+from utils import min_max_scale, load_breast_cancer, run_time, get_acc, train_test_split, sigmoid
 from math import exp
 
 
@@ -17,21 +17,6 @@ class LogisticRegression(LinearRegression):
         bias: b
         weights: W
     """
-
-    def _sigmoid(self, x, x_min=-100):
-        """Sigmoid(x) = 1 / (1 + e^(-x))
-
-        Arguments:
-           x {float}
-
-        Keyword Arguments:
-            x_min {int} -- It would cause math range error when x < -709 (default: {-100})
-
-        Returns:
-            float -- between 0 and 1
-        """
-
-        return 1 / (1 + exp(-x)) if x > x_min else 0
 
     def _get_gradient_delta(self, Xi, yi):
         """Calculate the gradient delta of the partial derivative of Loss
@@ -73,7 +58,7 @@ class LogisticRegression(LinearRegression):
         """
 
         z = self._linear(Xi)
-        y_hat = self._sigmoid(z)
+        y_hat = sigmoid(z)
         bias_grad_delta = yi - y_hat
         weights_grad_delta = [bias_grad_delta * Xij for Xij in Xi]
         return bias_grad_delta, weights_grad_delta
@@ -89,7 +74,7 @@ class LogisticRegression(LinearRegression):
         """
 
         z = self._linear(Xi)
-        return self._sigmoid(z)
+        return sigmoid(z)
 
     def predict(self, X, threshold=0.5):
         """Get the prediction of y.
