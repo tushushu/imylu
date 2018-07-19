@@ -38,7 +38,7 @@ class RegressionTree(object):
 
     def _get_split_mse(self, X, y, idx, feature, split):
         """Calculate the mse of each set when x is splitted into two pieces.
-        D(X) = E{[X-E(X)]^2} = E(X^2)-[E(X)]^2 
+        MSE = MSELeft + MSERight
 
         Arguments:
             X {list} -- 2d list object with int or float
@@ -65,7 +65,7 @@ class RegressionTree(object):
                 split_cnt[1] += 1
                 split_sum[1] += yi
                 split_sqr_sum[1] += yi ** 2
-        # Calculate the mse of y
+        # Calculate the mse of y, D(X) = E{[X-E(X)]^2} = E(X^2)-[E(X)]^2
         split_avg = [split_sum[0] / split_cnt[0], split_sum[1] / split_cnt[1]]
         split_mse = [split_sqr_sum[0] - split_sum[0] * split_avg[0],
                      split_sqr_sum[1] - split_sum[1] * split_avg[1]]
@@ -73,7 +73,8 @@ class RegressionTree(object):
 
     def _choose_split_point(self, X, y, idx, feature):
         """Iterate each xi and split x, y into two pieces,
-        and the best split point is the xi when we get min mse.
+        and the best split point is the xi when we get minimum mse.
+        Split(X_j) = X_j[ArgMin(MSE(y, X_j, i))], i <- [0, Lenth(X_j))
 
         Arguments:
             x {list} -- 1d list object with int or float
@@ -96,7 +97,8 @@ class RegressionTree(object):
         return mse, feature, split, split_avg
 
     def _choose_feature(self, X, y, idx):
-        """Choose the feature which has min mse.
+        """Choose the feature which has minimum mse.
+        ChooseFeature(X, Split) = ArgMin(MSE(y, X_j, Split_j)), X_j<-X, Split_j<-Split
 
         Arguments:
             X {list} -- 2d list object with int or float

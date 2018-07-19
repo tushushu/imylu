@@ -73,7 +73,7 @@ class DecisionTree(object):
 
     def _get_entropy(self, p):
         """Calculate entropy
-        Entropy = -sum(p * log2(p) + (1-p) * log2((1-p)))
+        Entropy = -Sum(p * log2(p) + (1-p) * log2((1-p)))
 
         Arguments:
             p {float} -- Positive probability
@@ -123,7 +123,7 @@ class DecisionTree(object):
         """Iterate each xi and split x, y into two pieces,
         and the best split point is the xi when we get max gain.
         Gain(y, X_j, i) = Info(y) - CondInfo(X_j, X_ij), X_ij<-X_j
-        Split(X_j) = X_j[argmax(Gain(y, X_j, i))], i <- [0, len(X_j))
+        Split(X_j) = X_j[ArgMax(Gain(y, X_j, i))], i <- [0, Lenth(X_j))
 
         Arguments:
             x {list} -- 1d list object with int or float
@@ -158,7 +158,7 @@ class DecisionTree(object):
 
     def _choose_feature(self, X, y, idx):
         """Choose the feature which has max info gain.
-        ChooseFeature(X, Split) = argmax(Gain(y, X_j, Split_j)), X_j<-X, Split_j<-Split
+        ChooseFeature(X, Split) = ArgMax(Gain(y, X_j, Split_j)), X_j<-X, Split_j<-Split
 
         Arguments:
             X {list} -- 2d list object with int or float
