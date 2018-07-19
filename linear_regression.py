@@ -23,12 +23,15 @@ class LinearRegression(object):
 
     def _get_gradient_delta(self, Xi, yi):
         """Calculate the gradient delta of the partial derivative of MSE
-        L = (y - y_hat) ** 2
-        L = (y - W * X - b) ** 2
+        Loss function:
+        L = (y - y_hat) ^ 2
+        L = (y - W * X - b) ^ 2
 
+        Get partial derivative of W:
         dL/dW = -2 * (y - W * X - b) * X
         dL/dW = -2 * (y - y_hat) * X
 
+        Get partial derivative of b:
         dL/db = -2 * (y - W * X - b)
         dL/db = -2 * (y - y_hat)
         ----------------------------------------------------------------
@@ -48,8 +51,8 @@ class LinearRegression(object):
 
     def _batch_gradient_descent(self, X, y, lr, epochs):
         """Update the gradient by the whole dataset
-        b = b - learning_rate * 1/m (b_grad_i), b_grad_i <- grad
-        W = W - learning_rate * 1/m (w_grad_i), w_grad_i <- grad
+        b = b - learning_rate * 1/m * b_grad_i, b_grad_i <- grad
+        W = W - learning_rate * 1/m * w_grad_i, w_grad_i <- grad
 
         Arguments:
             X {list} -- 2D list with int or float
@@ -79,6 +82,8 @@ class LinearRegression(object):
 
     def _stochastic_gradient_descent(self, X, y, lr, epochs, sample_rate):
         """Update the gradient by the random sample of dataset
+        b = b - learning_rate * b_sample_grad_i, b_sample_grad_i <- sample_grad
+        W = W - learning_rate * w_sample_grad_i, w_sample_grad_i <- sample_grad
 
         Arguments:
             X {list} -- 2D list with int or float

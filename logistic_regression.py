@@ -11,7 +11,7 @@ from math import exp
 
 
 class LogisticRegression(LinearRegression):
-    """Logistic regression class, z = WX + b, y = 1 / (1 + e**(-z))
+    """Logistic regression class
 
     Attributes:
         bias: b
@@ -20,6 +20,33 @@ class LogisticRegression(LinearRegression):
 
     def _get_gradient_delta(self, Xi, yi):
         """Calculate the gradient delta of the partial derivative of Loss
+        Estimation function:
+        z = WX + b
+        y = 1 / (1 + e**(-z))
+
+        Likelihood function:
+        P(y | X, W, b) = y_hat^y * (1-y_hat)^(1-y)
+        L = Product(P(y | X, W, b))
+
+        Take the logarithm of both sides of this equation:
+        log(L) = Sum(log(P(y | X, W, b)))
+        log(L) = Sum(log(y_hat^y * (1-y_hat)^(1-y)))
+        log(L) = Sum(y * log(y_hat) + (1-y) * log(1-y_hat)))
+
+        Get partial derivative of W and b:
+        1. dz/dW = X
+        2. dy_hat/dz = y_hat * (1-y_hat)
+        3. dlog(L)/dy_hat = y * 1/y_hat - (1-y) * 1/(1-y_hat)
+        4. dz/db = 1
+
+
+        According to 1,2,3:
+        dlog(L)/dW = dlog(L)/dy_hat * dy_hat/dz * dz/dW
+        dlog(L)/dW = (y - y_hat) * X
+
+        According to 2,3,4:
+        dlog(L)/db = y - y_hat
+        ------------------------------------------------------------------
 
         Arguments:
             Xi {list} -- 1d list object with int

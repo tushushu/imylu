@@ -122,8 +122,8 @@ class DecisionTree(object):
     def _choose_split_point(self, X, y, idx, feature):
         """Iterate each xi and split x, y into two pieces,
         and the best split point is the xi when we get max gain.
-        Gain(y, X_j) = Info(y) - CondInfo(X_j, X_ij), X_ij<-X_j
-        Split(X_j) = X_j[argmax(Gain(y, X_j, X_ij))], X_ij<-X_j
+        Gain(y, X_j, i) = Info(y) - CondInfo(X_j, X_ij), X_ij<-X_j
+        Split(X_j) = X_j[argmax(Gain(y, X_j, i))], i <- [0, len(X_j))
 
         Arguments:
             x {list} -- 1d list object with int or float
@@ -158,7 +158,7 @@ class DecisionTree(object):
 
     def _choose_feature(self, X, y, idx):
         """Choose the feature which has max info gain.
-        ChooseFeature(X, Split) = argmax(Gain(y, X_j, X_j[Split_j])), X_j<-X, Split_j<-Split
+        ChooseFeature(X, Split) = argmax(Gain(y, X_j, Split_j)), X_j<-X, Split_j<-Split
 
         Arguments:
             X {list} -- 2d list object with int or float

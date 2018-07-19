@@ -40,7 +40,7 @@ class HMM(object):
         by Maximum likelihood estimation.
 
         Likelihood function:
-        L = p ** sum(x|p) * (1-p) ** sum(x|(1-p))
+        L = p^sum(x|p) * (1-p)^sum(x|(1-p))
 
         Take the logarithm of both sides of this equation:
         log(L) = log(p) * sum(x|p) + log(1-p) * sum(x|(1-p))
