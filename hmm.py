@@ -10,7 +10,7 @@ from collections import defaultdict
 
 class Graph(object):
     """Graph class.
-
+http://www.petrovi.de/data/universal.pdf
     Attributes:
         nodes {dict} -- A dict with Node names and Node indexes
         nexts {list} -- A list like [{Node indexes : {Node indexes : edge weights}}]

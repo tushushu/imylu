@@ -12,9 +12,11 @@ from random import sample
 from math import log, exp
 
 
-class GradientBoostingRegressor(object):
+class GradientBoostingClassifier(object):
     def __init__(self):
-        """GBDT class for regression.
+        """GBDT class for classification.
+        http://docs.salford-systems.com/GreedyFuncApproxSS.pdf
+        https://stats.stackexchange.com/questions/204154/classification-with-gradient-boosting-how-to-keep-the-prediction-in-0-1
 
         Attributes:
             trees {list}: 1d list with RegressionTree objects
@@ -27,12 +29,11 @@ class GradientBoostingRegressor(object):
 
     def fit(self, X, y, n_estimators, lr, max_depth, min_samples_split, subsample=None):
         n = len(y)
-        pos = sum(y)
-        neg = n - pos
+        y_avg = sum(y) / n
         self.trees = []
         self.lr = lr
-        self.init_val = log(pos / neg)
-        residual = [yi - sigmoid(self.init_val) for yi in y]
+        self.init_val = log(y_avg / (1-y_avg))
+        residual = [2 * yi - sigmoid(2 * yi * self.init_val) for yi in y]
         for _ in range(n_estimators):
             # Sampling without replacement
             if subsample is None:
@@ -85,7 +86,7 @@ def main():
     X_train, X_test, split_train, split_test = train_test_split(
         X, y, random_state=10)
     # Train model
-    reg = GradientBoostingRegressor()
+    reg = GradientBoostingClassifier()
     reg.fit(X=X_train, y=split_train, n_estimators=100,
             lr=0.1, max_depth=2, min_samples_split=2, subsample=0.95)
     # Model accuracy

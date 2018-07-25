@@ -71,8 +71,8 @@ class GradientBoostingRegressor(object):
             tree = RegressionTree()
             tree.fit(X_sub, residual_sub, max_depth, min_samples_split)
             # Calculate residual
-            residual = [a - lr * b for a,
-                        b in zip(residual, tree.predict(X))]
+            residual = [r - lr * r_hat for r,
+                        r_hat in zip(residual, tree.predict(X))]
             self.trees.append(tree)
 
     def _predict(self, Xi):
