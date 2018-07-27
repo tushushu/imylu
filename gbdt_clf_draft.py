@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 """
-@Author: tushushu 
-@Date: 2018-07-05 17:37:34 
-@Last Modified by: tushushu 
-@Last Modified time: 2018-07-05 17:37:34 
+@Author: tushushu
+@Date: 2018-07-05 17:37:34
+@Last Modified by: tushushu
+@Last Modified time: 2018-07-05 17:37:34
 """
 from regression_tree import RegressionTree
 from copy import copy
-from utils import load_boston_house_prices, train_test_split, get_r2, run_time
+from utils import load_boston_house_prices, train_test_split, get_r2, run_time, sigmoid
 from random import sample
 from math import log, exp
 
 
-class GradientBoostingRegressor(object):
+class GradientBoostingClassifier(object):
     def __init__(self):
-        """GBDT class for regression.
+        """GBDT class for binary classification problem.
 
         Attributes:
             trees {list}: 1d list with RegressionTree objects
@@ -27,18 +27,6 @@ class GradientBoostingRegressor(object):
 
     def _get_init_val(self, y):
         """Calculate the initial prediction of y
-        Set MSE as loss function, and c is a constant:
-        L = MSE(y, c) = Sum((yi-c) ^ 2) / m, yi <- y
-
-        Get derivative of c:
-        dL / dc = Sum(2 * (yi-c)) / m
-        dL / dc = 2 * (Sum(yi) / m - Sum(c) / m)
-        dL / dc = 2 * (Mean(yi) - c)
-
-        Let derivative of y equals to zero, then we get initial constant value to minimize MSE:
-        2 * (Mean(yi) - c) = 0
-        c = Mean(yi)
-        ----------------------------------------------------------------------------------------
 
         Arguments:
             y {list} -- 1d list object with int or float
@@ -47,7 +35,9 @@ class GradientBoostingRegressor(object):
             float
         """
 
-        return sum(y) / len(y)
+        n = len(y)
+        y_sum = sum(y)
+        return 0.5 * log((y_sum) / (n - y_sum))
 
     def fit(self, X, y, n_estimators, lr, max_depth, min_samples_split, subsample=None):
         """Build a gradient boost decision tree.
@@ -68,7 +58,7 @@ class GradientBoostingRegressor(object):
         # Calculate the initial prediction of y
         self.init_val = self._get_init_val(y)
         # Initialize the residuals
-        residuals = [yi - self.init_val for yi in y]
+        residuals = [yi - sigmoid(self.init_val) for yi in y]
         # Train Regression Trees
         n = len(y)
         self.trees = []
@@ -125,11 +115,11 @@ def main():
     X_train, X_test, split_train, split_test = train_test_split(
         X, y, random_state=10)
     # Train model
-    reg = GradientBoostingRegressor()
-    reg.fit(X=X_train, y=split_train, n_estimators=100,
+    clf = GradientBoostingClassifier()
+    clf.fit(X=X_train, y=split_train, n_estimators=100,
             lr=0.1, max_depth=2, min_samples_split=2, subsample=0.95)
     # Model accuracy
-    get_r2(reg, X_test, split_test)
+    get_r2(clf, X_test, split_test)
 
 
 if __name__ == "__main__":

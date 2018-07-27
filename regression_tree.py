@@ -39,8 +39,8 @@ class RegressionTree(object):
     def _get_split_mse(self, X, y, idx, feature, split):
         """Calculate the mse of each set when x is splitted into two pieces.
         MSE as Loss fuction:
-        Mean(X) = Sum(x_i) / n, i <- [1, n]
-        Loss(X, y) = Sum((Mean(X) - y_i) ^ 2), i <- [1, n]
+        y_hat = Sum(y_i) / n, i <- [1, n]
+        Loss(y_hat, y) = Sum((y_hat - y_i) ^ 2), i <- [1, n]
         Loss = LossLeftNode+ LossRightNode
         --------------------------------------------------------------------
 
