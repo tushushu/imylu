@@ -25,8 +25,8 @@ class GradientBoostingRegressor(object):
         self.lr = None
         self.init_val = None
 
-    def fit(self, X, y, n_estimators, lr, max_depth, min_samples_split, subsample=None):
-        """Build a gradient boost decision tree.
+    def _get_init_val(self, y):
+        """Calculate the initial prediction of y
         Set MSE as loss function, and c is a constant:
         L = MSE(y, c) = Sum((yi-c) ^ 2) / m, yi <- y
 
@@ -41,6 +41,18 @@ class GradientBoostingRegressor(object):
         ----------------------------------------------------------------------------------------
 
         Arguments:
+            y {list} -- 1d list object with int or float
+
+        Returns:
+            float
+        """
+
+        return sum(y) / len(y)
+
+    def fit(self, X, y, n_estimators, lr, max_depth, min_samples_split, subsample=None):
+        """Build a gradient boost decision tree.
+
+        Arguments:
             X {list} -- 2d list with int or float
             y {list} -- 1d list object with int or float
             n_estimators {int} -- number of trees
@@ -53,11 +65,14 @@ class GradientBoostingRegressor(object):
             subsample {float} -- Subsample rate, without replacement (default: {None})
         """
 
+        # Calculate the initial prediction of y
+        self.init_val = self._get_init_val(y)
+        # Initialize the residuals
+        residuals = [yi - self.init_val for yi in y]
+        # Train Regression Trees
         n = len(y)
         self.trees = []
         self.lr = lr
-        self.init_val = sum(y) / n
-        residual = [yi - self.init_val for yi in y]
         for _ in range(n_estimators):
             # Sampling without replacement
             if subsample is None:
@@ -66,13 +81,13 @@ class GradientBoostingRegressor(object):
                 k = int(subsample * n)
                 idx = sample(range(n), k)
             X_sub = [X[i] for i in idx]
-            residual_sub = [residual[i] for i in idx]
-            # Train Regression Tree by sub-sample of X, y
+            residuals_sub = [residuals[i] for i in idx]
+            # Train a Regression Tree by sub-sample of X, residuals
             tree = RegressionTree()
-            tree.fit(X_sub, residual_sub, max_depth, min_samples_split)
-            # Calculate residual
-            residual = [r - lr * r_hat for r,
-                        r_hat in zip(residual, tree.predict(X))]
+            tree.fit(X_sub, residuals_sub, max_depth, min_samples_split)
+            # Calculate residuals
+            residuals = [residual - lr * residual_hat for residual,
+                         residual_hat in zip(residuals, tree.predict(X))]
             self.trees.append(tree)
 
     def _predict(self, Xi):

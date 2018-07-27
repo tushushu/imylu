@@ -7,16 +7,14 @@
 """
 from regression_tree import RegressionTree
 from copy import copy
-from utils import load_boston_house_prices, train_test_split, get_r2, run_time, sigmoid
+from utils import load_boston_house_prices, train_test_split, get_r2, run_time
 from random import sample
 from math import log, exp
 
 
-class GradientBoostingClassifier(object):
+class GradientBoostingRegressor(object):
     def __init__(self):
-        """GBDT class for classification.
-        http://docs.salford-systems.com/GreedyFuncApproxSS.pdf
-        https://stats.stackexchange.com/questions/204154/classification-with-gradient-boosting-how-to-keep-the-prediction-in-0-1
+        """GBDT class for regression.
 
         Attributes:
             trees {list}: 1d list with RegressionTree objects
@@ -27,13 +25,54 @@ class GradientBoostingClassifier(object):
         self.lr = None
         self.init_val = None
 
+    def _get_init_val(self, y):
+        """Calculate the initial prediction of y
+        Set MSE as loss function, and c is a constant:
+        L = MSE(y, c) = Sum((yi-c) ^ 2) / m, yi <- y
+
+        Get derivative of c:
+        dL / dc = Sum(2 * (yi-c)) / m
+        dL / dc = 2 * (Sum(yi) / m - Sum(c) / m)
+        dL / dc = 2 * (Mean(yi) - c)
+
+        Let derivative of y equals to zero, then we get initial constant value to minimize MSE:
+        2 * (Mean(yi) - c) = 0
+        c = Mean(yi)
+        ----------------------------------------------------------------------------------------
+
+        Arguments:
+            y {list} -- 1d list object with int or float
+
+        Returns:
+            float
+        """
+
+        return sum(y) / len(y)
+
     def fit(self, X, y, n_estimators, lr, max_depth, min_samples_split, subsample=None):
+        """Build a gradient boost decision tree.
+
+        Arguments:
+            X {list} -- 2d list with int or float
+            y {list} -- 1d list object with int or float
+            n_estimators {int} -- number of trees
+            lr {float} -- Learning rate
+            max_depth {int} -- The maximum depth of the tree.
+            min_samples_split {int} -- The minimum number of samples required to split an internal node.
+
+
+        Keyword Arguments:
+            subsample {float} -- Subsample rate, without replacement (default: {None})
+        """
+
+        # Calculate the initial prediction of y
+        self.init_val = self._get_init_val(y)
+        # Initialize the residuals
+        residuals = [yi - self.init_val for yi in y]
+        # Train Regression Trees
         n = len(y)
-        y_avg = sum(y) / n
         self.trees = []
         self.lr = lr
-        self.init_val = log(y_avg / (1-y_avg))
-        residual = [2 * yi - sigmoid(2 * yi * self.init_val) for yi in y]
         for _ in range(n_estimators):
             # Sampling without replacement
             if subsample is None:
@@ -42,13 +81,13 @@ class GradientBoostingClassifier(object):
                 k = int(subsample * n)
                 idx = sample(range(n), k)
             X_sub = [X[i] for i in idx]
-            residual_sub = [residual[i] for i in idx]
-            # Train Regression Tree by sub-sample of X, y
+            residuals_sub = [residuals[i] for i in idx]
+            # Train a Regression Tree by sub-sample of X, residuals
             tree = RegressionTree()
-            tree.fit(X_sub, residual_sub, max_depth, min_samples_split)
-            # Calculate residual
-            residual = [a - lr * b for a,
-                        b in zip(residual, tree.predict(X))]
+            tree.fit(X_sub, residuals_sub, max_depth, min_samples_split)
+            # Calculate residuals
+            residuals = [residual - lr * residual_hat for residual,
+                         residual_hat in zip(residuals, tree.predict(X))]
             self.trees.append(tree)
 
     def _predict(self, Xi):
@@ -86,7 +125,7 @@ def main():
     X_train, X_test, split_train, split_test = train_test_split(
         X, y, random_state=10)
     # Train model
-    reg = GradientBoostingClassifier()
+    reg = GradientBoostingRegressor()
     reg.fit(X=X_train, y=split_train, n_estimators=100,
             lr=0.1, max_depth=2, min_samples_split=2, subsample=0.95)
     # Model accuracy
