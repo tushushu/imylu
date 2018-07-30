@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-@Author: tushushu 
-@Date: 2018-07-05 17:51:04 
-@Last Modified by: tushushu 
-@Last Modified time: 2018-07-05 17:51:04 
+@Author: tushushu
+@Date: 2018-07-05 17:51:04
+@Last Modified by: tushushu
+@Last Modified time: 2018-07-05 17:51:04
 """
 from copy import copy
 from utils import load_boston_house_prices, train_test_split, get_r2, run_time
@@ -95,8 +95,9 @@ class RegressionTree(object):
         # In case of empty split
         unique.remove(min(unique))
         # Get split point which has min mse
-        mse, split, split_avg = min((self._get_split_mse(X, y, idx, feature, split)
-                                     for split in unique), key=lambda x: x[0])
+        mse, split, split_avg = min(
+            (self._get_split_mse(X, y, idx, feature, split)
+             for split in unique), key=lambda x: x[0])
         return mse, feature, split, split_avg
 
     def _choose_feature(self, X, y, idx):
@@ -146,7 +147,7 @@ class RegressionTree(object):
         return "Feature%d %s %.4f" % (feature, op, split)
 
     def _get_rules(self):
-        """Get the rules of all the decision tree leaf nodes. 
+        """Get the rules of all the decision tree leaf nodes.
             Expr: 1D list like [Feature, op, split]
             Rule: 2D list like [[Feature, op, split], score]
             Op: -1 means less than, 1 means equal or more than
@@ -185,7 +186,8 @@ class RegressionTree(object):
 
         Keyword Arguments:
             max_depth {int} -- The maximum depth of the tree. (default: {2})
-            min_samples_split {int} -- The minimum number of samples required to split an internal node (default: {2})
+            min_samples_split {int} -- The minimum number of samples required
+            to split an internal node (default: {2})
         """
 
         # Initialize with depth, node, indexes
@@ -197,8 +199,10 @@ class RegressionTree(object):
             # Terminate loop if tree depth is more than max_depth
             if depth == max_depth:
                 break
-            # Stop split when number of node samples is less than min_samples_split or Node is 100% pure.
-            if len(idx) < min_samples_split or set(map(lambda i: y[i], idx)) == 1:
+            # Stop split when number of node samples is less than
+            # min_samples_split or Node is 100% pure.
+            if len(idx) < min_samples_split or \
+                    set(map(lambda i: y[i], idx)) == 1:
                 continue
             # Stop split if no feature has more than 2 unique elements
             feature_rets = self._choose_feature(X, y, idx)

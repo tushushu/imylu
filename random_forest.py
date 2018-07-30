@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-@Author: tushushu 
-@Date: 2018-06-26 14:41:08 
-@Last Modified by: tushushu 
-@Last Modified time: 2018-06-26 14:41:08 
+@Author: tushushu
+@Date: 2018-06-26 14:41:08
+@Last Modified by: tushushu
+@Last Modified time: 2018-06-26 14:41:08
 """
 
 from random import sample, choices, choice
@@ -13,7 +13,7 @@ from utils import load_breast_cancer, train_test_split, get_acc, run_time
 
 class RandomForest(object):
     def __init__(self):
-        """RandomForest, randomly build some DecisionTree instance, 
+        """RandomForest, randomly build some DecisionTree instance,
         and the average score of each DecisionTree
 
         Attributes:
@@ -23,7 +23,8 @@ class RandomForest(object):
         self.trees = None
         self.tree_features = None
 
-    def fit(self, X, y, n_estimators=10, max_depth=3, min_samples_split=2, max_features=None, n_samples=None):
+    def fit(self, X, y, n_estimators=10, max_depth=3, min_samples_split=2,
+            max_features=None, n_samples=None):
         """Build a RandomForest classifier.
 
         Arguments:
@@ -33,7 +34,8 @@ class RandomForest(object):
         Keyword Arguments:
             n_estimators {int} -- number of trees (default: {5})
             max_depth {int} -- The maximum depth of each tree. (default: {3})
-            min_samples_split {int} -- The minimum number of samples required to split an internal node (default: {2})
+            min_samples_split {int} -- The minimum number of samples required
+            to split an internal node (default: {2})
             n_samples {int} -- number of samples (default: {None})
         """
 
@@ -80,11 +82,11 @@ class RandomForest(object):
                 pos_vote += 1
         # Get negative vote
         neg_vote = len(self.trees) - pos_vote
-        # Return 1 or 0 randomly if number of positive vote equals to negative vote
         if pos_vote > neg_vote:
             return 1
         elif pos_vote < neg_vote:
             return 0
+        # Return 1 or 0 randomly if number of positive vote equals to negative
         else:
             return choice([0, 1])
 

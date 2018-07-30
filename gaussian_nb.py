@@ -5,9 +5,8 @@
 @Last Modified by: tushushu 
 @Last Modified time: 2018-07-06 21:13:34 
 """
-from utils import load_breast_cancer, train_test_split, get_acc, run_time, min_max_scale
+from utils import load_breast_cancer, train_test_split, get_acc, run_time
 from math import pi, exp, sqrt
-from functools import reduce
 
 
 class GaussianNB(object):

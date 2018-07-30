@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-@Author: tushushu 
-@Date: 2018-07-05 16:41:03 
-@Last Modified by: tushushu 
-@Last Modified time: 2018-07-05 16:41:03 
+@Author: tushushu
+@Date: 2018-07-05 16:41:03
+@Last Modified by: tushushu
+@Last Modified time: 2018-07-05 16:41:03
 """
 from linear_regression import LinearRegression
-from utils import min_max_scale, load_breast_cancer, run_time, get_acc, train_test_split, sigmoid
-from math import exp
+from utils import (get_acc, load_breast_cancer, min_max_scale, run_time,
+                   sigmoid, train_test_split)
 
 
 class LogisticRegression(LinearRegression):
@@ -83,7 +83,8 @@ class LogisticRegression(LinearRegression):
             X {list} -- 2d list object with int or float
 
         Keyword Arguments:
-            threshold {float} -- Prediction = 1 when probability >= threshold (default: {0.5})
+            threshold {float} -- Prediction = 1 when probability >= threshold 
+            (default: {0.5})
 
         Returns:
             list -- 1d list object with float

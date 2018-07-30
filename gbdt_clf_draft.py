@@ -6,7 +6,6 @@
 @Last Modified time: 2018-07-05 17:37:34
 """
 from regression_tree import RegressionTree
-from copy import copy
 from utils import load_boston_house_prices, train_test_split, get_r2, run_time, sigmoid
 from random import sample
 from math import log, exp
