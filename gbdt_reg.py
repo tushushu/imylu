@@ -116,18 +116,18 @@ class GradientBoostingRegressor(object):
 
 @run_time
 def main():
-    print("Tesing the accuracy of GBDT...")
+    print("Tesing the accuracy of GBDT regressor...")
     # Load data
     X, y = load_boston_house_prices()
     # Split data randomly, train set rate 70%
-    X_train, X_test, split_train, split_test = train_test_split(
+    X_train, X_test, y_train, y_test = train_test_split(
         X, y, random_state=10)
     # Train model
     reg = GradientBoostingRegressor()
-    reg.fit(X=X_train, y=split_train, n_estimators=100,
+    reg.fit(X=X_train, y=y_train, n_estimators=100,
             lr=0.1, max_depth=2, min_samples_split=2, subsample=0.95)
     # Model accuracy
-    get_r2(reg, X_test, split_test)
+    get_r2(reg, X_test, y_test)
 
 
 if __name__ == "__main__":

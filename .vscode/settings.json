@@ -1,3 +1,4 @@
 {
-    "python.pythonPath": "/home/liutienan/miniconda3/bin/python"
+    "python.pythonPath": "C:\\ProgramData\\Miniconda3\\python.exe",
+    "git.ignoreLimitWarning": true
 }

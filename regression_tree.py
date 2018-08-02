@@ -264,15 +264,15 @@ def main():
     # Load data
     X, y = load_boston_house_prices()
     # Split data randomly, train set rate 70%
-    X_train, X_test, split_train, split_test = train_test_split(
+    X_train, X_test, y_train, y_test = train_test_split(
         X, y, random_state=10)
     # Train model
     reg = RegressionTree()
-    reg.fit(X=X_train, y=split_train, max_depth=4)
+    reg.fit(X=X_train, y=y_train, max_depth=4)
     # Show rules
     reg.print_rules()
     # Model accuracy
-    get_r2(reg, X_test, split_test)
+    get_r2(reg, X_test, y_test)
 
 
 if __name__ == "__main__":
