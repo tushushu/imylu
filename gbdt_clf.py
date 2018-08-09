@@ -249,10 +249,10 @@ def main():
     # Load data
     X, y = load_breast_cancer()
     # Split data randomly, train set rate 70%
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=20)
     # Train model
     clf = GradientBoostingClassifier()
-    clf.fit(X_train, y_train, n_estimators=2,
+    clf.fit(X_train, y_train, n_estimators=0,
             lr=0.8, max_depth=3, min_samples_split=2)
     # Model accuracy
     get_acc(clf, X_test, y_test)

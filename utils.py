@@ -102,7 +102,7 @@ def train_test_split(X, y, prob=0.7, random_state=None):
 
 def get_acc(clf, X, y):
     acc = sum((yi_hat == yi for yi_hat, yi in zip(clf.predict(X), y))) / len(y)
-    print("Test accuracy is %.2f%%!" % (acc * 100))
+    print("Test accuracy is %.3f%%!" % (acc * 100))
     return acc
 
 
