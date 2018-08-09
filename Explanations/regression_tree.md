@@ -103,8 +103,8 @@ def _get_split_mse(self, X, y, idx, feature, split):
 ```
 
 ## 2.4 计算最佳分割点
-```Python
 遍历特征某一列的所有的不重复的点，找出MSE最小的点作为最佳分割点。如果特征中没有不重复的元素则返回None。
+```Python
 def _choose_split_point(self, X, y, idx, feature):
     unique = set([X[i][feature] for i in idx])
     if len(unique) == 1:
