@@ -7,7 +7,7 @@
 """
 from regression_tree import RegressionTree
 from utils import load_boston_house_prices, train_test_split, get_r2, run_time
-from random import sample
+from random import choices
 
 
 class GradientBoostingRegressor(object):
@@ -25,15 +25,15 @@ class GradientBoostingRegressor(object):
 
     def _get_init_val(self, y):
         """Calculate the initial prediction of y
-        Set MSE as loss function, and c is a constant:
-        L = MSE(y, c) = Sum((yi-c) ^ 2) / m, yi <- y
+        Set MSE as loss function, yi <- y, and c is a constant:
+        L = MSE(y, c) = Sum((yi-c) ^ 2) / m
 
         Get derivative of c:
         dL / dc = Sum(2 * (yi-c)) / m
         dL / dc = 2 * (Sum(yi) / m - Sum(c) / m)
         dL / dc = 2 * (Mean(yi) - c)
 
-        Let derivative of y equals to zero, then we get initial constant value to minimize MSE:
+        Let derivative equals to zero, then we get initial constant value to minimize MSE:
         2 * (Mean(yi) - c) = 0
         c = Mean(yi)
         ----------------------------------------------------------------------------------------
@@ -72,12 +72,12 @@ class GradientBoostingRegressor(object):
         self.trees = []
         self.lr = lr
         for _ in range(n_estimators):
-            # Sampling without replacement
-            if subsample is None:
-                idx = range(n)
-            else:
+            # TODO Check out sampling method
+            # Sampling with replacement
+            idx = range(n)
+            if subsample is not None:
                 k = int(subsample * n)
-                idx = sample(range(n), k)
+                idx = choices(population=idx, k=k)
             X_sub = [X[i] for i in idx]
             residuals_sub = [residuals[i] for i in idx]
             # Train a Regression Tree by sub-sample of X, residuals
@@ -88,7 +88,7 @@ class GradientBoostingRegressor(object):
                          residual_hat in zip(residuals, tree.predict(X))]
             self.trees.append(tree)
 
-    def _predict(self, Xi):
+    def _predict(self, row):
         """Auxiliary function of predict.
 
         Arguments:
@@ -99,7 +99,7 @@ class GradientBoostingRegressor(object):
         """
 
         # Sum y_hat with residuals of each tree
-        return self.init_val + sum(self.lr * tree._predict(Xi) for tree in self.trees)
+        return self.init_val + sum(self.lr * tree._predict(row) for tree in self.trees)
 
     def predict(self, X):
         """Get the prediction of y.
@@ -111,7 +111,7 @@ class GradientBoostingRegressor(object):
             list -- 1d list object with int or float
         """
 
-        return [self._predict(Xi) for Xi in X]
+        return [self._predict(row) for row in X]
 
 
 @run_time
@@ -124,8 +124,8 @@ def main():
         X, y, random_state=10)
     # Train model
     reg = GradientBoostingRegressor()
-    reg.fit(X=X_train, y=y_train, n_estimators=100,
-            lr=0.1, max_depth=2, min_samples_split=2, subsample=0.95)
+    reg.fit(X=X_train, y=y_train, n_estimators=4,
+            lr=0.5, max_depth=2, min_samples_split=2)
     # Model accuracy
     get_r2(reg, X_test, y_test)
 

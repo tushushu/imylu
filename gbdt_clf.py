@@ -6,7 +6,7 @@
 @Last Modified time: 2018-07-05 17:37:34
 """
 from math import exp, log
-from random import sample
+from random import choices
 
 from regression_tree import RegressionTree
 from utils import (get_acc, load_breast_cancer,
@@ -28,6 +28,28 @@ class GradientBoostingClassifier(object):
 
     def _get_init_val(self, y):
         """Calculate the initial prediction of y
+        Estimation function (Maximize the likelihood):
+        z = Fm(xi)
+        p = 1 / (1 + e**(-z))
+
+        Likelihood function, yi <- y, and p is a constant:
+        Likelihood = Product(p^yi * (1-p)^(1-yi))
+
+        Loss function:
+        L = Sum(yi * Logp + (1-y) * Log(1-p))
+
+        Get derivative of p:
+        dL / dp = Sum(yi/p - (1-yi)/(1-p))
+        dp / dz = p * (1 - p)
+        dL / dz = dL / dp * dp / dz
+        dL / dz = Sum(yi * (1 - p) - (1-yi)* p)
+        dL / dz = Sum(yi) - Sum(1) * p
+
+        Let derivative equals to zero, then we get initial constant value to maximize Likelihood:
+        p = Mean(yi)
+        1 / (1 + e**(-z)) = Mean(yi)
+        z = Log(Sum(yi) / Sum(1-yi))
+        ----------------------------------------------------------------------------------------
 
         Arguments:
             y {list} -- 1d list object with int or float
@@ -38,7 +60,7 @@ class GradientBoostingClassifier(object):
 
         n = len(y)
         y_sum = sum(y)
-        return 0.5 * log((y_sum) / (n - y_sum))
+        return log((y_sum) / (n - y_sum))
 
     def _match_node(self, row, tree):
         """Find the leaf node that the sample belongs to
@@ -162,12 +184,11 @@ class GradientBoostingClassifier(object):
         self.trees = []
         self.lr = lr
         for _ in range(n_estimators):
-            # Sampling without replacement
-            if subsample is None:
-                idx = range(n)
-            else:
+            # Sampling with replacement
+            idx = range(n)
+            if subsample is not None:
                 k = int(subsample * n)
-                idx = sample(range(n), k)
+                idx = choices(population=idx, k=k)
             X_sub = [X[i] for i in idx]
             residuals_sub = [residuals[i] for i in idx]
             y_hat_sub = [y_hat[i] for i in idx]
@@ -231,8 +252,8 @@ def main():
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
     # Train model
     clf = GradientBoostingClassifier()
-    clf.fit(X_train, y_train, n_estimators=10,
-            lr=0.1, max_depth=3, min_samples_split=2)
+    clf.fit(X_train, y_train, n_estimators=2,
+            lr=0.8, max_depth=3, min_samples_split=2)
     # Model accuracy
     get_acc(clf, X_test, y_test)
 
