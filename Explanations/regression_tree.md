@@ -236,10 +236,44 @@ def predict(self, X):
     return [self._predict(Xi) for Xi in X]
 ```
 
-## 总结
+# 3 效果评估
+## 3.1 main函数
+使用著名的波士顿房价数据集，按照7:3的比例拆分为训练集和测试集，训练模型，并统计准确度。
+```Python
+@run_time
+def main():
+    print("Tesing the accuracy of RegressionTree...")
+    # Load data
+    X, y = load_boston_house_prices()
+    # Split data randomly, train set rate 70%
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, random_state=10)
+    # Train model
+    reg = RegressionTree()
+    reg.fit(X=X_train, y=y_train, max_depth=4)
+    # Show rules
+    reg.print_rules()
+    # Model accuracy
+    get_r2(reg, X_test, y_test)
+```
+## 3.2 效果展示
+最终生成了15条规则，拟合优度0.801，运行时间1.74秒，效果还算不错~
+![avatar](/pic/regression_tree.png)
+
+## 3.3 工具函数
+本人自定义了一些工具函数，可以在github上查看
+https://github.com/tushushu/Imylu/blob/master/utils.py
+1. run_time - 测试函数运行时间
+2. load_boston_house_prices - 加载波士顿房价数据
+3. train_test_split - 拆分训练集、测试机
+4. get_r2 - 计算拟合优度
+
+
+# 总结
 回归树的原理：  
 损失最小化，平均值大法。
 最佳行与列，效果顶呱呱。
 
 回归树的实现：  
 一顿操作猛如虎，加减乘除二叉树。
+
