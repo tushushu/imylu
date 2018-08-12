@@ -16,6 +16,7 @@ from utils import (get_acc, load_breast_cancer,
 class GradientBoostingClassifier(object):
     def __init__(self):
         """GBDT class for binary classification problem.
+        http://statweb.stanford.edu/~jhf/ftp/stobst.pdf
 
         Attributes:
             trees {list}: 1d list with RegressionTree objects
@@ -29,7 +30,7 @@ class GradientBoostingClassifier(object):
     def _get_init_val(self, y):
         """Calculate the initial prediction of y
         Estimation function (Maximize the likelihood):
-        z = Fm(xi)
+        z = fm(xi)
         p = 1 / (1 + e**(-z))
 
         Likelihood function, yi <- y, and p is a constant:
@@ -124,6 +125,31 @@ class GradientBoostingClassifier(object):
 
     def _get_score(self, y_hat, residuals, idxs):
         """Calculate the regression tree leaf node value
+        Estimation function (Maximize the likelihood):
+        z = Fm(xi) = Fm-1(xi) + fm(xi)
+        p = 1 / (1 + e**(-z))
+
+        Likelihood function, yi <- y, and p is a constant:
+        Likelihood = Product(p^yi * (1-p)^(1-yi))
+
+        Loss Function:
+        Loss(yi, Fm(xi)) = Sum(yi * Logp + (1-y) * Log(1-p))
+
+        Taylor 1st:
+        f(x + x_delta) = f(x) + f'(x) * x_delta
+
+        1st derivative:
+        Loss'(yi, Fm(xi)) = Sum(yi - Sigmoid(Fm(xi)))
+
+        2nd derivative:
+        Loss"(yi, Fm(xi)) = Sum((Fm(xi) - 1) * Fm(xi))
+
+        So,
+        Loss'(yi, Fm(xi)) = Loss'(yi, Fm-1(xi)) + Loss"(yi, Fm-1(xi)) *  fm(xi) = 0
+        fm(xi) = - Loss'(yi, Fm-1(xi)) / Loss"(yi, Fm-1(xi))
+        fm(xi) = Sum(yi - Sigmoid(Fm-1(xi))) / Sum((1 - Fm-1(xi)) * Fm-1(xi))
+        fm(xi) = Sum(residual_i) / Sum((1 - Fm-1(xi)) * Fm-1(xi))
+        ----------------------------------------------------------------------------------------
 
         Arguments:
             y_hat {list} -- 1d list object with int or float
@@ -175,11 +201,11 @@ class GradientBoostingClassifier(object):
 
         # Calculate the initial prediction of y
         self.init_val = self._get_init_val(y)
-        # Initialize the residuals
-        residuals = [yi - sigmoid(self.init_val) for yi in y]
         # Initialize y_hat
         n = len(y)
-        y_hat = [sigmoid(self.init_val)] * n
+        y_hat = [self.init_val] * n
+        # Initialize the residuals
+        residuals = [yi - sigmoid(y_hat_i) for yi, y_hat_i in zip(y, y_hat)]
         # Train Regression Trees
         self.trees = []
         self.lr = lr
@@ -197,9 +223,12 @@ class GradientBoostingClassifier(object):
             tree.fit(X_sub, residuals_sub, max_depth, min_samples_split)
             # Update scores of tree leaf nodes
             self._update_score(tree, X_sub, y_hat_sub, residuals_sub)
-            # Calculate residuals
-            residuals = [residual - lr * sigmoid(residual_hat) for residual,
-                         residual_hat in zip(residuals, tree.predict(X))]
+            # Update y_hat
+            y_hat = [y_hat_i + lr * res_hat_i for y_hat_i,
+                     res_hat_i in zip(y_hat, tree.predict(X))]
+            # Update residuals
+            residuals = [yi - sigmoid(y_hat_i)
+                         for yi, y_hat_i in zip(y, y_hat)]
             self.trees.append(tree)
 
     def _predict_prob(self, Xi):
@@ -252,7 +281,7 @@ def main():
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=20)
     # Train model
     clf = GradientBoostingClassifier()
-    clf.fit(X_train, y_train, n_estimators=0,
+    clf.fit(X_train, y_train, n_estimators=2,
             lr=0.8, max_depth=3, min_samples_split=2)
     # Model accuracy
     get_acc(clf, X_test, y_test)

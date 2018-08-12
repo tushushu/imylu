@@ -1,4 +1,4 @@
 {
-    "python.pythonPath": "C:\\ProgramData\\Miniconda3\\python.exe",
+    "python.pythonPath": "/Users/Tuzi/miniconda3/envs/ml/bin/python",
     "git.ignoreLimitWarning": true
 }
