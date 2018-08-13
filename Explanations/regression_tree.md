@@ -243,17 +243,14 @@ def predict(self, X):
 @run_time
 def main():
     print("Tesing the accuracy of RegressionTree...")
-    # Load data
     X, y = load_boston_house_prices()
-    # Split data randomly, train set rate 70%
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, random_state=10)
-    # Train model
+
     reg = RegressionTree()
     reg.fit(X=X_train, y=y_train, max_depth=4)
-    # Show rules
+
     reg.print_rules()
-    # Model accuracy
     get_r2(reg, X_test, y_test)
 ```
 ## 3.2 效果展示
@@ -265,7 +262,7 @@ def main():
 https://github.com/tushushu/Imylu/blob/master/utils.py
 1. run_time - 测试函数运行时间
 2. load_boston_house_prices - 加载波士顿房价数据
-3. train_test_split - 拆分训练集、测试机
+3. train_test_split - 拆分训练集、测试集
 4. get_r2 - 计算拟合优度
 
 
