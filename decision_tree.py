@@ -78,7 +78,20 @@ class DecisionTree(object):
 
         Entropy: 
         H(p) = -Sum(p_i * log(p_i)), i <- [1, n]
-        ----------------------------------------
+
+        Take binary classifaction for exmaple, 
+        Likelihood function, yi <- y, and p is a constant:
+        Likelihood = Product(p^yi * (1-p)^(1-yi))
+
+        Take the logarithm of both sides of this equation:
+        L = Sum(yi * logp + (1-yi) * log(1-p))
+
+        L / m = Sum(yi/m * logp + (1-yi) / m * log(1-p))
+        L / m = Sum(p * logp + (1-p) * log(1-p))
+        L / m = H(p)
+
+        So Maximising the Entropy equals to Maximising the likelihood
+        -------------------------------------------------------------
 
         Arguments:
             p {float} -- Positive probability
