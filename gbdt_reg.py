@@ -8,20 +8,13 @@
 from regression_tree import RegressionTree
 from utils import load_boston_house_prices, train_test_split, get_r2, run_time
 from random import choices
+from gbdt_base import GradientBoostingBase
 
 
-class GradientBoostingRegressor(object):
+class GradientBoostingRegressor(GradientBoostingBase):
     def __init__(self):
-        """GBDT class for regression.
-
-        Attributes:
-            trees {list}: 1d list with RegressionTree objects
-            lr {float}: Learning rate
-        """
-
-        self.trees = None
-        self.lr = None
-        self.init_val = None
+        super(GradientBoostingRegressor, self).__init__()
+        self.fn = lambda x: x
 
     def _get_init_val(self, y):
         """Calculate the initial prediction of y
@@ -47,59 +40,15 @@ class GradientBoostingRegressor(object):
 
         return sum(y) / len(y)
 
-    def fit(self, X, y, n_estimators, lr, max_depth, min_samples_split, subsample=None):
-        """Build a gradient boost decision tree.
+    def _update_score(self, tree, X, y_hat, residuals):
+        """[summary]
 
         Arguments:
+            tree {RegressionTree}
             X {list} -- 2d list with int or float
-            y {list} -- 1d list object with int or float
-            n_estimators {int} -- number of trees
-            lr {float} -- Learning rate
-            max_depth {int} -- The maximum depth of the tree.
-            min_samples_split {int} -- The minimum number of samples required to split an internal node.
-
-
-        Keyword Arguments:
-            subsample {float} -- Subsample rate, without replacement (default: {None})
         """
 
-        # Calculate the initial prediction of y
-        self.init_val = self._get_init_val(y)
-        # Initialize the residuals
-        residuals = [yi - self.init_val for yi in y]
-        # Train Regression Trees
-        n = len(y)
-        self.trees = []
-        self.lr = lr
-        for _ in range(n_estimators):
-            # TODO Check out sampling method
-            # Sampling with replacement
-            idx = range(n)
-            if subsample is not None:
-                k = int(subsample * n)
-                idx = choices(population=idx, k=k)
-            X_sub = [X[i] for i in idx]
-            residuals_sub = [residuals[i] for i in idx]
-            # Train a Regression Tree by sub-sample of X, residuals
-            tree = RegressionTree()
-            tree.fit(X_sub, residuals_sub, max_depth, min_samples_split)
-            # Calculate residuals
-            residuals = [residual - lr * residual_hat for residual,
-                         residual_hat in zip(residuals, tree.predict(X))]
-            self.trees.append(tree)
-
-    def _predict(self, row):
-        """Auxiliary function of predict.
-
-        Arguments:
-            row {list} -- 1D list with int or float
-
-        Returns:
-            int or float -- prediction of yi
-        """
-
-        # Sum y_hat with residuals of each tree
-        return self.init_val + sum(self.lr * tree._predict(row) for tree in self.trees)
+        pass
 
     def predict(self, X):
         """Get the prediction of y.

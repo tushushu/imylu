@@ -17,6 +17,8 @@ class GradientBoostingBase(object):
         Attributes:
             trees {list}: 1d list with RegressionTree objects
             lr {float}: Learning rate
+            init_val {float}: Initial value to predict
+            fn {function}: A function wrapper for prediction
         """
 
         self.trees = None
@@ -96,7 +98,7 @@ class GradientBoostingBase(object):
             regions[node].append(i)
         return regions
 
-    def _get_score(self, idxs, *args):
+    def _get_score(self, idxs, y_hat, residuals):
         """Calculate the regression tree leaf node value
 
         Arguments:
@@ -108,22 +110,34 @@ class GradientBoostingBase(object):
 
         return NotImplemented
 
-    def _update_score(self, tree, X, *args):
-        """[summary]
+    def _update_score(self, tree, X, y_hat, residuals):
+        """update the score of regression tree leaf node
 
         Arguments:
             tree {RegressionTree}
             X {list} -- 2d list with int or float
+            y_hat {list} -- 1d list with float
+            residuals {list} -- 1d list with float
         """
 
         nodes = self._get_nodes(tree)
 
         regions = self._divide_regions(tree, nodes, X)
         for node, idxs in regions.items():
-            node.score = self._get_score(idxs, *args)
+            node.score = self._get_score(idxs, y_hat, residuals)
         tree._get_rules()
 
     def _get_residuals(self, y, y_hat):
+        """Update residuals for each iteration
+
+        Arguments:
+            y {list} -- 1d list with int or float
+            y_hat {list} -- 1d list with float
+
+        Returns:
+            list -- residuals
+        """
+
         return [yi - self.fn(y_hat_i) for yi, y_hat_i in zip(y, y_hat)]
 
     def fit(self, X, y, n_estimators, lr, max_depth, min_samples_split, subsample=None):
