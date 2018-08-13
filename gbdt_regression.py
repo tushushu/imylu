@@ -22,12 +22,12 @@ class GradientBoostingRegressor(GradientBoostingBase):
         L = MSE(y, c) = Sum((yi-c) ^ 2) / m
 
         Get derivative of c:
-        dL / dc = Sum(2 * (yi-c)) / m
-        dL / dc = 2 * (Sum(yi) / m - Sum(c) / m)
-        dL / dc = 2 * (Mean(yi) - c)
+        dL / dc = Sum(-2 * (yi-c)) / m
+        dL / dc = -2 * (Sum(yi) / m - Sum(c) / m)
+        dL / dc = -2 * (Mean(yi) - c)
 
         Let derivative equals to zero, then we get initial constant value to minimize MSE:
-        2 * (Mean(yi) - c) = 0
+        -2 * (Mean(yi) - c) = 0
         c = Mean(yi)
         ----------------------------------------------------------------------------------------
 
@@ -41,11 +41,33 @@ class GradientBoostingRegressor(GradientBoostingBase):
         return sum(y) / len(y)
 
     def _update_score(self, tree, X, y_hat, residuals):
-        """[summary]
+        """update the score of regression tree leaf node
+        Fm(xi) = Fm-1(xi) + fm(xi)
+
+        Loss Function:
+        Loss(yi, Fm(xi)) = Sum((yi - y_hat_i) ^ 2)
+
+        Taylor 1st:
+        f(x + x_delta) = f(x) + f'(x) * x_delta
+
+        1st derivative:
+        Loss'(yi, Fm(xi)) = -2 * Mean(yi - Fm(xi))
+
+        2nd derivative:
+        Loss"(yi, Fm(xi)) = 2
+
+        So,
+        Loss'(yi, Fm(xi)) = Loss'(yi, Fm-1(xi)) + Loss"(yi, Fm-1(xi)) *  fm(xi) = 0
+        fm(xi) = - Loss'(yi, Fm-1(xi)) / Loss"(yi, Fm-1(xi))
+        fm(xi) = 2 * Mean(yi - Fm(xi) / 2
+        fm(xi) = Mean(yi - Fm(xi))
+        ----------------------------------------------------------------------------------------
 
         Arguments:
             tree {RegressionTree}
             X {list} -- 2d list with int or float
+            y_hat {list} -- 1d list with float
+            residuals {list} -- 1d list with float
         """
 
         pass
