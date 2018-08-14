@@ -57,7 +57,7 @@ class GradientBoostingBase(object):
                 nd = nd.right
         return nd
 
-    def _get_nodes(self, tree):
+    def _get_leaves(self, tree):
         """Gets all leaf nodes of a regression tree
 
         Arguments:
@@ -120,7 +120,7 @@ class GradientBoostingBase(object):
             residuals {list} -- 1d list with float
         """
 
-        nodes = self._get_nodes(tree)
+        nodes = self._get_leaves(tree)
 
         regions = self._divide_regions(tree, nodes, X)
         for node, idxs in regions.items():
