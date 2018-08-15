@@ -30,13 +30,15 @@ class GradientBoostingClassifier(GradientBoostingBase):
         Likelihood = Product(p^yi * (1-p)^(1-yi))
 
         Loss function:
-        L = Sum(yi * Logp + (1-y) * Log(1-p))
+        L = Sum(yi * Logp + (1-yi) * Log(1-p))
 
         Get derivative of p:
         dL / dp = Sum(yi/p - (1-yi)/(1-p))
+
         dp / dz = p * (1 - p)
+
         dL / dz = dL / dp * dp / dz
-        dL / dz = Sum(yi * (1 - p) - (1-yi)* p)
+        dL / dz = Sum(yi * (1-p) - (1-yi)* p)
         dL / dz = Sum(yi) - Sum(1) * p
 
         Let derivative equals to zero, then we get initial constant value to maximize Likelihood:
@@ -70,6 +72,9 @@ class GradientBoostingClassifier(GradientBoostingBase):
 
         Taylor 1st:
         f(x + x_delta) = f(x) + f'(x) * x_delta
+        f(x) = g'(x)
+        g'(x + x_delta) = g'(x) + g"(x) * x_delta
+
 
         1st derivative:
         Loss'(yi, Fm(xi)) = Sum(yi - Sigmoid(Fm(xi)))

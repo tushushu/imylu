@@ -45,21 +45,24 @@ class GradientBoostingRegressor(GradientBoostingBase):
         Fm(xi) = Fm-1(xi) + fm(xi)
 
         Loss Function:
-        Loss(yi, Fm(xi)) = Sum((yi - y_hat_i) ^ 2)
+        Loss(yi, Fm(xi)) = Sum((yi - Fm(xi)) ^ 2) / m
 
         Taylor 1st:
         f(x + x_delta) = f(x) + f'(x) * x_delta
+        f(x) = g'(x)
+        g'(x + x_delta) = g'(x) + g"(x) * x_delta
 
         1st derivative:
-        Loss'(yi, Fm(xi)) = -2 * Mean(yi - Fm(xi))
+        Loss'(yi, Fm(xi)) = -2 * Sum(yi - Fm(xi)) / m
 
         2nd derivative:
-        Loss"(yi, Fm(xi)) = 2
+        Loss"(yi, Fm(xi)) = -2
 
         So,
         Loss'(yi, Fm(xi)) = Loss'(yi, Fm-1(xi)) + Loss"(yi, Fm-1(xi)) *  fm(xi) = 0
         fm(xi) = - Loss'(yi, Fm-1(xi)) / Loss"(yi, Fm-1(xi))
-        fm(xi) = 2 * Mean(yi - Fm(xi) / 2
+        fm(xi) = -2 * Sum(yi - Fm(xi) / m / -2
+        fm(xi) = Sum(yi - Fm(xi)) / m 
         fm(xi) = Mean(yi - Fm(xi))
         ----------------------------------------------------------------------------------------
 

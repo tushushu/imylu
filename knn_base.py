@@ -152,6 +152,18 @@ class KNeighborsBase(object):
         self.tree = KDTree()
         self.tree.build_tree(X, y)
 
+    def _search(self, row):
+        nd = self.tree.root
+        while nd.left is not None and nd.right is not None:
+            if row[nd.feature] < nd.split:
+                nd = nd.left
+            else:
+                nd = nd.right
+        return nd
+
+    def _back_track(self, row):
+        raise NotImplementedError
+
     def _predict(self, row):
         raise NotImplementedError
 
