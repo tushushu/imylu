@@ -35,6 +35,7 @@ class RegressionTree(object):
 
         self.root = Node()
         self.height = 0
+        self._rules = None
 
     def _get_split_mse(self, X, y, idx, feature, split):
         """Calculate the mse of each set when x is splitted into two pieces.
@@ -163,7 +164,7 @@ class RegressionTree(object):
         """
 
         que = [[self.root, []]]
-        self.rules = []
+        self._rules = []
         # Breadth-First Search
         while que:
             nd, exprs = que.pop(0)
@@ -171,7 +172,7 @@ class RegressionTree(object):
             if not(nd.left or nd.right):
                 # Convert expression to text
                 literals = list(map(self._expr2literal, exprs))
-                self.rules.append([literals, nd.score])
+                self._rules.append([literals, nd.score])
             # Expand when the current node has left child
             if nd.left:
                 rule_left = copy(exprs)
@@ -228,11 +229,12 @@ class RegressionTree(object):
         self.height = depth
         self._get_rules()
 
-    def print_rules(self):
+    @property
+    def rules(self):
         """Print the rules of all the regression decision tree leaf nodes.
         """
 
-        for i, rule in enumerate(self.rules):
+        for i, rule in enumerate(self._rules):
             literals, score = rule
             print("Rule %d: " % i, ' | '.join(
                 literals) + ' => split_hat %.4f' % score)
@@ -280,7 +282,7 @@ def main():
     reg = RegressionTree()
     reg.fit(X=X_train, y=y_train, max_depth=4)
     # Show rules
-    reg.print_rules()
+    reg.rules
     # Model accuracy
     get_r2(reg, X_test, y_test)
 

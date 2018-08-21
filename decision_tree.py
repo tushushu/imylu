@@ -37,6 +37,7 @@ class DecisionTree(object):
 
         self.root = Node()
         self.height = 0
+        self._rules = None
 
     def _get_split_effect(self, X, y, idx, feature, split):
         """List length, positive probability and rate when x is splitted into two pieces.
@@ -249,7 +250,7 @@ class DecisionTree(object):
         """
 
         que = [[self.root, []]]
-        self.rules = []
+        self._rules = []
         # Breadth-First Search
         while que:
             nd, exprs = que.pop(0)
@@ -257,7 +258,7 @@ class DecisionTree(object):
             if not(nd.left or nd.right):
                 # Convert expression to text
                 literals = list(map(self._expr2literal, exprs))
-                self.rules.append([literals, nd.prob])
+                self._rules.append([literals, nd.prob])
             # Expand when the current node has left child
             if nd.left:
                 rule_left = copy(exprs)
@@ -311,11 +312,12 @@ class DecisionTree(object):
         self.height = depth
         self._get_rules()
 
-    def print_rules(self):
+    @property
+    def rules(self):
         """Print the rules of all the decision tree leaf nodes.
         """
 
-        for i, rule in enumerate(self.rules):
+        for i, rule in enumerate(self._rules):
             literals, prob = rule
             print("Rule %d: " % i, ' | '.join(
                 literals) + ' => Prob %.4f' % prob)
@@ -377,7 +379,7 @@ def main():
     clf = DecisionTree()
     clf.fit(X_train, y_train, max_depth=4)
     # Show rules
-    clf.print_rules()
+    clf.rules
     # Model accuracy
     get_acc(clf, X_test, y_test)
 
