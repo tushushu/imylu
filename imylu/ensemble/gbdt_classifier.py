@@ -7,7 +7,6 @@
 """
 from math import exp, log
 from random import choices
-from ..tree.regression_tree import RegressionTree
 from ..utils import sigmoid
 from .gbdt_base import GradientBoostingBase
 
