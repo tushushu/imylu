@@ -3,6 +3,8 @@ from random import random, seed
 from time import time
 from math import exp
 
+BASE_PATH = os.path.split(os.path.realpath(__file__))[0]
+
 
 def load_data(file_name):
     """Read csv file
@@ -15,7 +17,7 @@ def load_data(file_name):
         y {list} -- 1d list object with int or float
     """
 
-    path = os.path.join(os.getcwd(), "dataset", "%s.csv" % file_name)
+    path = os.path.join(BASE_PATH, "dataset", "%s.csv" % file_name)
     f = open(path)
     X = []
     y = []
@@ -101,20 +103,51 @@ def train_test_split(X, y, prob=0.7, random_state=None):
 
 
 def get_acc(clf, X, y):
+    """[summary]
+
+    Arguments:
+        clf {[type]} -- [description]
+        X {[type]} -- [description]
+        y {[type]} -- [description]
+
+    Returns:
+        [type] -- [description]
+    """
+
     acc = sum((yi_hat == yi for yi_hat, yi in zip(clf.predict(X), y))) / len(y)
     print("Test accuracy is %.3f%%!" % (acc * 100))
     return acc
 
 
-def run_time(func):
+def run_time(fn):
+    """[summary]
+
+    Arguments:
+        fn {function} -- [description]
+
+    Returns:
+        [type] -- [description]
+    """
+
     def wrapper():
         start = time()
-        func()
+        fn()
         print("Total run time is %.2f s" % (time() - start))
     return wrapper
 
 
 def get_r2(reg, X, y):
+    """[summary]
+
+    Arguments:
+        reg {[type]} -- [description]
+        X {[type]} -- [description]
+        y {[type]} -- [description]
+
+    Returns:
+        [type] -- [description]
+    """
+
     sse = sum((yi_hat - yi) ** 2 for yi_hat, yi in zip(reg.predict(X), y))
     y_avg = sum(y) / len(y)
     sst = sum((yi - y_avg) ** 2 for yi in y)

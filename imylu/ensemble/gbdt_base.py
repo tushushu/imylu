@@ -5,7 +5,7 @@
 @Last Modified by:   tushushu
 @Last Modified time: 2018-08-13 10:29:29
 """
-from regression_tree import RegressionTree
+from ..tree.regression_tree import RegressionTree
 from random import choices
 
 

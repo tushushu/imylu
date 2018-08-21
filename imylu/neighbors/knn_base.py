@@ -22,6 +22,8 @@ class KDTree(object):
     def __init__(self):
         self.root = Node()
 
+    def _arg_median(self, )
+
     def _get_variance(self, X, idxs, feature):
         """[summary]
 
@@ -54,7 +56,7 @@ class KDTree(object):
         """
 
         m = len(X[0])
-        variances = map(lambda x: self._get_variance(X, idxs, x), range(m))
+        variances = map(lambda j: self._get_variance(X, idxs, j), range(m))
         variances = filter(lambda x: x > min_variance, variances)
         return max(enumerate(variances), default=None, key=lambda x: x[1])
 
@@ -130,10 +132,10 @@ class KDTree(object):
 
     def search(self, row):
         """[summary]
-        
+
         Arguments:
             row {[type]} -- [description]
-        
+
         Returns:
             [type] -- [description]
         """

@@ -201,7 +201,7 @@ class DecisionTree(object):
 
         m = len(X[0])
         # Compare the info gain of each feature and choose best one.
-        split_rets = map(lambda x: self._choose_split(X, y, idx, x), range(m))
+        split_rets = map(lambda j: self._choose_split(X, y, idx, j), range(m))
         split_rets = filter(lambda x: x is not None, split_rets)
         # Return None if no feature can be splitted
         return max(split_rets, default=None, key=lambda x: x[0])

@@ -7,12 +7,9 @@
 """
 from math import exp, log
 from random import choices
-
-from regression_tree import RegressionTree
-from utils import (get_acc, load_breast_cancer,
-                   run_time, sigmoid, train_test_split)
-
-from gbdt_base import GradientBoostingBase
+from ..tree.regression_tree import RegressionTree
+from ..utils import sigmoid
+from .gbdt_base import GradientBoostingBase
 
 
 class GradientBoostingClassifier(GradientBoostingBase):
@@ -118,22 +115,3 @@ class GradientBoostingClassifier(GradientBoostingBase):
         """
 
         return [int(self._predict(row) >= threshold) for row in X]
-
-
-@run_time
-def main():
-    print("Tesing the accuracy of GBDT Classifier...")
-    # Load data
-    X, y = load_breast_cancer()
-    # Split data randomly, train set rate 70%
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=20)
-    # Train model
-    clf = GradientBoostingClassifier()
-    clf.fit(X_train, y_train, n_estimators=2,
-            lr=0.8, max_depth=3, min_samples_split=2)
-    # Model accuracy
-    get_acc(clf, X_test, y_test)
-
-
-if __name__ == "__main__":
-    main()

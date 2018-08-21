@@ -6,7 +6,7 @@
 @Last Modified time: 2018-07-05 17:51:04
 """
 from copy import copy
-from utils import load_boston_house_prices, train_test_split, get_r2, run_time
+from ..utils import load_boston_house_prices, train_test_split, get_r2, run_time
 
 
 class Node(object):
@@ -115,7 +115,7 @@ class RegressionTree(object):
 
         m = len(X[0])
         # Compare the mse of each feature and choose best one.
-        split_rets = map(lambda x: self._choose_split(X, y, idx, x), range(m))
+        split_rets = map(lambda j: self._choose_split(X, y, idx, j), range(m))
         split_rets = filter(lambda x: x is not None, split_rets)
         # Terminate if no feature can be splitted
         return min(split_rets, default=None, key=lambda x: x[0])
