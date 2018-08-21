@@ -8,7 +8,6 @@
 
 from math import log2
 from copy import copy
-from ..utils import load_breast_cancer, train_test_split, get_acc, run_time
 
 
 class Node(object):
@@ -320,7 +319,7 @@ class DecisionTree(object):
         for i, rule in enumerate(self._rules):
             literals, prob = rule
             print("Rule %d: " % i, ' | '.join(
-                literals) + ' => Prob %.4f' % prob)
+                literals) + ' => y_hat %.4f' % prob)
 
     def _predict_prob(self, row):
         """Auxiliary function of predict_prob.
@@ -366,23 +365,3 @@ class DecisionTree(object):
         """
 
         return [int(y >= threshold) for y in self.predict_prob(X)]
-
-
-@run_time
-def main():
-    print("Tesing the accuracy of DecisionTree...")
-    # Load data
-    X, y = load_breast_cancer()
-    # Split data randomly, train set rate 70%
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
-    # Train model
-    clf = DecisionTree()
-    clf.fit(X_train, y_train, max_depth=4)
-    # Show rules
-    clf.rules
-    # Model accuracy
-    get_acc(clf, X_test, y_test)
-
-
-if __name__ == "__main__":
-    main()
