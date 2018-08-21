@@ -128,6 +128,24 @@ class KDTree(object):
             que.append(right_node)
         return nodes
 
+    def search(self, row):
+        """[summary]
+        
+        Arguments:
+            row {[type]} -- [description]
+        
+        Returns:
+            [type] -- [description]
+        """
+
+        nd = self.root
+        while nd.left is not None and nd.right is not None:
+            if row[nd.feature] < nd.split:
+                nd = nd.left
+            else:
+                nd = nd.right
+        return nd
+
 
 class KNeighborsBase(object):
     def __init__(self):
@@ -152,15 +170,6 @@ class KNeighborsBase(object):
         self.tree = KDTree()
         self.tree.build_tree(X, y)
 
-    def _search(self, row):
-        nd = self.tree.root
-        while nd.left is not None and nd.right is not None:
-            if row[nd.feature] < nd.split:
-                nd = nd.left
-            else:
-                nd = nd.right
-        return nd
-
     def _back_track(self, row):
         raise NotImplementedError
 
@@ -178,11 +187,10 @@ def main():
 def test():
     X = [[1, 2, 10], [3, 5, 8], [4, 6, 2], [8, 7, 5]]
     y = [0, 1, 2, 3]
-    tree = KDTree()
-    tree.build_tree(X, y)
-    leaves = tree._get_leaves()
-    for leave in leaves:
-        print(leave, leave.val)
+    knn = KNeighborsBase()
+    knn.fit(X, y)
+    nd = knn.tree.search([1, 2, 9])
+    print(nd.val)
 
 
 if __name__ == "__main__":
