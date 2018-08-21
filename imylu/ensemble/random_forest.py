@@ -7,8 +7,7 @@
 """
 
 from random import sample, choices, choice
-from decision_tree import DecisionTree
-from utils import load_breast_cancer, train_test_split, get_acc, run_time
+from ..tree.decision_tree import DecisionTree
 
 
 class RandomForest(object):
@@ -101,30 +100,3 @@ class RandomForest(object):
         """
 
         return [self._predict(xi) for xi in X]
-
-
-@run_time
-def main():
-    print("Comparing RandomForest with DecisionTree...")
-    # Load data
-    X, y = load_breast_cancer()
-    # Split data randomly, train set rate 70%
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=40)
-
-    # Train RandomForest model
-    rf = RandomForest()
-    rf.fit(X_train, y_train, n_samples=300, max_depth=3, n_estimators=20)
-    # RandomForest Model accuracy
-    print("RandomForest:", end=' ')
-    get_acc(rf, X_test, y_test)
-
-    # Train DecisionTree model
-    dt = DecisionTree()
-    dt.fit(X_train, y_train, max_depth=4)
-    # DecisionTree Model accuracy
-    print("DecisionTree:", end=' ')
-    get_acc(dt, X_test, y_test)
-
-
-if __name__ == "__main__":
-    main()
