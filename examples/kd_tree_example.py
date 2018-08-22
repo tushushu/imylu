@@ -19,23 +19,27 @@ from imylu.neighbors.kd_tree import KDTree
 
 @run_time
 def main():
+    # Generate dataset randomly
     m = 5
     n = 30
     X = [[randint(0, 10) for _ in range(m)] for _ in range(n)]
     y = [randint(0, 1) for _ in range(n)]
+    # Build KD Tree
     tree = KDTree()
     tree.build_tree(X, y)
-    que = [tree.root]
+    que = [(tree.root, None)]
+    # Traverse KD Tree, show properties of nodes
     i = 0
     print("Traversing kd tree:\n")
     while que:
-        nd = que.pop(0)
-        print("No.:", i, "| feature:", nd.feature, "| split:", nd.split)
-        i += 1
+        nd, nd_father = que.pop(0)
+        print("No.%d" % i, "| father node:", nd_father,
+              "| feature:", nd.feature, "| split:", nd.split)
         if nd.left:
-            que.append(nd.left)
+            que.append((nd.left, "No.%d" % i))
         if nd.right:
-            que.append(nd.right)
+            que.append((nd.right, "No.%d" % i))
+        i += 1
 
 
 if __name__ == "__main__":
