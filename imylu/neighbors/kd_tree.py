@@ -28,29 +28,6 @@ class KDTree(object):
     def __init__(self):
         self.root = Node()
 
-    def _get_sorted_idxs(self, X):
-        """Caculate sorted indexes of X.
-
-        Arguments:
-            X {list} -- 2d list object with int or float
-
-        Returns:
-            dict -- 2D dict with int, {col_index: {row_index: rank_no}}
-        """
-
-        m = len(X[0])
-        n = len(X)
-        sorted_idxs_2d = {}
-        for j in range(m):
-            # Get all the indexes and elements of column j as tuples
-            col = map(lambda i: (i, X[i][j]), range(n))
-            # Sort the tuples by the values of elements and get the corresponding indexes.
-            sorted_idxs_1d = map(
-                lambda x: x[0], sorted(col, key=lambda x: x[1]))
-            # Key is column index, value is a dict like {row_index: rank_no}
-            sorted_idxs_2d[j] = {k: v for v, k in enumerate(sorted_idxs_1d)}
-        return sorted_idxs_2d
-
     def _get_median_idx(self, X, idxs, feature):
         """Calculate the median of a column of data.
 
