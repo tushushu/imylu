@@ -6,4 +6,4 @@ Chinese used to pronounce ML as [aimu'ailu], and the name imylu was inspired by 
 
 # Folders guide
 
-![avatar](/pic/dictionary_tree.png)
+![avatar](https://github.com/tushushu/imylu/blob/master/pic/dictionary_tree.PNG)
