@@ -132,7 +132,19 @@ def run_time(fn):
     def wrapper():
         start = time()
         fn()
-        print("Total run time is %.2f s" % (time() - start))
+        ret = time() - start
+        if ret < 1e-6:
+            unit = "ns"
+            ret *= 1e9
+        elif ret < 1e-3:
+            unit = "us"
+            ret *= 1e6
+        elif ret < 1:
+            unit = "ms"
+            ret *= 1e3
+        else:
+            unit = "s"
+        print("Total run time is %.1f %s" % (ret, unit))
     return wrapper
 
 
