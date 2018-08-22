@@ -5,14 +5,16 @@ Most of popular machine learning algorithms have been implemented by pure Python
 Chinese used to pronounce ML as [aimu'ailu], and the name imylu was inspired by this.  
 
 # Folders guide
-1. docs_cn: Algorithm explanation of Chinese version.
-2. examples: Examples to use imylu.
-3. imylu: Code for algorithms implementation. 
-   3.1 cluster: Clustering algorithms.  
-   3.2 dataset: Dataset used in examples.  
-   3.3 ensemble: Ensemble algorithms like gbdt, random forest etc.
-   3.4 linear_model: Linear models like linear regression, logistic regression etc.  
-   3.5 neighbors: KNN  
-   3.6 probability_model: Probability models like HMM, Naive Bayes etc.  
-   3.7 tree: Tree based algorithms like decision tree, regression tree etc. 
-4. pic: Pictures used in examples. 
+```
+|----docs_cn: Algorithm explanation of Chinese version.  
+|---- examples: Examples to use imylu.  
+|---- imylu: Code for algorithms implementation.  
+   |---- cluster: Clustering algorithms.  
+   |---- dataset: Dataset used in examples.  
+   |---- ensemble: GBDT, random forest etc.
+   |---- linear_model: Linear regression, logistic regression etc.  
+   |---- neighbors: KNN  
+   |---- probability_model: HMM, Naive Bayes etc.  
+   |---- tree: Decision tree, regression tree etc. 
+|---- pic: Pictures used in examples. 
+```
