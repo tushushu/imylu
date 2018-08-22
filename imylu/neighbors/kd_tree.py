@@ -35,20 +35,23 @@ class KDTree(object):
             X {list} -- 2d list object with int or float
 
         Returns:
-            list -- 2D list with int
+            dict -- 2D dict with int, {col_index: {row_index: rank_no}}
         """
 
         m = len(X[0])
         n = len(X)
-        sorted_idxs_2d = []
+        sorted_idxs_2d = {}
         for j in range(m):
+            # Get all the indexes and elements of column j as tuples
             col = map(lambda i: (i, X[i][j]), range(n))
-            sorted_idxs_1d = list(map(
-                lambda x: x[0], sorted(col, key=lambda x: x[1])))
-            sorted_idxs_2d.append(sorted_idxs_1d)
+            # Sort the tuples by the values of elements and get the corresponding indexes.
+            sorted_idxs_1d = map(
+                lambda x: x[0], sorted(col, key=lambda x: x[1]))
+            # Key is column index, value is a dict like {row_index: rank_no}
+            sorted_idxs_2d[j] = {k: v for v, k in enumerate(sorted_idxs_1d)}
         return sorted_idxs_2d
 
-    def _get_median(self, X, idxs, feature, sorted_idxs_2d):
+    def _get_median_idx(self, X, idxs, feature):
         """Calculate the median of a column of data.
 
         Arguments:
@@ -58,14 +61,19 @@ class KDTree(object):
             sorted_idxs_2d {list} -- 2D list with int
 
         Returns:
-            list -- The row corresponding to the median of this column.
+            list -- The row index corresponding to the median of this column.
         """
 
+        n = len(idxs)
         # Ignoring the number of column elements is odd and even.
-        k = len(idxs) // 2
-        sorted_idxs_1d = list(map(lambda i: sorted_idxs_2d[i][feature], idxs))
-        median_idx = sorted_idxs_1d[k]
-        return X[median_idx]
+        k = n // 2
+        # Get all the indexes and elements of column j as tuples
+        col = map(lambda i: (i, X[i][feature]), idxs)
+        # Sort the tuples by the values of elements and get the corresponding indexes.
+        sorted_idxs = map(lambda x: x[0], sorted(col, key=lambda x: x[1]))
+        # Search the median value
+        median_idx = list(sorted_idxs)[k]
+        return median_idx
 
     def _get_variance(self, X, idxs, feature):
         """Calculate the variance of a column of data.
@@ -104,23 +112,28 @@ class KDTree(object):
             j, self._get_variance(X, idxs, j)), range(m))
         return max(variances, key=lambda x: x[1])[0]
 
-    def _split_feature(self, X, idxs, feature, split):
+    def _split_feature(self, X, idxs, feature, median_idx):
         """Split indexes into two arrays according to split point.
 
         Arguments:
             X {list} -- 2d list object with int or float
             idx {list} -- indexes, 1d list object with int
             feature {int} -- Feature number
-            split {float} -- Split point of the feature
+            median_idx {float} -- median index of the feature
 
         Returns:
             list -- [left idx, right idx]
         """
 
         idxs_split = [[], []]
+        split_val = X[median_idx][feature]
         for idx in idxs:
+            # Keep the split point in current node.
+            if idx == median_idx:
+                continue
+            # Split
             xi = X[idx][feature]
-            if xi < split:
+            if xi < split_val:
                 idxs_split[0].append(idx)
             else:
                 idxs_split[1].append(idx)
@@ -134,7 +147,6 @@ class KDTree(object):
             y {list} -- 1d list object with int or float
         """
 
-        sorted_idxs_2d = self._get_sorted_idxs(X)
         # Initialize with node, indexes
         nd = self.root
         idxs = range(len(X))
@@ -143,20 +155,23 @@ class KDTree(object):
         while que:
             nd, idxs = que.pop(0)
             n = len(idxs)
-            # Stop split if there is no element in this node
-            if n == 0:
-                continue
             # Stop split if there is only one element in this node
             if n == 1:
-                nd.val = [(X[idx], y[idx]) for idx in idxs]
+                nd.split = (X[idxs[0]], y[idxs[0]])
                 continue
             # Split
-            nd.feature = self._choose_feature(X, idxs)
-            split = self._get_median(X, idxs, nd.feature, sorted_idxs_2d)
+            feature = self._choose_feature(X, idxs)
+            median_idx = self._get_median_idx(X, idxs, feature)
             idxs_left, idxs_right = self._split_feature(
-                X, idxs, nd.feature, split)
-            nd.split = split
-            nd.left = Node()
-            nd.right = Node()
-            que.append((nd.left, idxs_left))
-            que.append((nd.right, idxs_right))
+                X, idxs, feature, median_idx)
+            # Update properties of current node
+            nd.feature = feature
+            nd.split = (X[median_idx], y[median_idx])
+
+            # Put children of current node in que
+            if idxs_left != []:
+                nd.left = Node()
+                que.append((nd.left, idxs_left))
+            if idxs_right != []:
+                nd.right = Node()
+                que.append((nd.right, idxs_right))
