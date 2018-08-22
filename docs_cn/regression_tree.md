@@ -255,7 +255,7 @@ def main():
 ```
 ## 3.2 效果展示
 最终生成了15条规则，拟合优度0.801，运行时间1.74秒，效果还算不错~
-![avatar](/pic/regression_tree.png)
+![avatar](https://github.com/tushushu/imylu/blob/master/pic/regression_tree.PNG)
 
 ## 3.3 工具函数
 本人自定义了一些工具函数，可以在github上查看
