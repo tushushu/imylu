@@ -7,7 +7,7 @@ BASE_PATH = os.path.split(os.path.realpath(__file__))[0]
 
 
 def load_data(file_name):
-    """Read csv file
+    """Read csv file.
 
     Arguments:
         file_name {str} -- csv file name
@@ -36,15 +36,29 @@ def load_data(file_name):
 
 
 def load_breast_cancer():
+    """Load breast cancer data for classification.
+
+    Returns:
+        X {list} -- 2d list object with int or float
+        y {list} -- 1d list object with int or float
+    """
+
     return load_data("breast_cancer")
 
 
 def load_boston_house_prices():
+    """Load boston house prices data for regression.
+
+    Returns:
+        X {list} -- 2d list object with int or float
+        y {list} -- 1d list object with int or float
+    """
+
     return load_data("boston_house_prices")
 
 
 def min_max_scale(X):
-    """Scale the element of X into an interval [0, 1]
+    """Scale the element of X into an interval [0, 1].
 
     Arguments:
         X {list} -- 2d list object with int or float
@@ -103,15 +117,15 @@ def train_test_split(X, y, prob=0.7, random_state=None):
 
 
 def get_acc(clf, X, y):
-    """[summary]
+    """Calculate the prediction accuracy of classification model.
 
     Arguments:
-        clf {[type]} -- [description]
-        X {[type]} -- [description]
-        y {[type]} -- [description]
+        clf {model} -- classification model
+        X {list} -- 2d list object with int or float
+        y {list} -- 1d list object with int
 
     Returns:
-        [type] -- [description]
+        float
     """
 
     acc = sum((yi_hat == yi for yi_hat, yi in zip(clf.predict(X), y))) / len(y)
@@ -120,13 +134,14 @@ def get_acc(clf, X, y):
 
 
 def run_time(fn):
-    """[summary]
+    """Decorator for calculating function runtime.Depending on the length of time,
+    seconds, milliseconds, microseconds or nanoseconds are used.
 
     Arguments:
-        fn {function} -- [description]
+        fn {function}
 
     Returns:
-        [type] -- [description]
+        function
     """
 
     def wrapper():
@@ -149,15 +164,15 @@ def run_time(fn):
 
 
 def get_r2(reg, X, y):
-    """[summary]
+    """Calculate the goodness of fit of regression model.
 
     Arguments:
-        reg {[type]} -- [description]
-        X {[type]} -- [description]
-        y {[type]} -- [description]
+        reg {model} -- regression model
+        X {list} -- 2d list object with int or float
+        y {list} -- 1d list object with int
 
     Returns:
-        [type] -- [description]
+        float
     """
 
     sse = sum((yi_hat - yi) ** 2 for yi_hat, yi in zip(reg.predict(X), y))
@@ -169,7 +184,8 @@ def get_r2(reg, X, y):
 
 
 def sigmoid(x, x_min=-100):
-    """Sigmoid(x) = 1 / (1 + e^(-x))
+    """Calculate the sigmoid value of x.
+    Sigmoid(x) = 1 / (1 + e^(-x))
 
     Arguments:
         x {float}
@@ -182,3 +198,47 @@ def sigmoid(x, x_min=-100):
     """
 
     return 1 / (1 + exp(-x)) if x > x_min else 0
+
+
+def split_list(nums, split, left, right):
+    """ Sort the list, if the element in the array is less than result index, 
+    the element value is less than the split. Otherwise, the element value is 
+    equal to or greater than the split.
+
+    Arguments:
+        nums {list} -- 1d list with int or float
+        split {float} -- The split point value
+
+    Returns:
+        int -- index
+    """
+
+    p = left
+    q = right
+    while p < q:
+        while nums[p] < split:
+            p += 1
+        while nums[q] >= split:
+            q -= 1
+        nums[p], nums[q] = nums[q], nums[p]
+    return p
+
+
+def _split_list(nums, split):
+    """Another implementation of "split_list" function for performance comparison.
+
+    Arguments:
+        nums {list} -- 1d list with int or float
+        split {float} -- The split point value
+
+    Returns:
+        list -- 2d list with left and right split result
+    """
+
+    ret = [[], []]
+    for num in nums:
+        if num < split:
+            ret[0].append(num)
+        else:
+            ret[1].append(num)
+    return ret

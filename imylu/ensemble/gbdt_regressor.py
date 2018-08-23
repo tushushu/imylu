@@ -18,11 +18,11 @@ class GradientBoostingRegressor(GradientBoostingBase):
     def _get_init_val(self, y):
         """Calculate the initial prediction of y
         Set MSE as loss function, yi <- y, and c is a constant:
-        L = MSE(y, c) = Sum((yi-c) ^ 2) / m
+        L = MSE(y, c) = Sum((yi-c) ^ 2) / n
 
         Get derivative of c:
-        dL / dc = Sum(-2 * (yi-c)) / m
-        dL / dc = -2 * (Sum(yi) / m - Sum(c) / m)
+        dL / dc = Sum(-2 * (yi-c)) / n
+        dL / dc = -2 * (Sum(yi) / n - Sum(c) / n)
         dL / dc = -2 * (Mean(yi) - c)
 
         Let derivative equals to zero, then we get initial constant value to minimize MSE:
@@ -44,7 +44,7 @@ class GradientBoostingRegressor(GradientBoostingBase):
         Fm(xi) = Fm-1(xi) + fm(xi)
 
         Loss Function:
-        Loss(yi, Fm(xi)) = Sum((yi - Fm(xi)) ^ 2) / m
+        Loss(yi, Fm(xi)) = Sum((yi - Fm(xi)) ^ 2) / n
 
         Taylor 1st:
         f(x + x_delta) = f(x) + f'(x) * x_delta
@@ -52,17 +52,18 @@ class GradientBoostingRegressor(GradientBoostingBase):
         g'(x + x_delta) = g'(x) + g"(x) * x_delta
 
         1st derivative:
-        Loss'(yi, Fm(xi)) = -2 * Sum(yi - Fm(xi)) / m
+        Loss'(yi, Fm(xi)) = -2 * Sum(yi - Fm(xi)) / n
 
         2nd derivative:
         Loss"(yi, Fm(xi)) = -2
 
         So,
-        Loss'(yi, Fm(xi)) = Loss'(yi, Fm-1(xi)) + Loss"(yi, Fm-1(xi)) *  fm(xi) = 0
+        Loss'(yi, Fm(xi)) = Loss'(yi, Fm-1(xi) + fm(xi))
+        = Loss'(yi, Fm-1(xi)) + Loss"(yi, Fm-1(xi)) *  fm(xi) = 0
         fm(xi) = - Loss'(yi, Fm-1(xi)) / Loss"(yi, Fm-1(xi))
-        fm(xi) = -2 * Sum(yi - Fm(xi) / m / -2
-        fm(xi) = Sum(yi - Fm(xi)) / m 
-        fm(xi) = Mean(yi - Fm(xi))
+        fm(xi) = -2 * Sum(yi - Fm-1(xi) / n / -2
+        fm(xi) = Sum(yi - Fm-1(xi)) / n
+        fm(xi) = Mean(yi - Fm-1(xi))
         ----------------------------------------------------------------------------------------
 
         Arguments:
