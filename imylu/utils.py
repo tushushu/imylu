@@ -1,7 +1,9 @@
 import os
-from random import random, seed
+from random import random, seed, randint
 from time import time
 from math import exp
+from copy import copy
+from statistics import median
 
 BASE_PATH = os.path.split(os.path.realpath(__file__))[0]
 
@@ -214,12 +216,21 @@ def split_list(nums, split, left, right):
     """
 
     p = left
-    q = right
-    while p < q:
+    q = right - 1
+    break_tag = 0
+    while 1:
         while nums[p] < split:
             p += 1
+            if p > q:
+                break_tag = 1
+                break
         while nums[q] >= split:
             q -= 1
+            if p > q:
+                break_tag = 1
+                break
+        if break_tag == 1:
+            break
         nums[p], nums[q] = nums[q], nums[p]
     return p
 
@@ -236,9 +247,48 @@ def _split_list(nums, split):
     """
 
     ret = [[], []]
-    for num in nums:
-        if num < split:
-            ret[0].append(num)
+    while nums:
+        if nums[0] < split:
+            ret[0].append(nums.pop(0))
         else:
-            ret[1].append(num)
+            ret[1].append(nums.pop(0))
     return ret
+
+
+def _test_split_list(iterations=10**4, max_arr_len=1000, max_num=100):
+    """Test correctness and runtime efficiency of both split_list functions.
+    _split_list takes about 2.4 times as split_list does.
+
+    Keyword Arguments:
+        iterations {int} -- How many times to iterate. (default: {10**4})
+        max_arr_len {int} -- Max random length of array (default: {1000})
+        max_num {int} -- Max value of array's elements (default: {100})
+    """
+
+    time_1 = time_2 = 0
+    for _ in range(iterations):
+        n = randint(1, max_arr_len)
+        nums1 = [randint(1, max_num) for _ in range(n)]
+        nums2 = copy(nums1)
+        split = median(nums1)
+        left = 0
+        right = n
+
+        start = time()
+        ret_1 = split_list(nums1, split, left, right)
+        time_1 += time() - start
+
+        start = time()
+        ret_2 = _split_list(nums2, split)
+        time_2 += time() - start
+
+        assert all(num1 == num2 for num1, num2 in zip(
+            sorted(nums1[left:ret_1]), sorted(ret_2[0])))
+        assert all(num1 == num2 for num1, num2 in zip(
+            sorted(nums1[ret_1:right]), sorted(ret_2[1])))
+
+    print("Test passed!")
+    print("split_list runtime for %d iterations  is: %.3f seconds" %
+          (iterations, time_1))
+    print("_split_list runtime for %d iterations  is: %.3f seconds" %
+          (iterations, time_2))
