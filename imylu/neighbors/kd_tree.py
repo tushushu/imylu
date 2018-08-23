@@ -5,6 +5,7 @@
 @Last Modified by:   tushushu
 @Last Modified time: 2018-08-21 19:19:52
 """
+from ..utils import min_max_scale
 
 
 class Node(object):
@@ -124,6 +125,8 @@ class KDTree(object):
             y {list} -- 1d list object with int or float
         """
 
+        # Scale the data for calculating variances
+        X_scale = min_max_scale(X)
         # Initialize with node, indexes
         nd = self.root
         idxs = range(len(X))
@@ -137,7 +140,7 @@ class KDTree(object):
                 nd.split = (X[idxs[0]], y[idxs[0]])
                 continue
             # Split
-            feature = self._choose_feature(X, idxs)
+            feature = self._choose_feature(X_scale, idxs)
             median_idx = self._get_median_idx(X, idxs, feature)
             idxs_left, idxs_right = self._split_feature(
                 X, idxs, feature, median_idx)
