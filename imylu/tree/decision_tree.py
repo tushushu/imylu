@@ -61,7 +61,7 @@ class DecisionTree(object):
         pos_cnt = [0, 0]
         cnt = [0, 0]
 
-        # Iterate each row and compare with the split point
+        # Iterate each Xi and compare with the split point
         for i in idx:
             xi, yi = X[i][feature], y[i]
             if xi < split:
@@ -320,6 +320,7 @@ class DecisionTree(object):
             float
         """
 
+        # Search Xi from the DecisionTree until Xi is at an leafnode
         nd = self.root
         while nd.left and nd.right:
             if Xi[nd.feature] < nd.split:

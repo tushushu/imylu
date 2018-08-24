@@ -12,8 +12,12 @@ class Node(object):
     def __init__(self, score=None):
         """Node class to build tree leaves.
 
-        Keyword Arguments:
+        Attributes:
             score {float} -- prediction of y (default: {None})
+            left {Node} -- Left child node
+            right {Node} -- Right child node
+            feature {int} -- Column index
+            split {int} --  Split point
         """
         self.score = score
 
@@ -58,7 +62,7 @@ class RegressionTree(object):
         split_sum = [0, 0]
         split_cnt = [0, 0]
         split_sqr_sum = [0, 0]
-        # Iterate each row and compare with the split point
+        # Iterate each Xi and compare with the split point
         for i in idx:
             xi, yi = X[i][feature], y[i]
             if xi < split:
@@ -200,9 +204,11 @@ class RegressionTree(object):
         """
 
         # Initialize with depth, node, indexes
-        self.root = Node()
-        que = [[0, self.root, list(range(len(y)))]]
+        depth = 0
+        nd = self.root
+        idxs = list(range(len(y)))
         # Breadth-First Search
+        que = [[depth, nd, idxs]]
         while que:
             depth, nd, idxs = que.pop(0)
             # Terminate loop if tree depth is more than max_depth
@@ -218,10 +224,14 @@ class RegressionTree(object):
             if split_ret is None:
                 continue
             # Split
-            _, nd.feature, nd.split, split_avg = split_ret
-            idxs_split = self._split_feature(X, idxs, nd.feature, nd.split)
+            _, feature, split, split_avg = split_ret
+
+            nd.feature = feature
+            nd.split = split
             nd.left = Node(split_avg[0])
             nd.right = Node(split_avg[1])
+
+            idxs_split = self._split_feature(X, idxs, feature, split)
             que.append([depth+1, nd.left, idxs_split[0]])
             que.append([depth+1, nd.right, idxs_split[1]])
         # Update tree depth and rules
@@ -238,11 +248,11 @@ class RegressionTree(object):
             print("Rule %d: " % i, ' | '.join(
                 literals) + ' => y_hat %.4f' % score)
 
-    def _predict(self, row):
+    def _predict(self, Xi):
         """Auxiliary function of predict.
 
         Arguments:
-            row {list} -- 1D list with int or float
+            Xi {list} -- 1D list with int or float
 
         Returns:
             int or float -- prediction of yi
@@ -250,7 +260,7 @@ class RegressionTree(object):
 
         nd = self.root
         while nd.left and nd.right:
-            if row[nd.feature] < nd.split:
+            if Xi[nd.feature] < nd.split:
                 nd = nd.left
             else:
                 nd = nd.right
