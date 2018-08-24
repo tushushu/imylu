@@ -202,40 +202,34 @@ def sigmoid(x, x_min=-100):
     return 1 / (1 + exp(-x)) if x > x_min else 0
 
 
-def split_list(nums, split, left, right):
+def split_list(X, idxs, feature, split, low, high):
     """ Sort the list, if the element in the array is less than result index, 
     the element value is less than the split. Otherwise, the element value is 
     equal to or greater than the split.
 
     Arguments:
-        nums {list} -- 1d list with int or float
+        X {list} -- 2d list object with int or float
+        idx {list} -- indexes, 1d list object with int
+        feature {int} -- Feature number
         split {float} -- The split point value
 
     Returns:
         int -- index
     """
 
-    p = left
-    q = right - 1
-    break_tag = 0
-    while 1:
-        while nums[p] < split:
+    p = low
+    q = high - 1
+    while p <= q:
+        if X[idxs[p]][feature] < split:
             p += 1
-            if p > q:
-                break_tag = 1
-                break
-        while nums[q] >= split:
+        elif X[idxs[q]][feature] >= split:
             q -= 1
-            if p > q:
-                break_tag = 1
-                break
-        if break_tag == 1:
-            break
-        nums[p], nums[q] = nums[q], nums[p]
+        else:
+            idxs[p], idxs[q] = idxs[q], idxs[p]
     return p
 
 
-def _split_list(nums, split):
+def list_split(X, idxs, feature, split):
     """Another implementation of "split_list" function for performance comparison.
 
     Arguments:
@@ -247,15 +241,15 @@ def _split_list(nums, split):
     """
 
     ret = [[], []]
-    while nums:
-        if nums[0] < split:
-            ret[0].append(nums.pop(0))
+    while idxs:
+        if X[idxs[0]][feature] < split:
+            ret[0].append(idxs.pop(0))
         else:
-            ret[1].append(nums.pop(0))
+            ret[1].append(idxs.pop(0))
     return ret
 
 
-def _test_split_list(iterations=10**4, max_arr_len=1000, max_num=100):
+def _test_split_list(iterations=10**4, max_n_samples=1000, max_n_features=10, max_element_value=100):
     """Test correctness and runtime efficiency of both split_list functions.
     _split_list takes about 2.4 times as split_list does.
 
@@ -267,25 +261,29 @@ def _test_split_list(iterations=10**4, max_arr_len=1000, max_num=100):
 
     time_1 = time_2 = 0
     for _ in range(iterations):
-        n = randint(1, max_arr_len)
-        nums1 = [randint(1, max_num) for _ in range(n)]
-        nums2 = copy(nums1)
-        split = median(nums1)
-        left = 0
-        right = n
+        n = randint(1, max_n_samples)
+        m = randint(1, max_n_features)
+        X = [[randint(1, max_element_value) for _ in range(m)]
+             for _ in range(n)]
+        idxs_1 = list(range(n))
+        idxs_2 = copy(idxs_1)
+        feature = randint(1, m) - 1
+        split = median(map(lambda i: X[i][feature], range(n)))
+        low = 0
+        high = n
 
         start = time()
-        ret_1 = split_list(nums1, split, left, right)
+        ret_1 = split_list(X, idxs_1, feature, split, low, high)
         time_1 += time() - start
 
         start = time()
-        ret_2 = _split_list(nums2, split)
+        ret_2 = list_split(X, idxs_2, feature, split)
         time_2 += time() - start
 
-        assert all(num1 == num2 for num1, num2 in zip(
-            sorted(nums1[left:ret_1]), sorted(ret_2[0])))
-        assert all(num1 == num2 for num1, num2 in zip(
-            sorted(nums1[ret_1:right]), sorted(ret_2[1])))
+        assert all(i_1 == i_2 for i_1, i_2 in zip(
+            sorted(idxs_1[low:ret_1]), sorted(ret_2[0])))
+        assert all(i_1 == i_2 for i_1, i_2 in zip(
+            sorted(idxs_1[ret_1:high]), sorted(ret_2[1])))
 
     print("Test passed!")
     print("split_list runtime for %d iterations  is: %.3f seconds" %
