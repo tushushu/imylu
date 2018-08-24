@@ -8,6 +8,7 @@
 
 from math import log2
 from copy import copy
+from ..utils import list_split
 
 
 class Node(object):
@@ -148,7 +149,7 @@ class DecisionTree(object):
         info_right = self._get_entropy(prob[1])
         return rate[0] * info_left + rate[1] * info_right
 
-    def _choose_split(self, X, y, idx, feature):
+    def _choose_split(self, X, y, idxs, feature):
         """Iterate each xi and split x, y into two pieces,
         and the best split point is the xi when we get max gain.
         Info gain:
@@ -158,14 +159,14 @@ class DecisionTree(object):
         Arguments:
             x {list} -- 1d list object with int or float
             y {list} -- 1d list object with int 0 or 1
-            idx {list} -- indexes, 1d list object with int
+            idxs {list} -- indexes, 1d list object with int
             feature {int} -- Feature number
 
         Returns:
             tuple -- The best choice of gain, feature, split point and probability
         """
         # Feature cannot be splitted if there's only one unique element.
-        unique = set([X[i][feature] for i in idx])
+        unique = set([X[i][feature] for i in idxs])
         if len(unique) == 1:
             return None
         # In case of empty split
@@ -175,9 +176,9 @@ class DecisionTree(object):
             """Auxiliary function of _choose_split_poin
             """
 
-            info = self._get_info(y, idx)
+            info = self._get_info(y, idxs)
             prob, rate = self._get_split_effect(
-                X, y, idx, feature, split)
+                X, y, idxs, feature, split)
             cond_info = self._get_cond_info(prob, rate)
             gain = info - cond_info
             return gain, split, prob
@@ -186,13 +187,13 @@ class DecisionTree(object):
                                  for split in unique), key=lambda x: x[0])
         return gain, feature, split, prob
 
-    def _choose_feature(self, X, y, idx):
+    def _choose_feature(self, X, y, idxs):
         """Choose the feature which has max info gain.
 
         Arguments:
             X {list} -- 2d list object with int or float
             y {list} -- 1d list object with int 0 or 1
-            idx {list} -- indexes, 1d list object with int
+            idxs {list} -- indexes, 1d list object with int
 
         Returns:
             tuple -- (feature number, split point, probability)
@@ -200,32 +201,10 @@ class DecisionTree(object):
 
         m = len(X[0])
         # Compare the info gain of each feature and choose best one.
-        split_rets = map(lambda j: self._choose_split(X, y, idx, j), range(m))
+        split_rets = map(lambda j: self._choose_split(X, y, idxs, j), range(m))
         split_rets = filter(lambda x: x is not None, split_rets)
         # Return None if no feature can be splitted
         return max(split_rets, default=None, key=lambda x: x[0])
-
-    def _split_feature(self, X, idxs, feature, split):
-        """Split indexes into two arrays according to split point.
-
-        Arguments:
-            X {list} -- 2d list object with int or float
-            idx {list} -- indexes, 1d list object with int
-            feature {int} -- Feature number
-            split {float} -- Split point of the feature
-
-        Returns:
-            list -- [left idx, right idx]
-        """
-
-        idxs_split = [[], []]
-        for idx in idxs:
-            xi = X[idx][feature]
-            if xi < split:
-                idxs_split[0].append(idx)
-            else:
-                idxs_split[1].append(idx)
-        return idxs_split
 
     def _expr2literal(self, expr):
         """Auxiliary function of print_rules.
@@ -285,9 +264,11 @@ class DecisionTree(object):
         """
 
         # Initialize with depth, node, indexes
-        self.root = Node()
-        que = [[0, self.root, list(range(len(y)))]]
+        depth = 0
+        nd = self.root
+        idxs = list(range(len(y)))
         # Breadth-First Search
+        que = [[depth, nd, idxs]]
         while que:
             depth, nd, idxs = que.pop(0)
             # Terminate loop if tree depth is more than max_depth
@@ -301,10 +282,14 @@ class DecisionTree(object):
             if split_ret is None:
                 continue
             # Split
-            _, nd.feature, nd.split, prob = split_ret
-            idxs_split = self._split_feature(X, idxs, nd.feature, nd.split)
+            _, feature, split, prob = split_ret
+
+            nd.feature = feature
+            nd.split = split
             nd.left = Node(prob[0])
             nd.right = Node(prob[1])
+
+            idxs_split = list_split(X, idxs, feature, split)
             que.append([depth+1, nd.left, idxs_split[0]])
             que.append([depth+1, nd.right, idxs_split[1]])
         # Update tree depth and rules
@@ -321,11 +306,11 @@ class DecisionTree(object):
             print("Rule %d: " % i, ' | '.join(
                 literals) + ' => y_hat %.4f' % prob)
 
-    def _predict_prob(self, row):
+    def _predict_prob(self, Xi):
         """Auxiliary function of predict_prob.
 
         Arguments:
-            row {list} -- 1D list with int or float
+            Xi {list} -- 1D list with int or float
 
         Returns:
             float
@@ -333,7 +318,7 @@ class DecisionTree(object):
 
         nd = self.root
         while nd.left and nd.right:
-            if row[nd.feature] < nd.split:
+            if Xi[nd.feature] < nd.split:
                 nd = nd.left
             else:
                 nd = nd.right
@@ -349,7 +334,7 @@ class DecisionTree(object):
             list -- 1d list object with float
         """
 
-        return [self._predict_prob(row) for row in X]
+        return [self._predict_prob(Xi) for Xi in X]
 
     def predict(self, X, threshold=0.5):
         """Get the prediction of y.
