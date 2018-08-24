@@ -6,6 +6,7 @@
 @Last Modified time: 2018-07-05 17:51:04
 """
 from copy import copy
+from ..utils import list_split
 
 
 class Node(object):
@@ -123,28 +124,6 @@ class RegressionTree(object):
         # Terminate if no feature can be splitted
         return min(split_rets, default=None, key=lambda x: x[0])
 
-    def _split_feature(self, X, idxs, feature, split):
-        """Split indexes into two arrays according to split point.
-
-        Arguments:
-            X {list} -- 2d list object with int or float
-            idx {list} -- indexes, 1d list object with int
-            feature {int} -- Feature number
-            split {float} -- Split point of the feature
-
-        Returns:
-            list -- [left idx, right idx]
-        """
-
-        idxs_split = [[], []]
-        for idx in idxs:
-            xi = X[idx][feature]
-            if xi < split:
-                idxs_split[0].append(idx)
-            else:
-                idxs_split[1].append(idx)
-        return idxs_split
-
     def _expr2literal(self, expr):
         """Auxiliary function of print_rules.
 
@@ -231,7 +210,7 @@ class RegressionTree(object):
             nd.left = Node(split_avg[0])
             nd.right = Node(split_avg[1])
 
-            idxs_split = self._split_feature(X, idxs, feature, split)
+            idxs_split = list_split(X, idxs, feature, split)
             que.append([depth+1, nd.left, idxs_split[0]])
             que.append([depth+1, nd.right, idxs_split[1]])
         # Update tree depth and rules
