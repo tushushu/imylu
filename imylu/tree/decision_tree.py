@@ -15,8 +15,12 @@ class Node(object):
     def __init__(self, prob=None):
         """Node class to build tree leaves.
 
-        Keyword Arguments:
+        Attributes:
             prob {float} -- positive probability (default: {None})
+            left {Node} -- Left child node
+            right {Node} -- Right child node
+            feature {int} -- Column index
+            split {int} --  Split point
         """
         self.prob = prob
 
