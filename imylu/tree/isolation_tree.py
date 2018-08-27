@@ -93,7 +93,7 @@ class IsolationTree(object):
         # Randomly selected sample points into the root node of the tree
         idxs = sample(range(n), n_samples)
         # BFS
-        que = [[depth, nd, idxs]]
+        que = [(depth, nd, idxs)]
         while que and que[0][0] <= max_depth:
             depth, nd, idxs = que.pop(0)
             # Stop split if X cannot be splitted
@@ -109,8 +109,8 @@ class IsolationTree(object):
             nd.left = Node(len(idxs_split[0]))
             nd.right = Node(len(idxs_split[1]))
             # Put children of current node in que
-            que.append([depth+1, nd.left, idxs_split[0]])
-            que.append([depth+1, nd.right, idxs_split[1]])
+            que.append((depth+1, nd.left, idxs_split[0]))
+            que.append((depth+1, nd.right, idxs_split[1]))
         # Update the height of IsolationTree
         self.height = depth
 

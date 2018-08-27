@@ -158,14 +158,16 @@ class KDTree(object):
     def _search(self, Xi):
         # Search Xi from the KDTree until Xi is at an leafnode
         nd = self.root
+        path = [nd]
         while nd.left and nd.right:
             if Xi[nd.feature] < nd.split[0][nd.feature]:
                 nd = nd.left
             else:
                 nd = nd.right
-        return nd
+            path.append(nd)
+        return path
 
-    def _back_track(self, Xi, nd):
+    def _back_track(self, Xi, nd, path):
         raise NotImplementedError
 
     def search(self, Xi):

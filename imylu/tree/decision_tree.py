@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-@Author: tushushu 
-@Date: 2018-06-13 14:55:11 
-@Last Modified by: tushushu 
-@Last Modified time: 2018-06-13 14:55:11 
+@Author: tushushu
+@Date: 2018-06-13 14:55:11
+@Last Modified by: tushushu
+@Last Modified time: 2018-06-13 14:55:11
 """
 
 from math import log2
@@ -81,10 +81,10 @@ class DecisionTree(object):
         Probability:
         P(X=x_i) = p_i, i <- [1, n]
 
-        Entropy: 
+        Entropy:
         H(p) = -Sum(p_i * log(p_i)), i <- [1, n]
 
-        Take binary classifaction for exmaple, 
+        Take binary classifaction for exmaple,
         Likelihood function, yi <- y, and p is a constant:
         Likelihood = Product(p^yi * (1-p)^(1-yi))
 
@@ -116,7 +116,7 @@ class DecisionTree(object):
         Probability:
         P(y=y_i) = p_i, i <- [1, n]
 
-        Entropy: 
+        Entropy:
         Info(y) = H(p) = -Sum(p_i * log(p_i)), i <- [1, n]
         --------------------------------------------------
 
@@ -137,7 +137,7 @@ class DecisionTree(object):
         Suppose there are k cases:
         P(A = A_i), i <- [1, k]
 
-        Entropy: 
+        Entropy:
         CondInfo(X, y) = -Sum(p_i * H(y | A = A_i)), i <- [1, k]
         -------------------------------------------------------
 
@@ -225,7 +225,7 @@ class DecisionTree(object):
         return "Feature%d %s %.4f" % (feature, op, split)
 
     def _get_rules(self):
-        """Get the rules of all the decision tree leaf nodes. 
+        """Get the rules of all the decision tree leaf nodes.
             Expr: 1D list like [Feature, op, split]
             Rule: 2D list like [[Feature, op, split], prob]
             Op: -1 means less than, 1 means equal or more than
@@ -272,7 +272,7 @@ class DecisionTree(object):
         nd = self.root
         idxs = list(range(len(y)))
         # Breadth-First Search
-        que = [[depth, nd, idxs]]
+        que = [(depth, nd, idxs)]
         while que:
             depth, nd, idxs = que.pop(0)
             # Terminate loop if tree depth is more than max_depth
@@ -294,10 +294,10 @@ class DecisionTree(object):
             nd.right = Node(prob[1])
             # Put children of current node in que
             idxs_split = list_split(X, idxs, feature, split)
-            que.append([depth+1, nd.left, idxs_split[0]])
-            que.append([depth+1, nd.right, idxs_split[1]])
+            que.append((depth+1, nd.left, idxs_split[0]))
+            que.append((depth+1, nd.right, idxs_split[1]))
         # Update tree depth and rules
-        self.height = depth
+        self.height=depth
         self._get_rules()
 
     @property
@@ -306,7 +306,7 @@ class DecisionTree(object):
         """
 
         for i, rule in enumerate(self._rules):
-            literals, prob = rule
+            literals, prob=rule
             print("Rule %d: " % i, ' | '.join(
                 literals) + ' => y_hat %.4f' % prob)
 
@@ -321,12 +321,12 @@ class DecisionTree(object):
         """
 
         # Search Xi from the DecisionTree until Xi is at an leafnode
-        nd = self.root
+        nd=self.root
         while nd.left and nd.right:
             if Xi[nd.feature] < nd.split:
-                nd = nd.left
+                nd=nd.left
             else:
-                nd = nd.right
+                nd=nd.right
         return nd.prob
 
     def predict_prob(self, X):
