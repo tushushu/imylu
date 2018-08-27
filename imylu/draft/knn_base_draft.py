@@ -5,6 +5,7 @@
 @Last Modified by:   tushushu
 @Last Modified time: 2018-08-13 17:15:29
 """
+from ..tree.kd_tree import KDTree
 
 
 class KNeighborsBase(object):
@@ -30,23 +31,17 @@ class KNeighborsBase(object):
         self.tree = KDTree()
         self.tree.build_tree(X, y)
 
-    def _predict(self, row):
+    def _predict(self, Xi):
         """[summary]
 
         Arguments:
-            row {[type]} -- [description]
+            Xi {[type]} -- [description]
 
         Returns:
             [type] -- [description]
         """
 
-        nd = self.root
-        while nd.left is not None and nd.right is not None:
-            if row[nd.feature] < nd.split:
-                nd = nd.left
-            else:
-                nd = nd.right
-        return nd
+        raise NotImplementedError
 
     def _back_track(self, row):
         raise NotImplementedError
@@ -67,7 +62,7 @@ def test():
     y = [0, 1, 2, 3]
     knn = KNeighborsBase()
     knn.fit(X, y)
-    nd = knn.tree.search([1, 2, 9])
+    nd = knn.tree._predict([1, 2, 9])
     print(nd.val)
 
 

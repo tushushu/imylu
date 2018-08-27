@@ -14,16 +14,17 @@ sys.path.append(os.path.abspath(".."))
 
 from random import randint
 from imylu.utils import run_time
-from imylu.neighbors.kd_tree import KDTree
+from imylu.tree.kd_tree import KDTree
 
 
 @run_time
 def main():
     # Generate dataset randomly
-    m = 5
-    n = 30
+    m = 3
+    n = 10
     X = [[randint(0, 10) for _ in range(m)] for _ in range(n)]
     y = [randint(0, 1) for _ in range(n)]
+    Xi = [randint(0, 10) for _ in range(m)]
     # Build KD Tree
     tree = KDTree()
     tree.build_tree(X, y)
@@ -40,6 +41,9 @@ def main():
         if nd.right:
             que.append((nd.right, "No.%d" % i))
         i += 1
+    print("Searching Xi:\n")
+    nd = tree._search(Xi)
+    print("Target:", Xi, "Match:", nd.split)
 
 
 if __name__ == "__main__":
