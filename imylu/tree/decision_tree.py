@@ -287,12 +287,12 @@ class DecisionTree(object):
                 continue
             # Split
             _, feature, split, prob = split_ret
-
+            # Update properties of current node
             nd.feature = feature
             nd.split = split
             nd.left = Node(prob[0])
             nd.right = Node(prob[1])
-
+            # Put children of current node in que
             idxs_split = list_split(X, idxs, feature, split)
             que.append([depth+1, nd.left, idxs_split[0]])
             que.append([depth+1, nd.right, idxs_split[1]])

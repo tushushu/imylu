@@ -103,12 +103,12 @@ class IsolationTree(object):
                 continue
             # Split
             idxs_split = list_split(X, idxs, feature, split)
-
+            # Update properties of current node
             nd.feature = feature
             nd.split = split
             nd.left = Node(len(idxs_split[0]))
             nd.right = Node(len(idxs_split[1]))
-
+            # Put children of current node in que
             que.append([depth+1, nd.left, idxs_split[0]])
             que.append([depth+1, nd.right, idxs_split[1]])
         # Update the height of IsolationTree

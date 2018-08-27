@@ -204,12 +204,12 @@ class RegressionTree(object):
                 continue
             # Split
             _, feature, split, split_avg = split_ret
-
+            # Update properties of current node
             nd.feature = feature
             nd.split = split
             nd.left = Node(split_avg[0])
             nd.right = Node(split_avg[1])
-
+            # Put children of current node in que
             idxs_split = list_split(X, idxs, feature, split)
             que.append([depth+1, nd.left, idxs_split[0]])
             que.append([depth+1, nd.right, idxs_split[1]])
