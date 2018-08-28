@@ -5,7 +5,7 @@
 @Last Modified by:   tushushu
 @Last Modified time: 2018-08-21 19:19:52
 """
-from ..utils import min_max_scale
+from ..utils import min_max_scale, get_euclidean_distance
 
 
 class Node(object):
@@ -18,6 +18,9 @@ class Node(object):
         self.feature = None
         self.split = None
 
+    def __str__(self):
+        return "feature: %s, split: %s" % (str(self.feature), str(self.split))
+
 
 class KDTree(object):
     """KDTree class to improve search efficiency in KNN.
@@ -28,6 +31,20 @@ class KDTree(object):
 
     def __init__(self):
         self.root = Node()
+
+    def __str__(self):
+        ret = []
+        i = 0
+        que = [(self.root, -1)]
+        while que:
+            nd, idx_father = que.pop(0)
+            ret.append("%d -> %d: %s" % (idx_father, i, str(nd)))
+            if nd.left is not None:
+                que.append((nd.left, i))
+            if nd.right is not None:
+                que.append((nd.right, i))
+            i += 1
+        return "\n".join(ret)
 
     def _get_median_idx(self, X, idxs, feature):
         """Calculate the median of a column of data.
@@ -155,20 +172,116 @@ class KDTree(object):
                 nd.right = Node()
                 que.append((nd.right, idxs_right))
 
-    def _search(self, Xi):
-        # Search Xi from the KDTree until Xi is at an leafnode
-        nd = self.root
+    def _search(self, Xi, nd):
+        """Search Xi from the KDTree until Xi is at an leafnode or empty node
+
+        Arguments:
+            Xi {list} -- 1d list with int or float
+
+        Returns:
+            list -- list with searching path
+        """
+
         path = [nd]
-        while nd.left and nd.right:
-            if Xi[nd.feature] < nd.split[0][nd.feature]:
+        while nd.left or nd.right:
+            if nd.left is None:
+                nd = nd.right
+            elif nd.right is None:
                 nd = nd.left
             else:
-                nd = nd.right
+                if Xi[nd.feature] < nd.split[0][nd.feature]:
+                    nd = nd.left
+                else:
+                    nd = nd.right
             path.append(nd)
         return path
 
-    def _back_track(self, Xi, nd, path):
-        raise NotImplementedError
+    def _get_brother(self, nd, nd_father):
+        """Find the node's brother
 
-    def search(self, Xi):
-        raise NotImplementedError
+        Arguments:
+            nd {node} -- Current node.
+            nd_father {node} -- Father node of current node.
+
+        Returns:
+            node -- Brother node.
+        """
+
+        if nd_father.left is nd:
+            ret = nd_father.right
+        else:
+            ret = nd_father.left
+        return ret
+
+    def _get_eu_dist(self, Xi, nd):
+        """Calculate euclidean distance between Xi and node.
+
+        Arguments:
+            Xi {list} -- 1d list with int or float.
+            nd {node}
+
+        Returns:
+            float -- Euclidean distance.
+        """
+
+        X0 = nd.split[0]
+        return get_euclidean_distance(Xi, X0)
+
+    def _get_hyper_plane_dist(self, Xi, nd):
+        """Calculate euclidean distance between Xi and hyper plane.
+
+        Arguments:
+            Xi {list} -- 1d list with int or float.
+            nd {node}
+
+        Returns:
+            float -- Euclidean distance.
+        """
+
+        j = nd.feature
+        X0 = nd.split[0]
+        return (Xi[j] - X0[j]) ** 2
+
+    def nearest_neighbour_search(self, Xi):
+        """Nearest neighbour search and backtracking.
+
+        Arguments:
+            Xi {list} -- 1d list with int or float.
+
+        Returns:
+            node -- The nearest node to Xi.
+        """
+
+        # The path from root to a leaf node when searching Xi.
+        path = self._search(Xi, self.root)
+        # Record which nodes' brohters has been visited already.
+        bro_flags = [1] + [0] * (len(path)-1)
+        que = list(zip(path, bro_flags))
+        dist_best = float("inf")
+        nd_best = None
+        while 1:
+            nd_current, bro_flag = que.pop()
+            # Calculate distance between Xi and current node
+            dist_current = self._get_eu_dist(Xi, nd_current)
+            # Update best node and distance
+            if dist_current < dist_best:
+                dist_best = dist_current
+                nd_best = nd_current
+            # Calculate distance between Xi and father node's hyper plane.
+            if que:
+                nd_father = que[-1][0]
+            else:
+                break
+            # If it's necessary to visit brother node.
+            nd_brother = self._get_brother(nd_current, nd_father)
+            if bro_flag == 1 or nd_brother is None:
+                continue
+            # Check if it's possible that the other side of father node has closer child node.
+            dist_hyper = self._get_hyper_plane_dist(Xi, nd_father)
+            if dist_current > dist_hyper:
+                _path = self._search(Xi, nd_brother)
+                _bro_flags = [1] + [0] * (len(_path)-1)
+                que.extend(zip(_path, _bro_flags))
+            else:
+                continue
+        return nd_best
