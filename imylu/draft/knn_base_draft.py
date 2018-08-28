@@ -13,19 +13,6 @@ class KNeighborsBase(object):
         self.k_neighbors = None
         self.tree = None
 
-    def _get_distance(self, arr1, arr2):
-        """Calculate the Euclidean distance of two vectors
-
-        Arguments:
-            arr1 {list} -- 1d list object with int or float
-            arr2 {list} -- 1d list object with int or float
-
-        Returns:
-            float -- Euclidean distance
-        """
-
-        return sum((x1 - x2) ** 2 for x1, x2 in zip(arr1, arr2))
-
     def fit(self, X, y, k_neighbors=3):
         self.k_neighbors = k_neighbors
         self.tree = KDTree()
