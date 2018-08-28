@@ -49,7 +49,7 @@ def test():
     y = [0, 1, 2, 3]
     knn = KNeighborsBase()
     knn.fit(X, y)
-    nd = knn.tree._predict([1, 2, 9])
+    # nd = knn.tree._predict([1, 2, 9])
     print(nd.val)
 
 
