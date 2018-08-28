@@ -290,3 +290,15 @@ def _test_split_list(iterations=10**4, max_n_samples=1000, max_n_features=10, ma
           (iterations, time_1))
     print("_split_list runtime for %d iterations  is: %.3f seconds" %
           (iterations, time_2))
+
+
+def get_euclidean_distance(arr1, arr2):
+    """Calculate the Euclidean distance of two vectors.
+    Arguments:
+        arr1 {list} -- 1d list object with int or float
+        arr2 {list} -- 1d list object with int or float
+    Returns:
+        float -- Euclidean distance
+    """
+
+    return sum((x1 - x2) ** 2 for x1, x2 in zip(arr1, arr2))
