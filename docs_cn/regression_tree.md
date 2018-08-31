@@ -2,7 +2,8 @@
 提到回归树相信大家应该都不会觉得陌生（不陌生你点进来干嘛[捂脸]），大名鼎鼎的GBDT算法就是用回归树组合而成的。本文就回归树的基本原理进行讲解，并手把手、肩并肩地带您实现这一算法。
 
 完整实现代码请参考本人的p...哦不是...github：
-https://github.com/tushushu/Imylu/blob/master/regression_tree.py
+https://github.com/tushushu/imylu/blob/master/imylu/tree/regression_tree.py
+https://github.com/tushushu/imylu/blob/master/examples/regression_tree_example.py
 
 
 # 1. 原理篇
@@ -259,7 +260,7 @@ def main():
 
 ## 3.3 工具函数
 本人自定义了一些工具函数，可以在github上查看
-https://github.com/tushushu/Imylu/blob/master/utils.py
+https://github.com/tushushu/imylu/blob/master/imylu/utils.py
 1. run_time - 测试函数运行时间
 2. load_boston_house_prices - 加载波士顿房价数据
 3. train_test_split - 拆分训练集、测试集
