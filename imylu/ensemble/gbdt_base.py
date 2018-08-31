@@ -187,18 +187,18 @@ class GradientBoostingBase(object):
             residuals = self._get_residuals(y, y_hat)
             self.trees.append(tree)
 
-    def _predict(self, row):
+    def _predict(self, Xi):
         """Auxiliary function of predict.
 
         Arguments:
-            row {list} -- 1D list with int or float
+            Xi {list} -- 1D list with int or float
 
         Returns:
             int or float -- prediction of yi
         """
 
         # Sum y_hat with residuals of each tree and then calulate sigmoid value
-        return self.fn(self.init_val + sum(self.lr * tree._predict(row) for tree in self.trees))
+        return self.fn(self.init_val + sum(self.lr * tree._predict(Xi) for tree in self.trees))
 
     def predict(self, X):
         """Get the prediction of y.

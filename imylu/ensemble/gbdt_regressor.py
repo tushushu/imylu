@@ -85,4 +85,4 @@ class GradientBoostingRegressor(GradientBoostingBase):
             list -- 1d list object with int or float
         """
 
-        return [self._predict(row) for row in X]
+        return [self._predict(Xi) for Xi in X]

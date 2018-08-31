@@ -61,11 +61,11 @@ class IsolationForest(object):
             ret = 0
         return ret
 
-    def _predict(self, xi):
+    def _predict(self, Xi):
         """Auxiliary function of predict.
 
         Arguments:
-            xi {list} -- 1d list object with int or float
+            Xi {list} -- 1d list object with int or float
 
         Returns:
             list -- 1d list object with float
@@ -75,7 +75,7 @@ class IsolationForest(object):
         score = 0
         n_trees = len(self.trees)
         for tree in self.trees:
-            depth, node_size = tree._predict(xi)
+            depth, node_size = tree._predict(Xi)
             score += (depth + self._get_adjustment(node_size))
         score = score / n_trees
         # Scale
@@ -91,4 +91,4 @@ class IsolationForest(object):
             list -- 1d list object with float
         """
 
-        return [self._predict(xi) for xi in X]
+        return [self._predict(Xi) for Xi in X]

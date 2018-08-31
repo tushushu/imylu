@@ -114,4 +114,4 @@ class GradientBoostingClassifier(GradientBoostingBase):
             list -- 1d list object with float
         """
 
-        return [int(self._predict(row) >= threshold) for row in X]
+        return [int(self._predict(Xi) >= threshold) for Xi in X]

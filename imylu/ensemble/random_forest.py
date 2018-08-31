@@ -63,11 +63,11 @@ class RandomForest(object):
             self.trees.append(clf)
             self.tree_features.append(features)
 
-    def _predict(self, xi):
+    def _predict(self, Xi):
         """Auxiliary function of predict.
 
         Arguments:
-            xi {list} -- 1d list object with int or float
+            Xi {list} -- 1d list object with int or float
 
         Returns:
             int -- 0 or 1
@@ -76,7 +76,7 @@ class RandomForest(object):
         # Count positive vote
         pos_vote = 0
         for tree, features in zip(self.trees, self.tree_features):
-            score = tree._predict_prob([xi[j] for j in features])
+            score = tree._predict_prob([Xi[j] for j in features])
             if score >= 0.5:
                 pos_vote += 1
         # Get negative vote
@@ -99,4 +99,4 @@ class RandomForest(object):
             list -- 1d list object with float
         """
 
-        return [self._predict(xi) for xi in X]
+        return [self._predict(Xi) for Xi in X]
