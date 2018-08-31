@@ -11,7 +11,6 @@ os.chdir(os.path.split(os.path.realpath(__file__))[0])
 import sys
 sys.path.append(os.path.abspath(".."))
 
-import imylu.utils
 from imylu.utils import get_acc, load_breast_cancer, run_time, train_test_split
 from imylu.ensemble.gbdt_classifier import GradientBoostingClassifier
 
