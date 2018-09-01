@@ -15,11 +15,11 @@ sys.path.append(os.path.abspath(".."))
 from random import randint
 from time import time
 from imylu.utils import gen_data, get_euclidean_distance
-from imylu.tree.kd_tree import KDTree
+from imylu.neighbors.kd_tree import KDTree
 
 
 def exhausted_search(tree, Xi):
-    """[summary]
+    """Linear search the nearest neighbour.
 
     Arguments:
         tree {KD Tree}
