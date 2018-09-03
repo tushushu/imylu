@@ -23,13 +23,12 @@ class Node(object):
 
 
 class KDTree(object):
-    """KDTree class to improve search efficiency in KNN.
-
-    Attributes:
-        root: the root node of KDTree
-    """
-
     def __init__(self):
+        """KDTree class to improve search efficiency in KNN.
+
+        Attributes:
+            root: the root node of KDTree
+        """
         self.root = Node()
 
     def __str__(self):
