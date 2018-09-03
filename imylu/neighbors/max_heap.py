@@ -27,7 +27,7 @@ class MaxHeap(object):
         self.size = 0
 
     def __str__(self):
-        item_values = str(map(self.fn, self.items))
+        item_values = str([self.fn(self.items[i]) for i in range(self.size)])
         return "Size: %d\nMax size: %d\nItem_values: %s\n" % (self.size, self.max_size, item_values)
 
     def value(self, idx):
@@ -39,8 +39,12 @@ class MaxHeap(object):
         Returns:
             float
         """
-
-        return self.fn(self.items[idx])
+        item = self.items[idx]
+        if item is None:
+            ret = -float('inf')
+        else:
+            ret = self.fn(item)
+        return ret
 
     def add(self, item):
         """Add a new item to the MaxHeap.
@@ -62,10 +66,12 @@ class MaxHeap(object):
         """
 
         assert self.size > 0, "Cannot pop item! The MaxHeap is empty!"
+        ret = self.items[0]
         self.items[0] = self.items[self.size - 1]
+        self.items[self.size - 1] = None
         self.size -= 1
         self._shift_down(0)
-        return self.items[0]
+        return ret
 
     def _shift_up(self, idx):
         """Shift up item unitl its parent is greater than the item.
@@ -75,9 +81,10 @@ class MaxHeap(object):
         """
 
         parent = (idx - 1) // 2
-        while parent > 0 and self.value(parent) < self.value(idx):
+        while parent >= 0 and self.value(parent) < self.value(idx):
             self.items[parent], self.items[idx] = self.items[idx], self.items[parent]
-            idx, parent = parent, (idx - 1) // 2
+            idx = parent
+            parent = (idx - 1) // 2
 
     def _shift_down(self, idx):
         """Shift down item until its children are less than the item.
@@ -87,9 +94,12 @@ class MaxHeap(object):
         """
 
         child = (idx + 1) * 2 - 1
-        while child < self.size and self.value(idx) < self.value(child):
+        while child < self.size and (
+                self.value(idx) < self.value(child) or
+                self.value(idx) < self.value(child + 1)):
             # Compare the left child and the right child and get the index of the larger one.
-            if child + 1 < self.size and self.value(child + 1) > self.value(child):
+            if self.value(child + 1) > self.value(child):
                 child += 1
             self.items[idx], self.items[child] = self.items[child], self.items[idx]
-            idx, child = child, (idx + 1) * 2 - 1
+            idx = child
+            child = (idx + 1) * 2 - 1
