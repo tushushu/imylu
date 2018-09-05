@@ -73,17 +73,17 @@ class GradientBoostingClassifier(GradientBoostingBase):
 
 
         1st derivative:
-        Loss'(yi, Fm(xi)) = Sum(yi - Sigmoid(Fm(xi)))
+        Loss'(yi, Fm(xi)) = Sum(yi - p)
 
         2nd derivative:
-        Loss"(yi, Fm(xi)) = Sum((Fm(xi) - 1) * Fm(xi))
+        Loss"(yi, Fm(xi)) = Sum((p - 1) * p)
 
         So,
         Loss'(yi, Fm(xi)) = Loss'(yi, Fm-1(xi) + fm(xi))
         = Loss'(yi, Fm-1(xi)) + Loss"(yi, Fm-1(xi)) *  fm(xi) = 0
         fm(xi) = - Loss'(yi, Fm-1(xi)) / Loss"(yi, Fm-1(xi))
-        fm(xi) = Sum(yi - Sigmoid(Fm-1(xi))) / Sum((1 - Fm-1(xi)) * Fm-1(xi))
-        fm(xi) = Sum(residual_i) / Sum((1 - Fm-1(xi)) * Fm-1(xi))
+        fm(xi) = Sum(yi - p) / Sum((1 - p) * p)
+        fm(xi) = Sum(residual_i) / Sum((1 - p) * p)
         ----------------------------------------------------------------------------------------
 
         Arguments:
