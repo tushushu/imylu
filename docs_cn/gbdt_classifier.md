@@ -2,9 +2,9 @@
 提到GBDT分类相信大家应该都不会觉得陌生（不陌生你点进来干嘛[捂脸]），本文就GBDT分类的基本原理进行讲解，并手把手、肩并肩地带您实现这一算法。
 
 完整实现代码请参考本人的p...哦不是...github：
-https://github.com/tushushu/imylu/blob/master/imylu/ensemble/gbdt_base.py
-https://github.com/tushushu/imylu/blob/master/imylu/ensemble/gbdt_classifier.py
-https://github.com/tushushu/imylu/blob/master/examples/gbdt_classifier_example.py
+[gbdt_base.py](https://github.com/tushushu/imylu/blob/master/imylu/ensemble/gbdt_base.py)
+[gbdt_classifier.py](https://github.com/tushushu/imylu/blob/master/imylu/ensemble/gbdt_classifier.py)
+[gbdt_classifier_example.py](https://github.com/tushushu/imylu/blob/master/examples/gbdt_classifier_example.py)
 
 
 # 1. 原理篇
@@ -13,9 +13,9 @@ https://github.com/tushushu/imylu/blob/master/examples/gbdt_classifier_example.p
 ## 1.1 温故知新
 GBDT分类只是在GBDT回归上做了一点点改造，而GBDT分类又是建立在回归树的基础上的。
 之前写过一篇GBDT回归的文章，链接如下：
-https://zhuanlan.zhihu.com/p/43477845
+[GBDT回归的原理与Python实现](https://www.cnblogs.com/lixiaoxiaowen/articles/9598093.html)
 之前写过一篇回归树的文章，链接如下：
-https://zhuanlan.zhihu.com/p/41688007
+[回归树的原理与Python实现](https://www.cnblogs.com/lixiaoxiaowen/articles/9597983.html)
 
 ## 1.2 Sigmoid函数
 如果对逻辑回归或者神经网络有所了解的话，那么对Sigmoid函数应该不会感到陌生，它的函数表达式是：  
@@ -148,7 +148,7 @@ $f_m(X) = \Large\frac{\sum_{i=0}^{m}(y_i-p_i)}{\sum_{i=0}^{m}p_i * (1-p_i)}$
 本人用全宇宙最简单的编程语言——Python实现了GBDT分类算法，没有依赖任何第三方库，便于学习和使用。简单说明一下实现过程，更详细的注释请参考本人github上的代码。
 ## 2.1 导入回归树类
 回归树是我之前已经写好的一个类，在之前的文章详细介绍过，代码请参考：
-https://github.com/tushushu/imylu/blob/master/imylu/tree/regression_tree.py
+[regression_tree.py](https://github.com/tushushu/imylu/blob/master/imylu/tree/regression_tree.py)
 ```Python
 from ..tree.regression_tree import RegressionTree
 ```
@@ -312,11 +312,11 @@ def main():
 ```
 ## 3.2 效果展示
 最终准确度93.082%，运行时间14.9秒，效果还算不错~
-![avatar](https://github.com/tushushu/imylu/blob/master/pic/gbdt_classifier.PNG)
+![gbdt_classifier.png](https://github.com/tushushu/imylu/blob/master/pic/gbdt_classifier.png)
 
 ## 3.3 工具函数
 本人自定义了一些工具函数，可以在github上查看
-https://github.com/tushushu/imylu/blob/master/imylu/utils.py
+[utils.py](https://github.com/tushushu/imylu/blob/master/imylu/utils.py)
 1. run_time - 测试函数运行时间
 2. load_breast_cancer - 加载乳腺癌数据
 3. train_test_split - 拆分训练集、测试集

@@ -2,9 +2,9 @@
 提到GBDT回归相信大家应该都不会觉得陌生（不陌生你点进来干嘛[捂脸]），本文就GBDT回归的基本原理进行讲解，并手把手、肩并肩地带您实现这一算法。
 
 完整实现代码请参考本人的p...哦不是...github：
-https://github.com/tushushu/imylu/blob/master/imylu/ensemble/gbdt_base.py
-https://github.com/tushushu/imylu/blob/master/imylu/ensemble/gbdt_regressor.py
-https://github.com/tushushu/imylu/blob/master/examples/gbdt_regressor_example.py
+[gbdt_base.py](https://github.com/tushushu/imylu/blob/master/imylu/ensemble/gbdt_base.py)
+[gbdt_regressor.py](https://github.com/tushushu/imylu/blob/master/imylu/ensemble/gbdt_regressor.py)
+[gbdt_regressor_example.py](https://github.com/tushushu/imylu/blob/master/examples/gbdt_regressor_example.py)
 
 
 # 1. 原理篇
@@ -12,7 +12,7 @@ https://github.com/tushushu/imylu/blob/master/examples/gbdt_regressor_example.py
 
 ## 1.1 温故知新
 回归树是GBDT的基础，之前的一篇文章曾经讲过回归树的原理和实现。链接如下：
-https://zhuanlan.zhihu.com/p/41688007
+[回归树的原理与Python实现](https://www.cnblogs.com/lixiaoxiaowen/articles/9597983.html)
 
 ## 1.2 预测年龄
 仍然以预测同事年龄来举例，从《回归树》那篇文章中我们可以知道，如果需要通过一个常量来预测同事的年龄，平均值是最佳选择之一。
@@ -83,7 +83,7 @@ $f_m(X) = \Large\frac{1}{n}\normalsize\sum_{i=0}^m(y_i - F_{m-1}(x_i))$
 本人用全宇宙最简单的编程语言——Python实现了GBDT回归算法，没有依赖任何第三方库，便于学习和使用。简单说明一下实现过程，更详细的注释请参考本人github上的代码。
 ## 2.1 导入回归树类
 回归树是我之前已经写好的一个类，在之前的文章详细介绍过，代码请参考：
-https://github.com/tushushu/imylu/blob/master/imylu/tree/regression_tree.py
+[regression_tree.py](https://github.com/tushushu/imylu/blob/master/imylu/tree/regression_tree.py)
 ```Python
 from ..tree.regression_tree import RegressionTree
 ```
@@ -181,11 +181,11 @@ def main():
 ```
 ## 3.2 效果展示
 最终拟合优度0.851，运行时间5.0秒，效果还算不错~
-![avatar](https://github.com/tushushu/imylu/blob/master/pic/gbdt_regressor.PNG)
+![gbdt_regressor.png](https://github.com/tushushu/imylu/blob/master/pic/gbdt_regressor.png)
 
 ## 3.3 工具函数
 本人自定义了一些工具函数，可以在github上查看
-https://github.com/tushushu/imylu/blob/master/imylu/utils.py
+[utils.py](https://github.com/tushushu/imylu/blob/master/imylu/utils.py)
 1. run_time - 测试函数运行时间
 2. load_boston_house_prices - 加载波士顿房价数据
 3. train_test_split - 拆分训练集、测试集
