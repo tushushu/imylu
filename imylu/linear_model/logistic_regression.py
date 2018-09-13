@@ -5,12 +5,12 @@
 @Last Modified by: tushushu
 @Last Modified time: 2018-07-05 16:41:03
 """
-from .linear_regression import LinearRegression
+from .regression_base import RegressionBase
 from ..utils import sigmoid
 
 
-class LogisticRegression(LinearRegression):
-    """Logistic regression class
+class LogisticRegression(RegressionBase):
+    """Logistic regression class.
 
     Attributes:
         bias: b
