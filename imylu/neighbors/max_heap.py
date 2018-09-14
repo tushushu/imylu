@@ -32,6 +32,12 @@ class MaxHeap(object):
 
     @property
     def full(self):
+        """If the heap is full.
+
+        Returns:
+            bool
+        """
+
         return self.size == self.max_size
 
     def value(self, idx):
