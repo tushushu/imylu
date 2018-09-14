@@ -38,6 +38,13 @@ def is_valid(heap):
 
 def exhausted_search(nums, k):
     """Linear search the top k smallest elements.
+
+    Arguments:
+        nums {list} -- 1d list with int or float.
+        k {int}
+
+    Returns:
+        list -- Top k smallest elements.
     """
 
     rets = []
@@ -46,15 +53,9 @@ def exhausted_search(nums, k):
     val = float("inf")
     for _ in range(k):
         for i, num in enumerate(nums):
-            if num < val:
-                flag = True
-                for idx in idxs:
-                    if idx == i:
-                        flag = False
-                        break
-                if flag:
-                    key = i
-                    val = num
+            if num < val and i not in idxs:
+                key = i
+                val = num
         idxs.append(key)
         rets.append(val)
         val = float("inf")

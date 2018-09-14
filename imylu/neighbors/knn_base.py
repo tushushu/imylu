@@ -11,16 +11,42 @@ from ..utils import get_euclidean_distance
 
 
 class KNeighborsBase(object):
+    """KNN base class.
+
+    Attributes:
+        k_neighbors {int}: Learning rate.
+        trees {list}: 1d list with RegressionTree objects.
+    """
+
     def __init__(self):
         self.k_neighbors = None
         self.tree = None
 
     def fit(self, X, y, k_neighbors=3):
+        """Build KNN model.
+
+        Arguments:
+            X {list} -- 2d list with int or float.
+            y {list} -- 1d list object with int or float.
+
+        Keyword Arguments:
+            k_neighbors {int} -- Number of neighbors to search. (default: {3})
+        """
+
         self.k_neighbors = k_neighbors
         self.tree = KDTree()
         self.tree.build_tree(X, y)
 
     def _knn_search(self, Xi):
+        """K nearest neighbours search and backtracking.
+
+        Arguments:
+            Xi {list} -- 1d list with int or float.
+
+        Returns:
+            list -- K nearest nodes to Xi.
+        """
+
         tree = self.tree
         heap = MaxHeap(self.k_neighbors, lambda x: x.dist)
         # The path from root to a leaf node when searching Xi.

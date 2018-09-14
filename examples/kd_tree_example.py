@@ -5,7 +5,6 @@
 @Last Modified by:   tushushu
 @Last Modified time: 2018-08-22 10:37:56
 """
-
 import os
 os.chdir(os.path.split(os.path.realpath(__file__))[0])
 
@@ -74,7 +73,7 @@ def main():
         nd2 = exhausted_search(tree, Xi)
         run_time_2 += time() - start
         ret2 = get_euclidean_distance(Xi, nd2.split[0])
-        
+
         # Compare result
         assert ret1 == ret2, "target:%s\nrestult1:%s\nrestult2:%s\ntree:\n%s" % (
             str(Xi), str(nd1), str(nd2), str(tree))
