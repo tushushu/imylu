@@ -30,6 +30,10 @@ class MaxHeap(object):
         item_values = str([self.fn(self.items[i]) for i in range(self.size)])
         return "Size: %d\nMax size: %d\nItem_values: %s\n" % (self.size, self.max_size, item_values)
 
+    @property
+    def full(self):
+        return self.size == self.max_size
+
     def value(self, idx):
         """Caculate the value of item.
 
@@ -53,10 +57,14 @@ class MaxHeap(object):
             item {object} -- The item to add.
         """
 
-        assert self.size < self.max_size, "Cannot add item! The MaxHeap is full!"
-        self.items[self.size] = item
-        self.size += 1
-        self._shift_up(self.size - 1)
+        if self.full:
+            if self.fn(item) < self.value(0):
+                self.items[0] = item
+                self._shift_down(0)
+        else:
+            self.items[self.size] = item
+            self.size += 1
+            self._shift_up(self.size - 1)
 
     def pop(self):
         """Pop the top item out of the heap.
@@ -94,12 +102,14 @@ class MaxHeap(object):
         """
 
         child = (idx + 1) * 2 - 1
-        while child < self.size and (
-                self.value(idx) < self.value(child) or
-                self.value(idx) < self.value(child + 1)):
+        while child < self.size:
             # Compare the left child and the right child and get the index of the larger one.
-            if self.value(child + 1) > self.value(child):
+            if child + 1 < self.size and self.value(child + 1) > self.value(child):
                 child += 1
-            self.items[idx], self.items[child] = self.items[child], self.items[idx]
-            idx = child
-            child = (idx + 1) * 2 - 1
+            # Swap the items, if the value of father is less than child.
+            if self.value(idx) < self.value(child):
+                self.items[idx], self.items[child] = self.items[child], self.items[idx]
+                idx = child
+                child = (idx + 1) * 2 - 1
+            else:
+                break

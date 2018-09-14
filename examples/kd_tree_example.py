@@ -68,11 +68,13 @@ def main():
         nd1 = tree.nearest_neighbour_search(Xi)
         run_time_1 += time() - start
         ret1 = get_euclidean_distance(Xi, nd1.split[0])
+
         # Exhausted search
         start = time()
         nd2 = exhausted_search(tree, Xi)
         run_time_2 += time() - start
         ret2 = get_euclidean_distance(Xi, nd2.split[0])
+        
         # Compare result
         assert ret1 == ret2, "target:%s\nrestult1:%s\nrestult2:%s\ntree:\n%s" % (
             str(Xi), str(nd1), str(nd2), str(tree))
