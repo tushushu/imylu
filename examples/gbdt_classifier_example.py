@@ -17,7 +17,6 @@ from imylu.ensemble.gbdt_classifier import GradientBoostingClassifier
 
 @run_time
 def main():
-
     print("Tesing the accuracy of GBDT classifier...")
     # Load data
     X, y = load_breast_cancer()

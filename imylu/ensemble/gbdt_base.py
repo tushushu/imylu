@@ -15,10 +15,10 @@ class GradientBoostingBase(object):
         http://statweb.stanford.edu/~jhf/ftp/stobst.pdf
 
         Attributes:
-            trees {list}: 1d list with RegressionTree objects
-            lr {float}: Learning rate
-            init_val {float}: Initial value to predict
-            fn {function}: A function wrapper for prediction
+            trees {list}: 1d list with RegressionTree objects.
+            lr {float}: Learning rate.
+            init_val {float}: Initial value to predict.
+            fn {function}: A function wrapper for prediction.
         """
 
         self.trees = None
@@ -27,10 +27,10 @@ class GradientBoostingBase(object):
         self.fn = lambda x: NotImplemented
 
     def _get_init_val(self, y):
-        """Calculate the initial prediction of y
+        """Calculate the initial prediction of y.
 
         Arguments:
-            y {list} -- 1D list with int or float
+            y {list} -- 1D list with int or float.
 
         Returns:
             NotImplemented
@@ -39,10 +39,10 @@ class GradientBoostingBase(object):
         return NotImplemented
 
     def _match_node(self, row, tree):
-        """Find the leaf node that the sample belongs to
+        """Find the leaf node that the sample belongs to.
 
         Arguments:
-            row {list} -- 1D list with int or float
+            row {list} -- 1D list with int or float.
             tree {RegressionTree}
 
         Returns:
@@ -58,13 +58,13 @@ class GradientBoostingBase(object):
         return nd
 
     def _get_leaves(self, tree):
-        """Gets all leaf nodes of a regression tree
+        """Gets all leaf nodes of a regression tree.
 
         Arguments:
             tree {RegressionTree}
 
         Returns:
-            list -- 1D list with regression_tree.Node objects
+            list -- 1D list with regression_tree.Node objects.
         """
 
         nodes = []
@@ -81,12 +81,12 @@ class GradientBoostingBase(object):
         return nodes
 
     def _divide_regions(self, tree, nodes, X):
-        """Divide indexes of the samples into corresponding leaf nodes of the regression tree
+        """Divide indexes of the samples into corresponding leaf nodes of the regression tree.
 
         Arguments:
             tree {RegressionTree}
-            nodes {list} -- 1D list with regression_tree.Node objects
-            X {list} -- 2d list object with int or float
+            nodes {list} -- 1D list with regression_tree.Node objects.
+            X {list} -- 2d list object with int or float.
 
         Returns:
             dict -- e.g. {node1: [1, 3, 5], node2: [2, 4, 6]...}
@@ -99,10 +99,10 @@ class GradientBoostingBase(object):
         return regions
 
     def _get_score(self, idxs, y_hat, residuals):
-        """Calculate the regression tree leaf node value
+        """Calculate the regression tree leaf node value.
 
         Arguments:
-            idxs {list} -- 1D list with int
+            idxs {list} -- 1D list with int.
 
         Returns:
             NotImplemented
@@ -111,13 +111,13 @@ class GradientBoostingBase(object):
         return NotImplemented
 
     def _update_score(self, tree, X, y_hat, residuals):
-        """update the score of regression tree leaf node
+        """update the score of regression tree leaf node.
 
         Arguments:
             tree {RegressionTree}
-            X {list} -- 2d list with int or float
-            y_hat {list} -- 1d list with float
-            residuals {list} -- 1d list with float
+            X {list} -- 2d list with int or float.
+            y_hat {list} -- 1d list with float.
+            residuals {list} -- 1d list with float.
         """
 
         nodes = self._get_leaves(tree)
@@ -128,11 +128,11 @@ class GradientBoostingBase(object):
         tree._get_rules()
 
     def _get_residuals(self, y, y_hat):
-        """Update residuals for each iteration
+        """Update residuals for each iteration.
 
         Arguments:
-            y {list} -- 1d list with int or float
-            y_hat {list} -- 1d list with float
+            y {list} -- 1d list with int or float.
+            y_hat {list} -- 1d list with float.
 
         Returns:
             list -- residuals
@@ -144,16 +144,16 @@ class GradientBoostingBase(object):
         """Build a gradient boost decision tree.
 
         Arguments:
-            X {list} -- 2d list with int or float
-            y {list} -- 1d list object with int or float
-            n_estimators {int} -- number of trees
+            X {list} -- 2d list with int or float.
+            y {list} -- 1d list object with int or float.
+            n_estimators {int} -- number of trees.
             lr {float} -- Learning rate
             max_depth {int} -- The maximum depth of the tree.
             min_samples_split {int} -- The minimum number of samples required to split an internal node.
 
 
         Keyword Arguments:
-            subsample {float} -- Subsample rate, without replacement (default: {None})
+            subsample {float} -- Subsample rate, without replacement. (default: {None})
         """
 
         # Calculate the initial prediction of y
@@ -191,10 +191,10 @@ class GradientBoostingBase(object):
         """Auxiliary function of predict.
 
         Arguments:
-            Xi {list} -- 1D list with int or float
+            Xi {list} -- 1D list with int or float.
 
         Returns:
-            int or float -- prediction of yi
+            int or float -- prediction of yi.
         """
 
         # Sum y_hat with residuals of each tree and then calulate sigmoid value
@@ -204,7 +204,7 @@ class GradientBoostingBase(object):
         """Get the prediction of y.
 
         Arguments:
-            X {list} -- 2d list object with int or float
+            X {list} -- 2d list object with int or float.
 
         Returns:
             NotImplemented
