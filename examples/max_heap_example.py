@@ -15,6 +15,7 @@ from imylu.neighbors.max_heap import MaxHeap
 from imylu.utils import gen_data
 from random import randint
 from time import time
+from copy import copy
 
 
 def is_valid(heap):
@@ -31,8 +32,6 @@ def is_valid(heap):
     for i in range(1, heap.size):
         parent = (i - 1) // 2
         ret.append(heap.value(parent) >= heap.value(i))
-        if heap.value(parent) < heap.value(i):
-            print(parent, i, heap.value(parent), heap.value(i))
     return all(ret)
 
 
@@ -80,8 +79,13 @@ def main():
         start = time()
         for num in nums:
             heap.add(num)
-        ret1 = heap.items
+        ret1 = copy(heap.items)
         run_time_1 += time() - start
+
+        # Test pop method
+        while heap.size > 0:
+            heap.pop()
+            assert is_valid(heap), "Invalid heap!"
 
         # Exhausted search
         start = time()
