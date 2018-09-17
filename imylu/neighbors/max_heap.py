@@ -81,8 +81,8 @@ class MaxHeap(object):
 
         assert self.size > 0, "Cannot pop item! The MaxHeap is empty!"
         ret = self.items[0]
-        self.items[0] = self.items[self.size - 1]
-        self.items[self.size - 1] = None
+        self.items[0], self.items[self.size -
+                                  1] = self.items[self.size-1], self.items[0]
         self.size -= 1
         self._shift_down(0)
         return ret
@@ -119,3 +119,16 @@ class MaxHeap(object):
                 child = (idx + 1) * 2 - 1
             else:
                 break
+
+    def _is_valid(self):
+        """Validate a MaxHeap by comparing all the parents and its children.
+
+        Returns:
+            bool
+        """
+
+        ret = []
+        for i in range(1, self.size):
+            parent = (i - 1) // 2
+            ret.append(self.value(parent) >= self.value(i))
+        return all(ret)
