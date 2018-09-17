@@ -94,6 +94,7 @@ class MaxHeap(object):
             idx {int} -- Heap item's index.
         """
 
+        assert idx < self.size, "The parameter idx must be less than heap's size!"
         parent = (idx - 1) // 2
         while parent >= 0 and self.value(parent) < self.value(idx):
             self.items[parent], self.items[idx] = self.items[idx], self.items[parent]

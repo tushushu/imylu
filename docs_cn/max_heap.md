@@ -101,6 +101,7 @@ def pop(self):
 ## 2.6 元素上浮
 ```Python
 def _shift_up(self, idx):
+    assert idx < self.size, "The parameter idx must be less than heap's size!"
     parent = (idx - 1) // 2
     while parent >= 0 and self.value(parent) < self.value(idx):
         self.items[parent], self.items[idx] = self.items[idx], self.items[parent]
