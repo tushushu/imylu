@@ -143,15 +143,14 @@ def exhausted_search(nums, k):
     rets = []
     idxs = []
     key = None
-    val = float("inf")
     for _ in range(k):
+        val = float("inf")
         for i, num in enumerate(nums):
             if num < val and i not in idxs:
                 key = i
                 val = num
         idxs.append(key)
         rets.append(val)
-        val = float("inf")
     return rets
 ```
 

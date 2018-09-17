@@ -18,23 +18,6 @@ from time import time
 from copy import copy
 
 
-def is_valid(heap):
-    """Validate a MaxHeap by comparing all the parents and its children.
-
-    Arguments:
-        heap {MaxHeap}
-
-    Returns:
-        bool
-    """
-
-    ret = []
-    for i in range(1, heap.size):
-        parent = (i - 1) // 2
-        ret.append(heap.value(parent) >= heap.value(i))
-    return all(ret)
-
-
 def exhausted_search(nums, k):
     """Linear search the top k smallest elements.
 
@@ -49,15 +32,15 @@ def exhausted_search(nums, k):
     rets = []
     idxs = []
     key = None
-    val = float("inf")
     for _ in range(k):
+        val = float("inf")
         for i, num in enumerate(nums):
             if num < val and i not in idxs:
                 key = i
                 val = num
         idxs.append(key)
         rets.append(val)
-        val = float("inf")
+        
     return rets
 
 
@@ -81,11 +64,6 @@ def main():
             heap.add(num)
         ret1 = copy(heap.items)
         run_time_1 += time() - start
-
-        # Test pop method
-        while heap.size > 0:
-            heap.pop()
-            assert is_valid(heap), "Invalid heap!"
 
         # Exhausted search
         start = time()
