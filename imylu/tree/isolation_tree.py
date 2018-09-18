@@ -37,9 +37,9 @@ class IsolationTree(object):
         Arguments:
             X {list} -- 2d list with int or float
             n_samples {int} -- Subsample size
-            max_depth {int} -- Maximum height of isolation tree
+            max_depth {int} -- Maximum depth of isolation tree
         """
-        self.height = 0
+        self.depth = 1
         # In case of n_samples is greater than n
         n = len(X)
         if n_samples > n:
@@ -88,14 +88,16 @@ class IsolationTree(object):
         m = len(X[0])
         n = len(X)
         # Initialize depth, node
-        depth = 0
-        nd = self.root
         # Randomly selected sample points into the root node of the tree
         idxs = sample(range(n), n_samples)
+        que = [(self.depth + 1, self.root, idxs)]
         # BFS
-        que = [(depth, nd, idxs)]
-        while que and que[0][0] <= max_depth:
+        while que:
             depth, nd, idxs = que.pop(0)
+            # Terminate loop if tree depth is more than max_depth
+            if depth > max_depth:
+                depth -= 1
+                break
             # Stop split if X cannot be splitted
             feature = choice(range(m))
             split = self._get_split(X, idxs, feature)
@@ -111,8 +113,8 @@ class IsolationTree(object):
             # Put children of current node in que
             que.append((depth+1, nd.left, idxs_split[0]))
             que.append((depth+1, nd.right, idxs_split[1]))
-        # Update the height of IsolationTree
-        self.height = depth
+        # Update the depth of IsolationTree
+        self.depth = depth
 
     def _predict(self, Xi):
         """Auxiliary function of predict.

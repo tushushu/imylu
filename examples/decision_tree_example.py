@@ -24,7 +24,7 @@ def main():
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
     # Train model
     clf = DecisionTree()
-    clf.fit(X_train, y_train, max_depth=4)
+    clf.fit(X_train, y_train, max_depth=3)
     # Show rules
     clf.rules
     # Model accuracy

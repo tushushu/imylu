@@ -36,11 +36,11 @@ class DecisionTree(object):
 
         Attributes:
             root: the root node of DecisionTree
-            height: the height of DecisionTree
+            depth: the depth of DecisionTree
         """
 
         self.root = Node()
-        self.height = 0
+        self.depth = 1
         self._rules = None
 
     def _get_split_effect(self, X, y, idx, feature, split):
@@ -252,7 +252,7 @@ class DecisionTree(object):
                 rule_right.append([nd.feature, 1, nd.split])
                 que.append([nd.right, rule_right])
 
-    def fit(self, X, y, max_depth=3, min_samples_split=2):
+    def fit(self, X, y, max_depth=4, min_samples_split=2):
         """Build a decision tree classifier.
         Note:
             At least there's one column in X has more than 2 unique elements
@@ -263,20 +263,19 @@ class DecisionTree(object):
             y {list} -- 1d list object with int 0 or 1
 
         Keyword Arguments:
-            max_depth {int} -- The maximum depth of the tree. (default: {2})
+            max_depth {int} -- The maximum depth of the tree. (default: {4})
             min_samples_split {int} -- The minimum number of samples required to split an internal node (default: {2})
         """
 
         # Initialize with depth, node, indexes
-        depth = 0
-        nd = self.root
         idxs = list(range(len(y)))
+        que = [(self.depth + 1, self.root, idxs)]
         # Breadth-First Search
-        que = [(depth, nd, idxs)]
         while que:
             depth, nd, idxs = que.pop(0)
             # Terminate loop if tree depth is more than max_depth
-            if depth == max_depth:
+            if depth > max_depth:
+                depth -= 1
                 break
             # Stop split when number of node samples is less than min_samples_split or Node is 100% pure.
             if len(idxs) < min_samples_split or nd.prob == 1 or nd.prob == 0:
@@ -297,7 +296,7 @@ class DecisionTree(object):
             que.append((depth+1, nd.left, idxs_split[0]))
             que.append((depth+1, nd.right, idxs_split[1]))
         # Update tree depth and rules
-        self.height=depth
+        self.depth = depth
         self._get_rules()
 
     @property
@@ -306,7 +305,7 @@ class DecisionTree(object):
         """
 
         for i, rule in enumerate(self._rules):
-            literals, prob=rule
+            literals, prob = rule
             print("Rule %d: " % i, ' | '.join(
                 literals) + ' => y_hat %.4f' % prob)
 
@@ -321,12 +320,12 @@ class DecisionTree(object):
         """
 
         # Search Xi from the DecisionTree until Xi is at an leafnode
-        nd=self.root
+        nd = self.root
         while nd.left and nd.right:
             if Xi[nd.feature] < nd.split:
-                nd=nd.left
+                nd = nd.left
             else:
-                nd=nd.right
+                nd = nd.right
         return nd.prob
 
     def predict_prob(self, X):

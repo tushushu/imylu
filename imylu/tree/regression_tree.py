@@ -34,11 +34,11 @@ class RegressionTree(object):
 
         Attributes:
             root: the root node of DecisionTree
-            height: the height of DecisionTree
+            depth: the depth of DecisionTree
         """
 
         self.root = Node()
-        self.height = 0
+        self.depth = 1
         self._rules = None
 
     def _get_split_mse(self, X, y, idx, feature, split):
@@ -177,21 +177,20 @@ class RegressionTree(object):
             y {list} -- 1d list object with int or float
 
         Keyword Arguments:
-            max_depth {int} -- The maximum depth of the tree. (default: {2})
+            max_depth {int} -- The maximum depth of the tree. (default: {5})
             min_samples_split {int} -- The minimum number of samples required
             to split an internal node (default: {2})
         """
 
         # Initialize with depth, node, indexes
-        depth = 0
-        nd = self.root
         idxs = list(range(len(y)))
+        que = [(self.depth + 1, self.root, idxs)]
         # Breadth-First Search
-        que = [(depth, nd, idxs)]
         while que:
             depth, nd, idxs = que.pop(0)
             # Terminate loop if tree depth is more than max_depth
-            if depth == max_depth:
+            if depth > max_depth:
+                depth -= 1
                 break
             # Stop split when number of node samples is less than
             # min_samples_split or Node is 100% pure.
@@ -214,7 +213,7 @@ class RegressionTree(object):
             que.append((depth+1, nd.left, idxs_split[0]))
             que.append((depth+1, nd.right, idxs_split[1]))
         # Update tree depth and rules
-        self.height = depth
+        self.depth = depth
         self._get_rules()
 
     @property
