@@ -62,7 +62,7 @@ def main():
         start = time()
         for num in nums:
             heap.add(num)
-        ret1 = copy(heap.items)
+        ret1 = copy(heap._items)
         run_time_1 += time() - start
 
         # Exhausted search

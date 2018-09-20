@@ -20,7 +20,7 @@ class KNeighborsRegressor(KNeighborsBase):
         """
 
         heap = self._knn_search(Xi)
-        return sum(nd.split[1] for nd in heap.items) / self.k_neighbors
+        return sum(nd.split[1] for nd in heap._items) / self.k_neighbors
 
     def predict(self, X):
         """Get the prediction of y.

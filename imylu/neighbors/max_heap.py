@@ -16,19 +16,24 @@ class MaxHeap(object):
             fn {function} -- Function to caculate the values of items when comparing.
 
         Attributes:
-            items {object} -- The items in the MaxHeap instance.
+            _items {object} -- The items in the MaxHeap instance.
             size {int} -- The size of MaxHeap instance.
         """
 
         self.max_size = max_size
         self.fn = fn
 
-        self.items = [None] * max_size
+        self._items = [None] * max_size
         self.size = 0
 
     def __str__(self):
-        item_values = str([self.fn(self.items[i]) for i in range(self.size)])
-        return "Size: %d\nMax size: %d\nItem_values: %s\n" % (self.size, self.max_size, item_values)
+        item_values = str([self.fn(x) for x in self.items])
+        info = (self.size, self.max_size, self.items, item_values)
+        return "Size: %d\nMax size: %d\nItems: %s\nItem_values: %s\n" % info
+
+    @property
+    def items(self):
+        return self._items[:self.size]
 
     @property
     def full(self):
@@ -49,7 +54,7 @@ class MaxHeap(object):
         Returns:
             float
         """
-        item = self.items[idx]
+        item = self._items[idx]
         if item is None:
             ret = -float('inf')
         else:
@@ -65,10 +70,10 @@ class MaxHeap(object):
 
         if self.full:
             if self.fn(item) < self.value(0):
-                self.items[0] = item
+                self._items[0] = item
                 self._shift_down(0)
         else:
-            self.items[self.size] = item
+            self._items[self.size] = item
             self.size += 1
             self._shift_up(self.size - 1)
 
@@ -80,9 +85,9 @@ class MaxHeap(object):
         """
 
         assert self.size > 0, "Cannot pop item! The MaxHeap is empty!"
-        ret = self.items[0]
-        self.items[0], self.items[self.size -
-                                  1] = self.items[self.size-1], self.items[0]
+        ret = self._items[0]
+        self._items[0], self._items[self.size -
+                                    1] = self._items[self.size-1], self._items[0]
         self.size -= 1
         self._shift_down(0)
         return ret
@@ -97,7 +102,7 @@ class MaxHeap(object):
         assert idx < self.size, "The parameter idx must be less than heap's size!"
         parent = (idx - 1) // 2
         while parent >= 0 and self.value(parent) < self.value(idx):
-            self.items[parent], self.items[idx] = self.items[idx], self.items[parent]
+            self._items[parent], self._items[idx] = self._items[idx], self._items[parent]
             idx = parent
             parent = (idx - 1) // 2
 
@@ -115,7 +120,7 @@ class MaxHeap(object):
                 child += 1
             # Swap the items, if the value of father is less than child.
             if self.value(idx) < self.value(child):
-                self.items[idx], self.items[child] = self.items[child], self.items[idx]
+                self._items[idx], self._items[child] = self._items[child], self._items[idx]
                 idx = child
                 child = (idx + 1) * 2 - 1
             else:
