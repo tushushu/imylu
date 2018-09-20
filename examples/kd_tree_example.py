@@ -17,43 +17,37 @@ from imylu.utils import gen_data, get_euclidean_distance
 from imylu.neighbors.kd_tree import KDTree
 
 
-def exhausted_search(tree, Xi):
+def exhausted_search(X, Xi):
     """Linear search the nearest neighbour.
 
     Arguments:
-        tree {KD Tree}
-        Xi {list} -- [description]
+        X {list} -- 2d list with int or float.
+        Xi {list} -- 1d list with int or float.
 
     Returns:
-        Node -- [description]
+        list -- 1d list with int or float.r.
     """
 
     dist_best = float('inf')
-    nd_best = None
-    que = [tree.root]
-    while que:
-        nd = que.pop(0)
-        dist = get_euclidean_distance(Xi, nd.split[0])
+    row_best = None
+    for row in X:
+        dist = get_euclidean_distance(Xi, row)
         if dist < dist_best:
             dist_best = dist
-            nd_best = nd
-        if nd.left is not None:
-            que.append(nd.left)
-        if nd.right is not None:
-            que.append(nd.right)
-    return nd_best
+            row_best = row
+    return row_best
 
 
 def main():
     print("Testing KD Tree...")
-    test_times = 100
+    test_times = 1000
     run_time_1 = run_time_2 = 0
     for _ in range(test_times):
         # Generate dataset randomly
         low = 0
         high = 100
-        n_rows = 10000
-        n_cols = 3
+        n_rows = 1000
+        n_cols = 2
         X = gen_data(low, high, n_rows, n_cols)
         y = gen_data(low, high, n_rows)
         Xi = gen_data(low, high, n_cols)
@@ -64,19 +58,19 @@ def main():
 
         # KD Tree Search
         start = time()
-        nd1 = tree.nearest_neighbour_search(Xi)
+        nd = tree.nearest_neighbour_search(Xi)
         run_time_1 += time() - start
-        ret1 = get_euclidean_distance(Xi, nd1.split[0])
+        ret1 = get_euclidean_distance(Xi, nd.split[0])
 
         # Exhausted search
         start = time()
-        nd2 = exhausted_search(tree, Xi)
+        row = exhausted_search(X, Xi)
         run_time_2 += time() - start
-        ret2 = get_euclidean_distance(Xi, nd2.split[0])
+        ret2 = get_euclidean_distance(Xi, row)
 
         # Compare result
         assert ret1 == ret2, "target:%s\nrestult1:%s\nrestult2:%s\ntree:\n%s" % (
-            str(Xi), str(nd1), str(nd2), str(tree))
+            str(Xi), str(nd), str(row), str(tree))
     print("%d tests passed!" % test_times)
     print("KD Tree Search %.2f s" % run_time_1)
     print("Exhausted search %.2f s" % run_time_2)
