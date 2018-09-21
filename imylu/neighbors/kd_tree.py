@@ -13,6 +13,7 @@ class Node(object):
         """Node class to build tree leaves.
         """
 
+        self.father = None
         self.left = None
         self.right = None
         self.feature = None
@@ -21,17 +22,39 @@ class Node(object):
     def __str__(self):
         return "feature: %s, split: %s" % (str(self.feature), str(self.split))
 
+    @property
+    def brother(self):
+        """Find the node's brother.
+
+        Returns:
+            node -- Brother node.
+        """
+        if self.father is None:
+            ret = None
+        else:
+            if self.father.left is self:
+                ret = self.father.right
+            else:
+                ret = self.father.left
+        return ret
+
 
 class KDTree(object):
     def __init__(self):
-        """KDTree class to improve search efficiency in KNN.
+        """KD Tree class to improve search efficiency in KNN.
 
         Attributes:
-            root: the root node of KDTree
+            root: the root node of KDTree.
         """
         self.root = Node()
 
     def __str__(self):
+        """Show the relationship of each node in the KD Tree.
+
+        Returns:
+            str -- KDTree Nodes information.
+        """
+
         ret = []
         i = 0
         que = [(self.root, -1)]
@@ -49,10 +72,10 @@ class KDTree(object):
         """Calculate the median of a column of data.
 
         Arguments:
-            X {list} -- 2d list object with int or float
-            idxs {list} -- 1D list with int
-            feature {int} -- Feature number
-            sorted_idxs_2d {list} -- 2D list with int
+            X {list} -- 2d list object with int or float.
+            idxs {list} -- 1D list with int.
+            feature {int} -- Feature number.
+            sorted_idxs_2d {list} -- 2D list with int.
 
         Returns:
             list -- The row index corresponding to the median of this column.
@@ -73,9 +96,9 @@ class KDTree(object):
         """Calculate the variance of a column of data.
 
         Arguments:
-            X {list} -- 2d list object with int or float
-            idxs {list} -- 1D list with int
-            feature {int} -- Feature number
+            X {list} -- 2d list object with int or float.
+            idxs {list} -- 1D list with int.
+            feature {int} -- Feature number.
 
         Returns:
             float -- variance
@@ -94,8 +117,8 @@ class KDTree(object):
         """Choose the feature which has maximum variance.
 
         Arguments:
-            X {list} -- 2d list object with int or float
-            idxs {list} -- 1D list with int
+            X {list} -- 2d list object with int or float.
+            idxs {list} -- 1D list with int.
 
         Returns:
             feature number {int}
@@ -110,10 +133,10 @@ class KDTree(object):
         """Split indexes into two arrays according to split point.
 
         Arguments:
-            X {list} -- 2d list object with int or float
-            idx {list} -- indexes, 1d list object with int
-            feature {int} -- Feature number
-            median_idx {float} -- median index of the feature
+            X {list} -- 2d list object with int or float.
+            idx {list} -- Indexes, 1d list object with int.
+            feature {int} -- Feature number.
+            median_idx {float} -- Median index of the feature.
 
         Returns:
             list -- [left idx, right idx]
@@ -134,11 +157,11 @@ class KDTree(object):
         return idxs_split
 
     def build_tree(self, X, y):
-        """Build a kd tree.
+        """Build a KD Tree.
 
         Arguments:
-            X {list} -- 2d list object with int or float
-            y {list} -- 1d list object with int or float
+            X {list} -- 2d list object with int or float.
+            y {list} -- 1d list object with int or float.
         """
 
         # Scale the data for calculating variances
@@ -166,22 +189,23 @@ class KDTree(object):
             # Put children of current node in que
             if idxs_left != []:
                 nd.left = Node()
+                nd.left.father = nd
                 que.append((nd.left, idxs_left))
             if idxs_right != []:
                 nd.right = Node()
+                nd.right.father = nd
                 que.append((nd.right, idxs_right))
 
     def _search(self, Xi, nd):
-        """Search Xi from the KDTree until Xi is at an leafnode or empty node
+        """Search Xi from the KDTree until Xi is at an leafnode.
 
         Arguments:
-            Xi {list} -- 1d list with int or float
+            Xi {list} -- 1d list with int or float.
 
         Returns:
-            list -- list with searching path
+            node -- Leafnode.
         """
 
-        path = [nd]
         while nd.left or nd.right:
             if nd.left is None:
                 nd = nd.right
@@ -192,25 +216,7 @@ class KDTree(object):
                     nd = nd.left
                 else:
                     nd = nd.right
-            path.append(nd)
-        return path
-
-    def _get_brother(self, nd, nd_father):
-        """Find the node's brother
-
-        Arguments:
-            nd {node} -- Current node.
-            nd_father {node} -- Father node of current node.
-
-        Returns:
-            node -- Brother node.
-        """
-
-        if nd_father.left is nd:
-            ret = nd_father.right
-        else:
-            ret = nd_father.left
-        return ret
+        return nd
 
     def _get_eu_dist(self, Xi, nd):
         """Calculate euclidean distance between Xi and node.
@@ -251,36 +257,33 @@ class KDTree(object):
             node -- The nearest node to Xi.
         """
 
-        # The path from root to a leaf node when searching Xi.
-        path = self._search(Xi, self.root)
-        # Record which nodes' brohters has been visited already.
-        bro_flags = [1] + [0] * (len(path)-1)
-        que = list(zip(path, bro_flags))
+        # The leaf node after searching Xi.
         dist_best = float("inf")
-        nd_best = None
-        while 1:
-            nd_current, bro_flag = que.pop()
-            # Calculate distance between Xi and current node
-            dist_current = self._get_eu_dist(Xi, nd_current)
-            # Update best node and distance
-            if dist_current < dist_best:
-                dist_best = dist_current
-                nd_best = nd_current
-            # Calculate distance between Xi and father node's hyper plane.
-            if que:
-                nd_father = que[-1][0]
-            else:
-                break
-            # If it's necessary to visit brother node.
-            nd_brother = self._get_brother(nd_current, nd_father)
-            if bro_flag == 1 or nd_brother is None:
-                continue
-            # Check if it's possible that the other side of father node has closer child node.
-            dist_hyper = self._get_hyper_plane_dist(Xi, nd_father)
-            if dist_current > dist_hyper:
-                _path = self._search(Xi, nd_brother)
-                _bro_flags = [1] + [0] * (len(_path)-1)
-                que.extend(zip(_path, _bro_flags))
-            else:
-                continue
+        nd_best = self._search(Xi, self.root)
+        que = [(self.root, nd_best)]
+        while que:
+            nd_root, nd_cur = que.pop(0)
+            while 1:
+                # Calculate distance between Xi and current node
+                dist = self._get_eu_dist(Xi, nd_cur)
+                # Update best node, distance and visit flag.
+                if dist < dist_best:
+                    dist_best = dist
+                    nd_best = nd_cur
+                # Check if to break the loop.
+                if nd_cur is not nd_root:
+                    # If it's necessary to visit brother node.
+                    nd_bro = nd_cur.brother
+                    if nd_bro is not None:
+                        # Calculate distance between Xi and father node's hyper plane.
+                        dist_hyper = self._get_hyper_plane_dist(
+                            Xi, nd_cur.father)
+                        # Check if it's possible that the other side of father node has closer child node.
+                        if dist > dist_hyper:
+                            _nd_best = self._search(Xi, nd_bro)
+                            que.append((nd_bro, _nd_best))
+                    # Back track.
+                    nd_cur = nd_cur.father
+                else:
+                    break
         return nd_best

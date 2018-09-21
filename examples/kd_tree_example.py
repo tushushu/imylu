@@ -40,7 +40,7 @@ def exhausted_search(X, Xi):
 
 def main():
     print("Testing KD Tree...")
-    test_times = 1000
+    test_times = 100
     run_time_1 = run_time_2 = 0
     for _ in range(test_times):
         # Generate dataset randomly
