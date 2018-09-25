@@ -68,8 +68,8 @@ def main():
         ret2 = get_euclidean_distance(Xi, row)
 
         # Compare result
-        assert ret1 == ret2, "target:%s\nrestult1:%s\nrestult2:%s\ntree:\n%s" % (
-            str(Xi), str(nd), str(row), str(tree))
+        assert ret1 == ret2, "target:%s\nrestult1:%s\nrestult2:%s\ntree:\n%s" \
+            % (str(Xi), str(nd), str(row), str(tree))
     print("%d tests passed!" % test_times)
     print("KD Tree Search %.2f s" % run_time_1)
     print("Exhausted search %.2f s" % run_time_2)
