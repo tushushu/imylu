@@ -11,9 +11,7 @@ os.chdir(os.path.split(os.path.realpath(__file__))[0])
 import sys
 sys.path.append(os.path.abspath(".."))
 
-from random import randint
-from time import time
-from imylu.utils import gen_data, get_euclidean_distance
+from imylu.utils import get_euclidean_distance
 from imylu.neighbors.knn_base import KNeighborsBase
 
 

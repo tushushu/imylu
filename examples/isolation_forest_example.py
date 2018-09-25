@@ -23,7 +23,7 @@ def main():
     n = 100
     X = [[random() for _ in range(5)] for _ in range(n)]
     # Add outliers
-    X.append([10]*5)
+    X.append([10] * 5)
     # Train model
     clf = IsolationForest()
     clf.fit(X, n_samples=500)

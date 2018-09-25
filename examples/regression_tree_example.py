@@ -11,7 +11,8 @@ os.chdir(os.path.split(os.path.realpath(__file__))[0])
 import sys
 sys.path.append(os.path.abspath(".."))
 
-from imylu.utils import load_boston_house_prices, train_test_split, get_r2, run_time
+from imylu.utils import load_boston_house_prices, train_test_split, get_r2, \
+    run_time
 from imylu.tree.regression_tree import RegressionTree
 
 

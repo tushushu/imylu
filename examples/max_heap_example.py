@@ -13,7 +13,6 @@ sys.path.append(os.path.abspath(".."))
 
 from imylu.neighbors.max_heap import MaxHeap
 from imylu.utils import gen_data
-from random import randint
 from time import time
 from copy import copy
 
@@ -40,7 +39,7 @@ def exhausted_search(nums, k):
                 val = num
         idxs.append(key)
         rets.append(val)
-        
+
     return rets
 
 

@@ -11,7 +11,8 @@ os.chdir(os.path.split(os.path.realpath(__file__))[0])
 import sys
 sys.path.append(os.path.abspath(".."))
 
-from imylu.utils import get_acc, load_breast_cancer, min_max_scale, run_time, train_test_split
+from imylu.utils import get_acc, load_breast_cancer, min_max_scale, run_time, \
+    train_test_split
 from imylu.linear_model.logistic_regression import LogisticRegression
 
 

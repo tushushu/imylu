@@ -11,7 +11,8 @@ os.chdir(os.path.split(os.path.realpath(__file__))[0])
 import sys
 sys.path.append(os.path.abspath(".."))
 
-from imylu.utils import get_r2, load_boston_house_prices, run_time, train_test_split
+from imylu.utils import get_r2, load_boston_house_prices, run_time, \
+    train_test_split
 from imylu.ensemble.gbdt_regressor import GradientBoostingRegressor
 
 
