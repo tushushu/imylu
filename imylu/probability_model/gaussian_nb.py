@@ -54,7 +54,8 @@ class GaussianNB(object):
             float -- P(y_1)
         """
 
-        return 1 / sqrt(2*pi*variance) * exp(-(xij-avg)**2 / (2*variance))
+        return 1 / sqrt(2 * pi * variance) * \
+            exp(-(xij - avg)**2 / (2 * variance))
 
     def _get_avg_var(self, X, y, n_class):
         """Calculate the variance and mean of each column of X
@@ -143,11 +144,13 @@ class GaussianNB(object):
             X {list} -- 2d list object with int or float
 
         Keyword Arguments:
-            threshold {float} -- Prediction = 1 when probability >= threshold (default: {0.5})
+            threshold {float} -- Prediction = 1 when probability >= threshold
+            (default: {0.5})
 
         Returns:
             list -- 1d list object with float
         """
 
         # Choose the class which has the maximum probability
-        return [max(enumerate(y), key=lambda x: x[1])[0] for y in self.predict_prob(X)]
+        return [max(enumerate(y), key=lambda x: x[1])[0]
+                for y in self.predict_prob(X)]

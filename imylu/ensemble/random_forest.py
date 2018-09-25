@@ -53,7 +53,7 @@ class RandomForest(object):
                 n_features = min(m, max_features)
             else:
                 n_features = int(m ** 0.5)
-            features = sample(range(m), choice(range(1, n_features+1)))
+            features = sample(range(m), choice(range(1, n_features + 1)))
             # Subsample of X and y
             X_sub = [[X[i][j] for j in features] for i in idx]
             y_sub = [y[i] for i in idx]

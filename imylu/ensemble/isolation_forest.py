@@ -4,11 +4,11 @@
 @Date: 2018-06-15 11:19:44
 @Last Modified by: tushushu
 @Last Modified time: 2018-06-15 11:19:44
-The paper links: http://cs.nju.edu.cn/zhouzh/zhouzh.files/publication/tkdd11.pdf
+The paper links:
+http://cs.nju.edu.cn/zhouzh/zhouzh.files/publication/tkdd11.pdf
 """
 
-from random import randint
-from math import ceil, log
+from math import log
 from ..tree.isolation_tree import IsolationTree
 
 
@@ -33,9 +33,11 @@ class IsolationForest(object):
             X {list} -- 2d list with int or float
 
         Keyword Arguments:
-            n_samples {int} -- According to paper, set number of samples to 256 (default: {256})
+            n_samples {int} -- According to paper, set number of samples
+            to 256 (default: {256})
             max_depth {int} -- Tree height limit (default: {10})
-            n_trees {int} --  According to paper, set number of trees to 100 (default: {100})
+            n_trees {int} --  According to paper, set number of trees
+            to 100 (default: {100})
         """
 
         self.adjustment = self._get_adjustment(n_samples)

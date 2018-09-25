@@ -44,7 +44,8 @@ class DecisionTree(object):
         self._rules = None
 
     def _get_split_effect(self, X, y, idx, feature, split):
-        """List length, positive probability and rate when x is splitted into two pieces.
+        """List length, positive probability and rate when x is splitted into
+        two pieces.
 
         Arguments:
             X {list} -- 2d list object with int or float
@@ -167,7 +168,8 @@ class DecisionTree(object):
             feature {int} -- Feature number
 
         Returns:
-            tuple -- The best choice of gain, feature, split point and probability
+            tuple -- The best choice of gain, feature, split point
+            and probability
         """
         # Feature cannot be splitted if there's only one unique element.
         unique = set([X[i][feature] for i in idxs])
@@ -264,7 +266,8 @@ class DecisionTree(object):
 
         Keyword Arguments:
             max_depth {int} -- The maximum depth of the tree. (default: {4})
-            min_samples_split {int} -- The minimum number of samples required to split an internal node (default: {2})
+            min_samples_split {int} -- The minimum number of samples required
+            to split an internal node (default: {2})
         """
 
         # Initialize with depth, node, indexes
@@ -277,7 +280,8 @@ class DecisionTree(object):
             if depth > max_depth:
                 depth -= 1
                 break
-            # Stop split when number of node samples is less than min_samples_split or Node is 100% pure.
+            # Stop split when number of node samples is less than
+            # min_samples_split or Node is 100% pure.
             if len(idxs) < min_samples_split or nd.prob == 1 or nd.prob == 0:
                 continue
             # Stop split if no feature has more than 2 unique elements
@@ -293,8 +297,8 @@ class DecisionTree(object):
             nd.right = Node(prob[1])
             # Put children of current node in que
             idxs_split = list_split(X, idxs, feature, split)
-            que.append((depth+1, nd.left, idxs_split[0]))
-            que.append((depth+1, nd.right, idxs_split[1]))
+            que.append((depth + 1, nd.left, idxs_split[0]))
+            que.append((depth + 1, nd.right, idxs_split[1]))
         # Update tree depth and rules
         self.depth = depth
         self._get_rules()

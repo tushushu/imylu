@@ -84,11 +84,12 @@ class KDTree(object):
         n = len(idxs)
         # Ignoring the number of column elements is odd and even.
         k = n // 2
-        # Get all the indexes and elements of column j as tuples
+        # Get all the indexes and elements of column j as tuples.
         col = map(lambda i: (i, X[i][feature]), idxs)
-        # Sort the tuples by the values of elements and get the corresponding indexes.
+        # Sort the tuples by the elements' values
+        # and get the corresponding indexes.
         sorted_idxs = map(lambda x: x[0], sorted(col, key=lambda x: x[1]))
-        # Search the median value
+        # Search the median value.
         median_idx = list(sorted_idxs)[k]
         return median_idx
 
@@ -275,10 +276,12 @@ class KDTree(object):
                     # If it's necessary to visit brother node.
                     nd_bro = nd_cur.brother
                     if nd_bro is not None:
-                        # Calculate distance between Xi and father node's hyper plane.
+                        # Calculate distance between Xi and father node's
+                        # hyper plane.
                         dist_hyper = self._get_hyper_plane_dist(
                             Xi, nd_cur.father)
-                        # Check if it's possible that the other side of father node has closer child node.
+                        # Check if it's possible that the other side of father
+                        # node has closer child node.
                         if dist > dist_hyper:
                             _nd_best = self._search(Xi, nd_bro)
                             que.append((nd_bro, _nd_best))

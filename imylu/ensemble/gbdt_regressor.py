@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-@Author: tushushu 
-@Date: 2018-07-05 17:37:34 
-@Last Modified by: tushushu 
-@Last Modified time: 2018-07-05 17:37:34 
+@Author: tushushu
+@Date: 2018-07-05 17:37:34
+@Last Modified by: tushushu
+@Last Modified time: 2018-07-05 17:37:34
 """
 
-from random import choices
 from .gbdt_base import GradientBoostingBase
 
 
@@ -25,7 +24,8 @@ class GradientBoostingRegressor(GradientBoostingBase):
         dL / dc = -2 * (Sum(yi) / n - Sum(c) / n)
         dL / dc = -2 * (Mean(yi) - c)
 
-        Let derivative equals to zero, then we get initial constant value to minimize MSE:
+        Let derivative equals to zero, then we get initial constant value
+        to minimize MSE:
         -2 * (Mean(yi) - c) = 0
         c = Mean(yi)
         ----------------------------------------------------------------------------------------

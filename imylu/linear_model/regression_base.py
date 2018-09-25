@@ -69,8 +69,8 @@ class RegressionBase(object):
                 bias_grad_delta, weights_grad_delta = self._get_gradient_delta(
                     X[i], y[i])
                 bias_grad += bias_grad_delta
-                weights_grad = [w_grad + w_grad_d for w_grad,
-                                w_grad_d in zip(weights_grad, weights_grad_delta)]
+                weights_grad = [w_grad + w_grad_d for w_grad, w_grad_d
+                                in zip(weights_grad, weights_grad_delta)]
             # Update the bias and weight by gradient of current epoch
             self.bias += lr * bias_grad * 2 / m
             self.weights = [w + lr * w_grad * 2 / m for w,

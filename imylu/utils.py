@@ -77,7 +77,7 @@ def min_max_scale(X):
         x_min = [min(a, b) for a, b in zip(x_min, row)]
     ret = []
     for row in X:
-        tmp = [(x - b)/(a - b) for a, b, x in zip(x_max, x_min, row)]
+        tmp = [(x - b) / (a - b) for a, b, x in zip(x_max, x_min, row)]
         ret.append(tmp)
     return ret
 
@@ -90,7 +90,8 @@ def train_test_split(X, y, prob=0.7, random_state=None):
         y {list} -- 1d list object with int or float
 
     Keyword Arguments:
-        prob {float} -- Train data expected rate between 0 and 1 (default: {0.7})
+        prob {float} -- Train data expected rate between 0 and 1
+        (default: {0.7})
         random_state {int} -- Random seed (default: {None})
 
     Returns:
@@ -180,7 +181,7 @@ def get_r2(reg, X, y):
     sse = sum((yi_hat - yi) ** 2 for yi_hat, yi in zip(reg.predict(X), y))
     y_avg = sum(y) / len(y)
     sst = sum((yi - y_avg) ** 2 for yi in y)
-    r2 = 1 - sse/sst
+    r2 = 1 - sse / sst
     print("Test r2 is %.3f!" % r2)
     return r2
 
@@ -193,7 +194,8 @@ def sigmoid(x, x_min=-100):
         x {float}
 
     Keyword Arguments:
-        x_min {int} -- It would cause math range error when x < -709 (default: {-100})
+        x_min {int} -- It would cause math range error when x < -709
+        (default: {-100})
 
     Returns:
         float -- between 0 and 1
@@ -203,8 +205,8 @@ def sigmoid(x, x_min=-100):
 
 
 def split_list(X, idxs, feature, split, low, high):
-    """ Sort the list, if the element in the array is less than result index, 
-    the element value is less than the split. Otherwise, the element value is 
+    """ Sort the list, if the element in the array is less than result index,
+    the element value is less than the split. Otherwise, the element value is
     equal to or greater than the split.
 
     Arguments:
@@ -249,7 +251,8 @@ def list_split(X, idxs, feature, split):
     return ret
 
 
-def _test_split_list(iterations=10**4, max_n_samples=1000, max_n_features=10, max_element_value=100):
+def _test_split_list(iterations=10**4, max_n_samples=1000, max_n_features=10,
+                     max_element_value=100):
     """Test correctness and runtime efficiency of both split_list functions.
     _split_list takes about 2.4 times as split_list does.
 

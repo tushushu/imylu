@@ -81,7 +81,8 @@ class GradientBoostingBase(object):
         return nodes
 
     def _divide_regions(self, tree, nodes, X):
-        """Divide indexes of the samples into corresponding leaf nodes of the regression tree.
+        """Divide indexes of the samples into corresponding leaf nodes
+        of the regression tree.
 
         Arguments:
             tree {RegressionTree}
@@ -140,7 +141,8 @@ class GradientBoostingBase(object):
 
         return [yi - self.fn(y_hat_i) for yi, y_hat_i in zip(y, y_hat)]
 
-    def fit(self, X, y, n_estimators, lr, max_depth, min_samples_split, subsample=None):
+    def fit(self, X, y, n_estimators, lr, max_depth, min_samples_split,
+            subsample=None):
         """Build a gradient boost decision tree.
 
         Arguments:
@@ -149,11 +151,13 @@ class GradientBoostingBase(object):
             n_estimators {int} -- number of trees.
             lr {float} -- Learning rate
             max_depth {int} -- The maximum depth of the tree.
-            min_samples_split {int} -- The minimum number of samples required to split an internal node.
+            min_samples_split {int} -- The minimum number of samples required
+            to split an internal node.
 
 
         Keyword Arguments:
-            subsample {float} -- Subsample rate, without replacement. (default: {None})
+            subsample {float} -- Subsample rate without replacement.
+            (default: {None})
         """
 
         # Calculate the initial prediction of y
@@ -198,7 +202,8 @@ class GradientBoostingBase(object):
         """
 
         # Sum y_hat with residuals of each tree and then calulate sigmoid value
-        return self.fn(self.init_val + sum(self.lr * tree._predict(Xi) for tree in self.trees))
+        return self.fn(self.init_val +
+                       sum(self.lr * tree._predict(Xi) for tree in self.trees))
 
     def predict(self, X):
         """Get the prediction of y.

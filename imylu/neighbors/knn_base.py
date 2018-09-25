@@ -7,7 +7,6 @@
 """
 from .kd_tree import KDTree
 from .max_heap import MaxHeap
-from ..utils import get_euclidean_distance
 
 
 class KNeighborsBase(object):
@@ -52,7 +51,7 @@ class KNeighborsBase(object):
         # The path from root to a leaf node when searching Xi.
         path = tree._search(Xi, tree.root)
         # Record which nodes' brohters has been visited already.
-        bro_flags = [1] + [0] * (len(path)-1)
+        bro_flags = [1] + [0] * (len(path) - 1)
         que = list(zip(path, bro_flags))
         while 1:
             nd_cur, bro_flag = que.pop()
@@ -67,13 +66,15 @@ class KNeighborsBase(object):
                 break
             # If it's necessary to visit brother node.
             nd_bro = tree._get_brother(nd_cur, nd_dad)
-            if (bro_flag == 1 or nd_bro is None) and heap.size == heap.max_size:
+            if (bro_flag == 1 or nd_bro is None) and \
+                    heap.size == heap.max_size:
                 continue
-            # Check if it's possible that the other side of father node has closer child node.
+            # Check if it's possible that the other side of father node
+            # has closer child node.
             dist_hyper = tree._get_hyper_plane_dist(Xi, nd_dad)
             if nd_cur.dist > dist_hyper:
                 _path = tree._search(Xi, nd_bro)
-                _bro_flags = [1] + [0] * (len(_path)-1)
+                _bro_flags = [1] + [0] * (len(_path) - 1)
                 que.extend(zip(_path, _bro_flags))
             else:
                 continue

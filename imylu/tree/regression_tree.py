@@ -210,8 +210,8 @@ class RegressionTree(object):
             nd.right = Node(split_avg[1])
             # Put children of current node in que
             idxs_split = list_split(X, idxs, feature, split)
-            que.append((depth+1, nd.left, idxs_split[0]))
-            que.append((depth+1, nd.right, idxs_split[1]))
+            que.append((depth + 1, nd.left, idxs_split[0]))
+            que.append((depth + 1, nd.right, idxs_split[1]))
         # Update tree depth and rules
         self.depth = depth
         self._get_rules()

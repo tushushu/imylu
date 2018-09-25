@@ -5,8 +5,7 @@
 @Last Modified by: tushushu
 @Last Modified time: 2018-07-05 17:37:34
 """
-from math import exp, log
-from random import choices
+from math import log
 from ..utils import sigmoid
 from .gbdt_base import GradientBoostingBase
 
@@ -37,7 +36,8 @@ class GradientBoostingClassifier(GradientBoostingBase):
         dL / dz = Sum(yi * (1-p) - (1-yi)* p)
         dL / dz = Sum(yi) - Sum(1) * p
 
-        Let derivative equals to zero, then we get initial constant value to maximize Likelihood:
+        Let derivative equals to zero, then we get initial constant value
+        to maximize Likelihood:
         p = Mean(yi)
         1 / (1 + e**(-z)) = Mean(yi)
         z = Log(Sum(yi) / Sum(1-yi))
@@ -108,7 +108,8 @@ class GradientBoostingClassifier(GradientBoostingBase):
             X {list} -- 2d list object with int or float
 
         Keyword Arguments:
-            threshold {float} -- Prediction = 1 when probability >= threshold (default: {0.5})
+            threshold {float} -- Prediction = 1 when probability >= threshold
+            (default: {0.5})
 
         Returns:
             list -- 1d list object with float

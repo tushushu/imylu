@@ -13,7 +13,8 @@ class MaxHeap(object):
 
         Arguments:
             max_size {int} -- The maximum size of MaxHeap instance.
-            fn {function} -- Function to caculate the values of items when comparing.
+            fn {function} -- Function to caculate the values of items
+            when comparing items.
 
         Attributes:
             _items {object} -- The items in the MaxHeap instance.
@@ -86,8 +87,8 @@ class MaxHeap(object):
 
         assert self.size > 0, "Cannot pop item! The MaxHeap is empty!"
         ret = self._items[0]
-        self._items[0], self._items[self.size -
-                                    1] = self._items[self.size-1], self._items[0]
+        self._items[0], self._items[self.size - 1] = \
+            self._items[self.size - 1], self._items[0]
         self.size -= 1
         self._shift_down(0)
         return ret
@@ -99,10 +100,12 @@ class MaxHeap(object):
             idx {int} -- Heap item's index.
         """
 
-        assert idx < self.size, "The parameter idx must be less than heap's size!"
+        assert idx < self.size, \
+            "The parameter idx must be less than heap's size!"
         parent = (idx - 1) // 2
         while parent >= 0 and self.value(parent) < self.value(idx):
-            self._items[parent], self._items[idx] = self._items[idx], self._items[parent]
+            self._items[parent], self._items[idx] = \
+                self._items[idx], self._items[parent]
             idx = parent
             parent = (idx - 1) // 2
 
@@ -115,12 +118,15 @@ class MaxHeap(object):
 
         child = (idx + 1) * 2 - 1
         while child < self.size:
-            # Compare the left child and the right child and get the index of the larger one.
-            if child + 1 < self.size and self.value(child + 1) > self.value(child):
+            # Compare the left child and the right child and get the index
+            # of the larger one.
+            if child + 1 < self.size and \
+                    self.value(child + 1) > self.value(child):
                 child += 1
             # Swap the items, if the value of father is less than child.
             if self.value(idx) < self.value(child):
-                self._items[idx], self._items[child] = self._items[child], self._items[idx]
+                self._items[idx], self._items[child] = \
+                    self._items[child], self._items[idx]
                 idx = child
                 child = (idx + 1) * 2 - 1
             else:
