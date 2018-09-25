@@ -1,3 +1,8 @@
 {
-    "python.pythonPath": "C:\\ProgramData\\Miniconda3\\envs\\py36\\python.exe"
+    "python.pythonPath": "C:\\ProgramData\\Miniconda3\\envs\\py36\\python.exe",
+    "python.linting.flake8Enabled": true,
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Args": [
+        "--ignore=E402"
+    ]
 }
