@@ -1,203 +1,308 @@
 
-提到KD-Tree相信大家应该都不会觉得陌生（不陌生你点进来干嘛[捂脸]），大名鼎鼎的KNN算法就用到了大顶堆。本文就大顶堆的基本原理进行讲解，并手把手、肩并肩地带您实现这一算法。
+提到KD-Tree相信大家应该都不会觉得陌生（不陌生你点进来干嘛[捂脸]），大名鼎鼎的KNN算法就用到了KD-Tree。本文就KD-Tree的基本原理进行讲解，并手把手、肩并肩地带您实现这一算法。
 
 完整实现代码请参考本人的p...哦不是...github：  
-[max_heap.py](https://github.com/tushushu/imylu/blob/master/imylu/neighbors/max_heap.py)  
-[max_heap_example.py](https://github.com/tushushu/imylu/blob/master/examples/max_heap_example.py)  
+[kd_tree.py](https://github.com/tushushu/imylu/blob/master/imylu/neighbors/kd_tree.py)  
+[kd_tree_example.py](https://github.com/tushushu/imylu/blob/master/examples/kd_tree_example.py)  
 
 
 # 1. 原理篇
-我们用大白话讲讲大顶堆是怎么一回事。
+我们用大白话讲讲KD-Tree是怎么一回事。
 
-## 1.1 什么是“堆”
-在实际生活中，“堆”非常常见，比如工地旁边会有“土堆”，一些垃圾站会有“垃圾堆”。这些“堆”通常都是由一些相似的物体放在一起，形成上窄下宽的结构。
+## 1.1 线性查找
+假设数组A为[0, 6, 3, 8, 7, 4, 11]，有一个元素x，我们要找到数组A中距离x最近的元素，应该如何实现呢？比较直接的想法是用数组A中的每一个元素与x作差，差的绝对值最小的那个元素就是我们要找的元素。假设x = 2，那么用数组A中的所有元素与x作差得到[-2, 4, 1, 6, 5, 2, 9]，其中绝对值最小的是1，对应的元素是数组A中的3，所以3就是我们的查找结果。
 
-## 1.2 完全二叉树
-百度百科说：对于深度为K的，有n个节点的二叉树，当且仅当其每一个节点都与深度为K的满二叉树中编号从1至n的节点一一对应时称之为完全二叉树。
-这描述让人听起来有点懵逼，说得简单点，完全二叉树只有两种情况：  
-1. 完美二叉树，即每一层节点数都是上一层的二倍
-2. 完美二叉树扣掉若干个节点，"扣"的顺序是由下向上、由右向左
+## 1.2 二分查找
+如果我们有大量的元素要在数组A中进行查找，那么1.1的方式就显得不是那么高效了，如果数组A的长度为N，那么每次查找都要进行N次操作，即算法复杂度为O(N)。
 
-## 1.2 什么是“大顶堆”
-如下图所示，计算机中的“大顶堆”就是把数据放在一颗完全二叉树中，形状看上去跟我们提到的“土堆”，“垃圾堆”差不多。跟普通二叉树的区别就是，每个父节点的值都大于子节点的值，即儿子不如爹，所以用大顶堆来描述“富不过三代”再贴切不过。  
-![max_heap.png](https://github.com/tushushu/imylu/blob/master/pic/max_heap.png)
+1. 我们把数组A进行升序排列，得到[0, 3, 4, 6, 7, 8, 11]；  
+2. 令x = 2，数组中间的元素是6，2小于6，所以2只可能存在于6的左边，我们只需要在数组[0, 3, 4]中继续查找；  
+3. 左边的数组中间的元素是3，2小于3，所以2只可能存在于3的左边，即数组[0]；  
+4. 由于数组[0]的长度不足，查找结束；  
+5. x需要跟我们最终找到的0，以及倒数第二步找到的3进行比较，发现2离3更近，所以查找结果为3。  
+这种查找方法就是二分查找，其算法复杂度为O(Log2(N))。
 
-## 1.3 如何建立大顶堆
-建立一个大顶堆需要告诉计算机：这，就是大顶堆！然后要说明这个大顶堆目前的大小是0，未来不能超过多大。由于大顶堆是个完全二叉树，层序遍历的时候元素都是连续的，中间没有“空位”，所以很方便用数组来表示这棵树。那么我们就再开辟一个数组，用于存储大顶堆的元素。
+## 1.3 BST
+除了数组之外，有没有更直观的数据结构可以实现1.2的二分查找呢？答案就是二分查找树，全称Binary Search Tree，简称BST。把数组A建立成一个BST，结构如下图所示。我们只需要访问根节点，进行值比较来确定下一节点，如此循环往复直到访问到叶子节点为止。
+![bst.png](https://github.com/tushushu/imylu/blob/master/pic/bst.png)
 
-## 1.4 元素上浮
-之前说过大顶堆的特征是“儿子不如爹”，那么如果大顶堆的最后一个元素比爹还大，那么这个儿子就要升级当爹了，爹也要降级为儿子，听起来有点乱...这个过程就是元素的上浮过程。如果上浮一次之后，发现儿子还是比爹大，就继续上浮，直到上浮到爹比儿子大或者上浮到堆顶为止。
+## 1.4 多维数组
+现在我们把问题加点难度，假设数组B为[[6, 2], [6, 3], [3, 5], [5, 0], [1, 2], [4, 9], [8, 1]]，有一个元素x，我们要找到数组B中距离x最近的元素，应该如何实现呢？比较直接的想法是用数组B中的每一个元素与x求距离，距离最小的那个元素就是我们要找的元素。假设x = [1, 1]，那么用数组A中的所有元素与x求距离得到[5.0, 5.4, 4.5, 4.1, 1.0, 8.5, 7.0]，其中距离最小的是1，对应的元素是数组B中的[1, 2]，所以[1, 2]就是我们的查找结果。
 
-## 1.5 元素下沉
-同理，如果大顶堆的第一个元素比儿子还小，那么这个爹就要降级为儿子了，儿子也要升级当爹，听起来仍然有点乱...这个过程就是元素的下沉过程。如果下沉一次之后，发现爹还是比儿子小，就继续下沉，直到下沉到儿子比爹小或者下沉到堆底为止。
+## 1.5 再次陷入困境
+如果我们有大量的元素要在数组B中进行查找，那么1.4的方式就又显得不是那么高效了，如果数组B的长度为N，那么每次查找都要进行N次操作，即算法复杂度为O(N)。
 
-## 1.6 插入元素
-在大顶堆中插入一个元素，分为如下两种情况：  
-1. 堆未满，将元素放在当前最后一个元素的后面，然后执行上浮过程；
-2. 堆已满，如果该元素大于堆顶则无法插入，小于堆顶则替换堆顶，再执行下沉过程。
+## 1.2 什么是KD-Tree
+这时候已经没办法用BST，不过我们可以对BST做一些改变来适应多维数组的情况。当当当当~，这时候该KD-Tree出场了。废话不多说，先上图：
+![kd_tree.png](https://github.com/tushushu/imylu/blob/master/pic/kd_tree.png)
 
-## 1.7 推出顶部元素
-大顶堆的交换顶部元素A和最后一个元素B，堆的size减1，再将顶部的B执行下沉过程，最后返回元素A。注意，虽然堆的size减小了1，但实际上并没有元素被删除，数组长度也没有任何变化，被pop的元素只是被放在了数组中size之后的位置。
+## 1.3 如何建立KD-Tree
 
-## 1.8 大顶堆有什么用
-大顶堆的典型应用有3个：
-1. 堆排序降序，我们把顶点元素不停地pop出来，由于每次pop出的元素都是当时最大的，所以把pop的值收集起来就是一个降序数组；
-2. 堆排序升序，同方法1，由于顶点元素每次都被pop方法放在了数组的最后一个元素的位置，所以全部pop完毕之后堆中的数组已经是一个升序数组；
-3. 从N个元素中查找最小的K个元素，把N个元素逐个插入大小为K的大顶堆中，最后大顶堆中的元素就是我们要找的TOP K。
+## 1.4 特征选取
+
+## 1.5 分割点选择
+
+## 1.6 利用KD-Tree查找元素
+
 
 # 2. 实现篇
-本人用全宇宙最简单的编程语言——Python实现了大顶堆算法，没有依赖任何第三方库，便于学习和使用。简单说明一下实现过程，更详细的注释请参考本人github上的代码。
+本人用全宇宙最简单的编程语言——Python实现了KD-Tree算法，没有依赖任何第三方库，便于学习和使用。简单说明一下实现过程，更详细的注释请参考本人github上的代码。
 
-## 2.1 创建MaxHeap类
-初始化，存储最大元素数量、元素值计算函数、元素列表，当前元素数量。
+## 2.1 创建Node类
+初始化，存储父节点、左节点、右节点、特征及分割点。
 ```Python
-class MaxHeap(object):
-    def __init__(self, max_size, fn):
-        self.max_size = max_size
-        self.fn = fn
-        self.items = [None] * max_size
-        self.size = 0
+class Node(object):
+    def __init__(self):
+        self.father = None
+        self.left = None
+        self.right = None
+        self.feature = None
+        self.split = None
 ```
 
-## 2.2 获取大顶堆各个属性
+## 2.2 获取Node的各个属性
 ```Python
 def __str__(self):
-    item_values = str([self.fn(self.items[i]) for i in range(self.size)])
-    return "Size: %d\nMax size: %d\nItem_values: %s\n" % (self.size, self.max_size, item_values)
+    return "feature: %s, split: %s" % (str(self.feature), str(self.split))
 ```
 
-## 2.3 检查大顶堆是否已满
+## 2.3 获取Node的兄弟节点
 ```Python
 @property
-def full(self):
-    return self.size == self.max_size
-```
-
-## 2.4 添加元素
-```Python
-def add(self, item):
-    if self.full:
-        if self.fn(item) < self.value(0):
-            self.items[0] = item
-            self._shift_down(0)
+def brother(self):
+    if self.father is None:
+        ret = None
     else:
-        self.items[self.size] = item
-        self.size += 1
-        self._shift_up(self.size - 1)
-```
-
-## 2.5 推出顶部元素
-```Python
-def pop(self):
-    assert self.size > 0, "Cannot pop item! The MaxHeap is empty!"
-    ret = self.items[0]
-    self.items[0] = self.items[self.size - 1]
-    self.items[self.size - 1] = None
-    self.size -= 1
-    self._shift_down(0)
+        if self.father.left is self:
+            ret = self.father.right
+        else:
+            ret = self.father.left
     return ret
 ```
 
-## 2.6 元素上浮
+## 2.4 创建KDTree类
+初始化，存储根节点。
 ```Python
-def _shift_up(self, idx):
-    assert idx < self.size, "The parameter idx must be less than heap's size!"
-    parent = (idx - 1) // 2
-    while parent >= 0 and self.value(parent) < self.value(idx):
-        self.items[parent], self.items[idx] = self.items[idx], self.items[parent]
-        idx = parent
-        parent = (idx - 1) // 2
+class KDTree(object):
+    def __init__(self):
+        self.root = Node()
 ```
 
-## 2.7 元素下沉
+## 2.5 获取KDTree属性
+便于我们查看KD Tree的节点值，各个节点之间的关系。
 ```Python
-def _shift_down(self, idx):
-    child = (idx + 1) * 2 - 1
-    while child < self.size:
-        if child + 1 < self.size and self.value(child + 1) > self.value(child):
-            child += 1
-        if self.value(idx) < self.value(child):
-            self.items[idx], self.items[child] = self.items[child], self.items[idx]
-            idx = child
-            child = (idx + 1) * 2 - 1
+def __str__(self):
+    ret = []
+    i = 0
+    que = [(self.root, -1)]
+    while que:
+        nd, idx_father = que.pop(0)
+        ret.append("%d -> %d: %s" % (idx_father, i, str(nd)))
+        if nd.left is not None:
+            que.append((nd.left, i))
+        if nd.right is not None:
+            que.append((nd.right, i))
+        i += 1
+    return "\n".join(ret)
+```
+
+## 2.6 获取数组中位数的下标
+```Python
+def _get_median_idx(self, X, idxs, feature):
+    n = len(idxs)
+    k = n // 2
+    col = map(lambda i: (i, X[i][feature]), idxs)
+    sorted_idxs = map(lambda x: x[0], sorted(col, key=lambda x: x[1]))
+    median_idx = list(sorted_idxs)[k]
+    return median_idx
+```
+
+## 2.7 计算特征的方差
+```Python
+def _get_variance(self, X, idxs, feature):
+    n = len(idxs)
+    col_sum = col_sum_sqr = 0
+    for idx in idxs:
+        xi = X[idx][feature]
+        col_sum += xi
+        col_sum_sqr += xi ** 2
+    return col_sum_sqr / n - (col_sum / n) ** 2
+```
+
+## 2.8 选择特征
+取方差最大的的特征作为特征。
+```Python
+def _choose_feature(self, X, idxs):
+    m = len(X[0])
+    variances = map(lambda j: (
+        j, self._get_variance(X, idxs, j)), range(m))
+    return max(variances, key=lambda x: x[1])[0]
+```
+
+## 2.8 分割特征
+把大于、小于中位数的元素分别放到两个数组中。
+```Python
+def _split_feature(self, X, idxs, feature, median_idx):
+    idxs_split = [[], []]
+    split_val = X[median_idx][feature]
+    for idx in idxs:
+        if idx == median_idx:
+            continue
+        xi = X[idx][feature]
+        if xi < split_val:
+            idxs_split[0].append(idx)
         else:
-            break
+            idxs_split[1].append(idx)
+    return idxs_split
 ```
 
+## 2.9 建立KDTree
+使用广度优先搜索的方式建立KD Tree，注意要对X进行归一化。
+```Python
+def build_tree(self, X, y):
+    X_scale = min_max_scale(X)
+    nd = self.root
+    idxs = range(len(X))
+    que = [(nd, idxs)]
+    while que:
+        nd, idxs = que.pop(0)
+        n = len(idxs)
+        if n == 1:
+            nd.split = (X[idxs[0]], y[idxs[0]])
+            continue
+        feature = self._choose_feature(X_scale, idxs)
+        median_idx = self._get_median_idx(X, idxs, feature)
+        idxs_left, idxs_right = self._split_feature(X, idxs, feature, median_idx)
+        nd.feature = feature
+        nd.split = (X[median_idx], y[median_idx])
+        if idxs_left != []:
+            nd.left = Node()
+            nd.left.father = nd
+            que.append((nd.left, idxs_left))
+        if idxs_right != []:
+            nd.right = Node()
+            nd.right.father = nd
+            que.append((nd.right, idxs_right))
+```
+
+## 2.10 搜索辅助函数
+比较目标元素与当前结点的当前feature，访问对应的子节点。反复执行上述过程，直到到达叶子节点。
+```Python
+def _search(self, Xi, nd):
+    while nd.left or nd.right:
+        if nd.left is None:
+            nd = nd.right
+        elif nd.right is None:
+            nd = nd.left
+        else:
+            if Xi[nd.feature] < nd.split[0][nd.feature]:
+                nd = nd.left
+            else:
+                nd = nd.right
+    return nd
+```
+
+## 2.11 欧氏距离
+计算目标元素与某个节点的欧氏距离。
+```Python
+def _get_eu_dist(self, Xi, nd):
+    X0 = nd.split[0]
+    return get_euclidean_distance(Xi, X0)
+```
+
+## 2.12 超平面距离
+计算目标元素与某个节点所在超平面的欧氏距离。
+```Python
+def _get_hyper_plane_dist(self, Xi, nd):
+    j = nd.feature
+    X0 = nd.split[0]
+    return (Xi[j] - X0[j]) ** 2
+```
+
+## 2.13 搜索函数
+搜索KD Tree中与目标元素距离最近的节点，使用广度优先搜索来实现。
+```Python
+def nearest_neighbour_search(self, Xi):
+    dist_best = float("inf")
+    nd_best = self._search(Xi, self.root)
+    que = [(self.root, nd_best)]
+    while que:
+        nd_root, nd_cur = que.pop(0)
+        while 1:
+            dist = self._get_eu_dist(Xi, nd_cur)
+            if dist < dist_best:
+                dist_best = dist
+                nd_best = nd_cur
+            if nd_cur is not nd_root:
+                nd_bro = nd_cur.brother
+                if nd_bro is not None:
+                    dist_hyper = self._get_hyper_plane_dist(
+                        Xi, nd_cur.father)
+                    if dist > dist_hyper:
+                        _nd_best = self._search(Xi, nd_bro)
+                        que.append((nd_bro, _nd_best))
+                nd_cur = nd_cur.father
+            else:
+                break
+    return nd_best
+```
 
 # 3 效果评估
-## 3.1 heap有效性校验
-检查当前堆是否符合大顶堆的定义。
+## 3.1 线性查找
+用“笨”办法查找距离最近的元素。
 ```Python
-def is_valid(heap):
-    ret = []
-    for i in range(1, heap.size):
-        parent = (i - 1) // 2
-        ret.append(heap.value(parent) >= heap.value(i))
-    return all(ret)
-```
-
-## 3.2 线性查找
-用“笨”办法查找最小的k个元素。
-```Python
-def exhausted_search(nums, k):
-    rets = []
-    idxs = []
-    key = None
-    for _ in range(k):
-        val = float("inf")
-        for i, num in enumerate(nums):
-            if num < val and i not in idxs:
-                key = i
-                val = num
-        idxs.append(key)
-        rets.append(val)
-    return rets
+def exhausted_search(X, Xi):
+    dist_best = float('inf')
+    row_best = None
+    for row in X:
+        dist = get_euclidean_distance(Xi, row)
+        if dist < dist_best:
+            dist_best = dist
+            row_best = row
+    return row_best
 ```
 
 ## 3.3 main函数
 主函数分为如下几个部分：
 1. 随机生成数据集，即测试用例
-2. 建立大顶堆
+2. 建立KD-Tree
 3. 执行“笨”办法查找
-4. 比较“笨”办法和大顶堆的查找结果
+4. 比较“笨”办法和KD-Tree的查找结果
 ```Python
 def main():
-    # Test
-    print("Testing MaxHeap...")
+    print("Testing KD Tree...")
     test_times = 100
     run_time_1 = run_time_2 = 0
     for _ in range(test_times):
-        # Generate dataset randomly
         low = 0
-        high = 1000
-        n_rows = 10000
-        k = 100
-        nums = gen_data(low, high, n_rows)
+        high = 100
+        n_rows = 1000
+        n_cols = 2
+        X = gen_data(low, high, n_rows, n_cols)
+        y = gen_data(low, high, n_rows)
+        Xi = gen_data(low, high, n_cols)
 
-        # Build Max Heap
-        heap = MaxHeap(k, lambda x: x)
+        tree = KDTree()
+        tree.build_tree(X, y)
+
         start = time()
-        for num in nums:
-            heap.add(num)
-        ret1 = copy(heap.items)
+        nd = tree.nearest_neighbour_search(Xi)
         run_time_1 += time() - start
+        ret1 = get_euclidean_distance(Xi, nd.split[0])
 
-        # Exhausted search
         start = time()
-        ret2 = exhausted_search(nums, k)
+        row = exhausted_search(X, Xi)
         run_time_2 += time() - start
+        ret2 = get_euclidean_distance(Xi, row)
 
-        # Compare result
-        ret1.sort()
-        assert ret1 == ret2, "target:%s\nk:%d\nrestult1:%s\nrestult2:%s\n" % (
-            str(nums), k, str(ret1), str(ret2))
+        assert ret1 == ret2, "target:%s\nrestult1:%s\nrestult2:%s\ntree:\n%s" \
+            % (str(Xi), str(nd), str(row), str(tree))
     print("%d tests passed!" % test_times)
-    print("Max Heap Search %.2f s" % run_time_1)
+    print("KD Tree Search %.2f s" % run_time_1)
     print("Exhausted search %.2f s" % run_time_2)
 ```
 ## 3.2 效果展示
-针对top k查找随机生成了100个测试用例，线性查找用时8.76秒，大顶堆用时1.74秒，效果还算不错~
+针对top k查找随机生成了100个测试用例，线性查找用时8.76秒，KD-Tree用时1.74秒，效果还算不错~
 ![max_heap1.png](https://github.com/tushushu/imylu/blob/master/pic/max_heap1.png)
 
 
