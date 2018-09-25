@@ -32,11 +32,11 @@
 ## 1.5 再次陷入困境
 如果我们有大量的元素要在数组B中进行查找，那么1.4的方式就又显得不是那么高效了，如果数组B的长度为N，那么每次查找都要进行N次操作，即算法复杂度为O(N)。
 
-## 1.2 什么是KD-Tree
+## 1.6 什么是KD-Tree
 这时候已经没办法用BST，不过我们可以对BST做一些改变来适应多维数组的情况。当当当当~，这时候该KD-Tree出场了。废话不多说，先上图：  
 ![kd_tree.png](https://github.com/tushushu/imylu/blob/master/pic/kd_tree.png)
 
-## 1.3 如何建立KD-Tree
+## 1.7 如何建立KD-Tree
 您可能会问，刚在那张图的KD Tree又是如何建立的呢？
 很简单，只需要5步：  
 1. 建立根节点；
@@ -47,15 +47,15 @@
 
 不难看出，KD Tree的建立步骤跟BST是非常相似的，可以认为BST是KD Tree在一维数据上的特例。KD Tree的算法复杂度介于O(Log2(N))和O(N)之间。
 
-## 1.4 特征选取
+## 1.8 特征选取
 您可能还会问，为什么方差最大的适合作为特征呢？
 因为方差大，数据相对“分散”，选取该特征来对数据集进行分割，数据散得更“开”一些。
 
-## 1.5 分割点选择
+## 1.9 分割点选择
 您可能又要问，为什么选择中位数作为分割点呢？
 因为借鉴了BST，选取中位数，让左子树和右子树的数据数量一致，便于二分查找。
 
-## 1.6 利用KD-Tree查找元素
+## 1.10 利用KD-Tree查找元素
 KD Tree建好之后，接下来就要利用KD Tree对元素进行查找了。查找的方式在BST的基础上又增加了一些难度，如下：  
 1. 从根节点开始，根据目标在分割特征中是否小于或大于当前节点，向左或向右移动。
 2. 一旦算法到达叶节点，它就将节点点保存为“当前最佳”。
@@ -63,7 +63,7 @@ KD Tree建好之后，接下来就要利用KD Tree对元素进行查找了。查
 4. 如果当前节点比当前最佳节点更接近，那么它就成为当前最好的。
 5. 如果目标距离当前节点的父节点所在的将数据集分割为两份的超平面的距离更接近，说明当前节点的兄弟节点所在的子树有可能包含更近的点。因此需要对这个兄弟节点递归执行1-4步。
 
-## 1.7 超平面
+## 1.11 超平面
 所以什么是超平面呢，听起来让人一脸懵逼。  
 以[0, 2, 0], [1, 4, 3], [2, 6, 1]的举例：  
 1. 如果用第二维特征作为分割特征，那么从三个数据点中的对应特征取出2, 4, 6，中位数是4；
@@ -167,7 +167,7 @@ def _choose_feature(self, X, idxs):
     return max(variances, key=lambda x: x[1])[0]
 ```
 
-## 2.8 分割特征
+## 2.9 分割特征
 把大于、小于中位数的元素分别放到两个列表中。
 ```Python
 def _split_feature(self, X, idxs, feature, median_idx):
@@ -184,7 +184,7 @@ def _split_feature(self, X, idxs, feature, median_idx):
     return idxs_split
 ```
 
-## 2.9 建立KDTree
+## 2.10 建立KDTree
 使用广度优先搜索的方式建立KD Tree，注意要对X进行归一化。
 ```Python
 def build_tree(self, X, y):
@@ -213,7 +213,7 @@ def build_tree(self, X, y):
             que.append((nd.right, idxs_right))
 ```
 
-## 2.10 搜索辅助函数
+## 2.11 搜索辅助函数
 比较目标元素与当前结点的当前feature，访问对应的子节点。反复执行上述过程，直到到达叶子节点。
 ```Python
 def _search(self, Xi, nd):
@@ -230,7 +230,7 @@ def _search(self, Xi, nd):
     return nd
 ```
 
-## 2.11 欧氏距离
+## 2.12 欧氏距离
 计算目标元素与某个节点的欧氏距离，注意get_euclidean_distance这个函数没有进行开根号的操作，所以求出来的是欧氏距离的平方。
 ```Python
 def _get_eu_dist(self, Xi, nd):
@@ -238,7 +238,7 @@ def _get_eu_dist(self, Xi, nd):
     return get_euclidean_distance(Xi, X0)
 ```
 
-## 2.12 超平面距离
+## 2.13 超平面距离
 计算目标元素与某个节点所在超平面的欧氏距离，为了跟2.11保持一致，要加上平方。
 ```Python
 def _get_hyper_plane_dist(self, Xi, nd):
@@ -247,7 +247,7 @@ def _get_hyper_plane_dist(self, Xi, nd):
     return (Xi[j] - X0[j]) ** 2
 ```
 
-## 2.13 搜索函数
+## 2.14 搜索函数
 搜索KD Tree中与目标元素距离最近的节点，使用广度优先搜索来实现。
 ```Python
 def nearest_neighbour_search(self, Xi):
