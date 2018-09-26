@@ -29,7 +29,7 @@ class Node(object):
         Returns:
             node -- Brother node.
         """
-        if self.father is None:
+        if not self.father:
             ret = None
         else:
             if self.father.left is self:
@@ -61,9 +61,9 @@ class KDTree(object):
         while que:
             nd, idx_father = que.pop(0)
             ret.append("%d -> %d: %s" % (idx_father, i, str(nd)))
-            if nd.left is not None:
+            if nd.left:
                 que.append((nd.left, i))
-            if nd.right is not None:
+            if nd.right:
                 que.append((nd.right, i))
             i += 1
         return "\n".join(ret)
@@ -208,9 +208,9 @@ class KDTree(object):
         """
 
         while nd.left or nd.right:
-            if nd.left is None:
+            if not nd.left:
                 nd = nd.right
-            elif nd.right is None:
+            elif not nd.right:
                 nd = nd.left
             else:
                 if Xi[nd.feature] < nd.split[0][nd.feature]:
@@ -275,7 +275,7 @@ class KDTree(object):
                 if nd_cur is not nd_root:
                     # If it's necessary to visit brother node.
                     nd_bro = nd_cur.brother
-                    if nd_bro is not None:
+                    if nd_bro:
                         # Calculate distance between Xi and father node's
                         # hyper plane.
                         dist_hyper = self._get_hyper_plane_dist(
