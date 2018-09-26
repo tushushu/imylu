@@ -264,29 +264,23 @@ class KDTree(object):
         que = [(self.root, nd_best)]
         while que:
             nd_root, nd_cur = que.pop(0)
-            while 1:
+            # Calculate distance between Xi and root node
+            dist = self._get_eu_dist(Xi, nd_root)
+            # Update best node and distance.
+            if dist < dist_best:
+                dist_best, nd_best = dist, nd_root
+            while nd_cur is not nd_root:
                 # Calculate distance between Xi and current node
                 dist = self._get_eu_dist(Xi, nd_cur)
                 # Update best node, distance and visit flag.
                 if dist < dist_best:
-                    dist_best = dist
-                    nd_best = nd_cur
-                # Check if to break the loop.
-                if nd_cur is not nd_root:
-                    # If it's necessary to visit brother node.
-                    nd_bro = nd_cur.brother
-                    if nd_bro:
-                        # Calculate distance between Xi and father node's
-                        # hyper plane.
-                        dist_hyper = self._get_hyper_plane_dist(
-                            Xi, nd_cur.father)
-                        # Check if it's possible that the other side of father
-                        # node has closer child node.
-                        if dist > dist_hyper:
-                            _nd_best = self._search(Xi, nd_bro)
-                            que.append((nd_bro, _nd_best))
-                    # Back track.
-                    nd_cur = nd_cur.father
-                else:
-                    break
+                    dist_best, nd_best = dist, nd_cur
+                # If it's necessary to visit brother node.
+                if nd_cur.brother and dist > \
+                        self._get_hyper_plane_dist(Xi, nd_cur.father):
+                    _nd_best = self._search(Xi, nd_cur.brother)
+                    que.append((nd_cur.brother, _nd_best))
+                # Back track.
+                nd_cur = nd_cur.father
+
         return nd_best

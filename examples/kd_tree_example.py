@@ -69,7 +69,7 @@ def main():
 
         # Compare result
         assert ret1 == ret2, "target:%s\nrestult1:%s\nrestult2:%s\ntree:\n%s" \
-            % (str(Xi), str(nd), str(row), str(tree))
+            % (Xi, nd, row, tree)
     print("%d tests passed!" % test_times)
     print("KD Tree Search %.2f s" % run_time_1)
     print("Exhausted search %.2f s" % run_time_2)
