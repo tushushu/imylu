@@ -26,7 +26,7 @@ def main():
         X, y, random_state=10)
     # Train model
     reg = KNeighborsRegressor()
-    reg.fit(X=X_train, y=y_train, k_neighbors=21)
+    reg.fit(X=X_train, y=y_train, k_neighbors=3)
     # Model accuracy
     get_r2(reg, X_test, y_test)
 
