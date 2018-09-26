@@ -49,35 +49,29 @@ class KNeighborsBase(object):
         tree = self.tree
         heap = MaxHeap(self.k_neighbors, lambda x: x.dist)
         # The path from root to a leaf node when searching Xi.
-        path = tree._search(Xi, tree.root)
-        # Record which nodes' brohters has been visited already.
-        bro_flags = [1] + [0] * (len(path) - 1)
-        que = list(zip(path, bro_flags))
-        while 1:
-            nd_cur, bro_flag = que.pop()
-            # Calculate distance between Xi and current node
-            nd_cur.dist = tree._get_eu_dist(Xi, nd_cur)
-            # Update best node and distance
-            heap.add(nd_cur)
-            # Calculate distance between Xi and father node's hyper plane.
-            if que:
-                nd_dad = que[-1][0]
-            else:
-                break
-            # If it's necessary to visit brother node.
-            nd_bro = tree._get_brother(nd_cur, nd_dad)
-            if (bro_flag == 1 or nd_bro is None) and \
-                    heap.size == heap.max_size:
-                continue
-            # Check if it's possible that the other side of father node
-            # has closer child node.
-            dist_hyper = tree._get_hyper_plane_dist(Xi, nd_dad)
-            if nd_cur.dist > dist_hyper:
-                _path = tree._search(Xi, nd_bro)
-                _bro_flags = [1] + [0] * (len(_path) - 1)
-                que.extend(zip(_path, _bro_flags))
-            else:
-                continue
+        nd = tree._search(Xi, tree.root)
+        # BFS
+        que = [(tree.root, nd)]
+        while que:
+            nd_root, nd_cur = que.pop(0)
+            # Calculate distance between Xi and root node
+            nd_root.dist = tree._get_eu_dist(Xi, nd_root)
+            # Update best node and distance.
+            heap.add(nd_root)
+            while nd_cur is not nd_root:
+                # Calculate distance between Xi and current node
+                nd_cur.dist = tree._get_eu_dist(Xi, nd_cur)
+                # Update best node and distance
+                heap.add(nd_cur)
+                # If it's necessary to visit brother node.
+                if nd_cur.brother and \
+                        (not heap or
+                         heap.items[0].dist >
+                         tree._get_hyper_plane_dist(Xi, nd_cur.father)):
+                    _nd = tree._search(Xi, nd_cur.brother)
+                    que.append((nd_cur.brother, _nd))
+                # Back track.
+                nd_cur = nd_cur.father
         return heap
 
     def _predict(self, Xi):
