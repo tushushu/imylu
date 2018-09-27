@@ -351,7 +351,8 @@ class DecisionTree(object):
             X {list} -- 2d list object with int or float
 
         Keyword Arguments:
-            threshold {float} -- Prediction = 1 when probability >= threshold (default: {0.5})
+            threshold {float} -- Prediction = 1 when probability >= threshold
+            (default: {0.5})
 
         Returns:
             list -- 1d list object with float
