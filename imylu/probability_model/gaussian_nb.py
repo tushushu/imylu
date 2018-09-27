@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-@Author: tushushu 
-@Date: 2018-07-06 21:13:34 
-@Last Modified by: tushushu 
-@Last Modified time: 2018-07-06 21:13:34 
+@Author: tushushu
+@Date: 2018-07-06 21:13:34
+@Last Modified by: tushushu
+@Last Modified time: 2018-07-06 21:13:34
 """
 
 from math import pi, exp, sqrt
+from collections import Counter
 
 
 class GaussianNB(object):
@@ -34,13 +35,8 @@ class GaussianNB(object):
         Returns:
             dict -- {y_0: P(y_0), y_1: P(y_1)...y_n: P(y_n)]
         """
-        ret = {}
-        for yi in y:
-            if ret.get(yi):
-                ret[yi] += 1
-            else:
-                ret[yi] = 1
-        return ret
+
+        return Counter(y)
 
     def _get_posterior(self, xij, avg, variance):
         """Calculate posterior probability
@@ -122,8 +118,7 @@ class GaussianNB(object):
                      for i in range(self.n_class)]
         # Scale the probabilities
         probs_sum = sum(probs)
-        probs = [prob / probs_sum for prob in probs]
-        return probs
+        return [prob / probs_sum for prob in probs]
 
     def predict_prob(self, X):
         """Get the probability that y is positive.
