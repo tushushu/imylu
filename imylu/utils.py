@@ -4,6 +4,7 @@ from time import time
 from math import exp
 from copy import copy
 from statistics import median
+from itertools import tee
 
 BASE_PATH = os.path.split(os.path.realpath(__file__))[0]
 
@@ -325,3 +326,23 @@ def gen_data(low, high, n_rows, n_cols=None):
         ret = [[randint(low, high) for _ in range(n_cols)]
                for _ in range(n_rows)]
     return ret
+
+
+def pairwise(iterable):
+    """s -> (s0,s1), (s1,s2), (s2, s3), ...
+
+    Arguments:
+        iterable {iterable}
+
+    Returns:
+        zip
+    """
+
+    a, b = tee(iterable)
+    next(b, None)
+    return zip(a, b)
+
+
+def arg_max_2d(dic):
+    return max(((k, *max(dic_inner.items(), key=lambda x: x[1]))
+                for k, dic_inner in dic.items()), key=lambda x: x[2])[:2]
