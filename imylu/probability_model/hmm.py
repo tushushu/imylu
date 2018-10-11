@@ -43,7 +43,7 @@ class HMM(object):
         return {element: cnt / n_elements
                 for element, cnt in element_cnt.items()}
 
-    def fit(self, states, observations):
+    def fit(self, states_2d, observations_2d):
         """Calculate start probability, transition probability and emission probability
         by Maximum likelihood estimation.
 
@@ -60,8 +60,8 @@ class HMM(object):
         --------------------------------------------------------------------------------
 
         Arguments:
-            states {list} -- state_1, state_2...state_n
-            observations {list} -- observation_1...observation_n-1
+            states_2d {list} -- 2d list with states.
+            observations_2d {list} -- 2d list with observations.
 
         Returns:
             start_prob {dict} -- {'state_1': p, 'state_2': p...}
@@ -76,11 +76,12 @@ class HMM(object):
         trans_cnt = defaultdict(lambda: defaultdict(int))
         emit_cnt = defaultdict(lambda: defaultdict(int))
         # Count the number of occurrences.
-        n = len(states)
-        for i in range(0, n - 1):
-            start_cnt[states[i]] += 1
-            trans_cnt[states[i]][states[i + 1]] += 1
-            emit_cnt[states[i]][observations[i]] += 1
+        for states, observations in zip(states_2d, observations_2d):
+            n = len(states)
+            for i in range(0, n - 1):
+                start_cnt[states[i]] += 1
+                trans_cnt[states[i]][states[i + 1]] += 1
+                emit_cnt[states[i]][observations[i]] += 1
         # Convert values into probabilities in the dictionary.
         self.start_probs = self._get_prob(start_cnt)
         self.trans_probs = {k: self._get_prob(v) for k, v in trans_cnt.items()}
@@ -164,9 +165,12 @@ def test():
     model.trans_probs = {"normal": {"normal": 0.7, "light": 0.2, "heavy": 0.1},
                          "light": {"normal": 0.4, "light": 0.4, "heavy": 0.2},
                          "heavy": {"normal": 0.2, "light": 0.5, "heavy": 0.3}}
-    model.emit_probs = {"normal": {"jump": 0.7, "cough": 0.1, "fever": 0, "shit": 0.2},
-                        "light": {"jump": 0.5, "cough": 0.2, "fever": 0.2, "shit": 0.1},
-                        "heavy": {"jump": 0.3, "cough": 0.2, "fever": 0.3, "shit": 0.2}
+    model.emit_probs = {"normal":
+                        {"jump": 0.7, "cough": 0.1, "fever": 0, "shit": 0.2},
+                        "light":
+                        {"jump": 0.5, "cough": 0.2, "fever": 0.2, "shit": 0.1},
+                        "heavy":
+                        {"jump": 0.3, "cough": 0.2, "fever": 0.3, "shit": 0.2}
                         }
     model.states = {"normal", "light", "heavy"}
     model.observations = {"jump", "cough", "fever", "shit"}
