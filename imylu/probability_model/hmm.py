@@ -99,7 +99,7 @@ class HMM(object):
             tuple -- states, probabilities
         """
 
-        # Initialize.
+        # Initialization.
         observations = iter(observations)
         observation = next(observations)
         # Record the sequence of states.
@@ -133,10 +133,28 @@ class HMM(object):
         return paths, probs
 
     def _predict(self, Xi):
+        """Predict the states according to observations.
+
+        Arguments:
+            Xi {list} -- Observations
+
+        Returns:
+            list -- States
+        """
+
         ret = zip(self._viterbi(Xi))
         return max(ret, key=lambda x: x[1])[0]
 
     def predict(self, X):
+        """Predict the states according to observations.
+
+        Arguments:
+            X {list} -- 2D list with observations.
+
+        Returns:
+            list -- 2D list with states.
+        """
+
         return [self._predict(Xi) for Xi in X]
 
 
@@ -153,7 +171,7 @@ def test():
     model.states = {"normal", "light", "heavy"}
     model.observations = {"jump", "cough", "fever", "shit"}
     observations = ["fever", "fever", "fever"]
-    print(model.viterbi(observations))
+    print(model._viterbi(observations))
 
 
 if __name__ == "__main__":
