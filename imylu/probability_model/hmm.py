@@ -4,22 +4,21 @@
 @Date: 2018-09-27 14:09:22
 @Last Modified by:   tushushu
 @Last Modified time: 2018-09-27 14:09:22
-https://blog.csdn.net/athemeroy/article/details/79339546
-https://blog.csdn.net/athemeroy/article/details/79342048
 """
 
 from collections import defaultdict
+from itertools import chain
 
 
 class HMM(object):
     """HMM class.
 
     Attributes:
-        states {list}
-        observations {list}
-        start_prob {dict} -- start probability
-        trans_prob {dict} -- transition probability
-        emit_prob {dict} -- emission probability
+        states {set} -- Distinct states appeared in the train set.
+        observations {set} -- Distinct observations appeared in the train set.
+        start_prob {dict} -- Start probability = P(States_i)
+        trans_prob {dict} -- Transition probability = P(States_i → States_j)
+        emit_prob {dict} -- Emission probability = P(States_i → Observation_j)
     """
 
     def __init__(self):
@@ -33,17 +32,19 @@ class HMM(object):
         """Convert values into log probabilities in the dictionary.
 
         Arguments:
-            element_cnt {dict} -- Count of elements.
+            element_cnt {defaultdict} -- Count of elements.
 
         Returns:
             dict -- Log probabilities of elements.
         """
 
-        n_elements = sum(element_cnt.values)
-        return {element: cnt / n_elements
-                for element, cnt in element_cnt.items()}
+        ret = defaultdict(float)
+        n_elements = sum(element_cnt.values())
+        for element, cnt in element_cnt.items():
+            ret[element] = cnt / n_elements
+        return ret
 
-    def fit(self, states_2d, observations_2d):
+    def fit(self, X, y):
         """Calculate start probability, transition probability and emission probability
         by Maximum likelihood estimation.
 
@@ -60,8 +61,8 @@ class HMM(object):
         --------------------------------------------------------------------------------
 
         Arguments:
-            states_2d {list} -- 2d list with states.
-            observations_2d {list} -- 2d list with observations.
+            X {list} -- 2d list with observations.
+            y {list} -- 2d list with states.
 
         Returns:
             start_prob {dict} -- {'state_1': p, 'state_2': p...}
@@ -76,19 +77,36 @@ class HMM(object):
         trans_cnt = defaultdict(lambda: defaultdict(int))
         emit_cnt = defaultdict(lambda: defaultdict(int))
         # Count the number of occurrences.
-        for states, observations in zip(states_2d, observations_2d):
+        for observations, states in zip(X, y):
             n = len(states)
-            for i in range(0, n - 1):
+            for i in range(n - 1):
                 start_cnt[states[i]] += 1
                 trans_cnt[states[i]][states[i + 1]] += 1
                 emit_cnt[states[i]][observations[i]] += 1
+            start_cnt[states[n - 1]] += 1
+            emit_cnt[states[n - 1]][observations[n - 1]] += 1
         # Convert values into probabilities in the dictionary.
         self.start_probs = self._get_prob(start_cnt)
         self.trans_probs = {k: self._get_prob(v) for k, v in trans_cnt.items()}
-        self.emit_probs = {k: self._get_prob(v) for k, v in trans_cnt.items()}
+        self.emit_probs = {k: self._get_prob(v) for k, v in emit_cnt.items()}
         # Get unique states and observations.
-        self.states = set(states)
-        self.observations = set(observations)
+        self.states = set(self.start_probs.keys())
+        self.observations = set(chain(*X))
+
+    def get_emit_prob(self, state, observation):
+        """Calculate emission  probability, when the observation has not
+        appearred in the train data, we set emission  probability to 1.
+
+        Arguments:
+            state {str}
+            observation {str}
+        """
+
+        if observation in self.observations:
+            ret = self.emit_probs[state][observation]
+        else:
+            ret = 1
+        return ret
 
     def _viterbi(self, observations):
         """Viterbi algorithm.
@@ -106,8 +124,8 @@ class HMM(object):
         # Record the sequence of states.
         paths = [[state] for state in self.states]
         # Joint probability.
-        probs = [self.start_probs[state] * self.emit_probs[state]
-                 [observation] for state in self.states]
+        probs = [self.start_probs[state] * self.get_emit_prob(
+            state, observation) for state in self.states]
         # Iterate the observations left.
         for observation in observations:
             new_paths = []
@@ -120,7 +138,7 @@ class HMM(object):
                     state_pre = path[-1]
                     # Multiply the log prob of current state.
                     trans_prob = self.trans_probs[state_pre][state_cur]
-                    emit_prob = self.emit_probs[state_cur][observation]
+                    emit_prob = self.get_emit_prob(state_cur, observation)
                     prob_mul = prob * trans_prob * emit_prob
                     # Choose the maximum sum result.
                     if prob_mul > prob_max:
@@ -143,7 +161,7 @@ class HMM(object):
             list -- States
         """
 
-        ret = zip(self._viterbi(Xi))
+        ret = zip(*self._viterbi(Xi))
         return max(ret, key=lambda x: x[1])[0]
 
     def predict(self, X):
@@ -157,26 +175,3 @@ class HMM(object):
         """
 
         return [self._predict(Xi) for Xi in X]
-
-
-def test():
-    model = HMM()
-    model.start_probs = {"normal": 0.7, "light": 0.2, "heavy": 0.1}
-    model.trans_probs = {"normal": {"normal": 0.7, "light": 0.2, "heavy": 0.1},
-                         "light": {"normal": 0.4, "light": 0.4, "heavy": 0.2},
-                         "heavy": {"normal": 0.2, "light": 0.5, "heavy": 0.3}}
-    model.emit_probs = {"normal":
-                        {"jump": 0.7, "cough": 0.1, "fever": 0, "shit": 0.2},
-                        "light":
-                        {"jump": 0.5, "cough": 0.2, "fever": 0.2, "shit": 0.1},
-                        "heavy":
-                        {"jump": 0.3, "cough": 0.2, "fever": 0.3, "shit": 0.2}
-                        }
-    model.states = {"normal", "light", "heavy"}
-    model.observations = {"jump", "cough", "fever", "shit"}
-    observations = ["fever", "fever", "fever"]
-    print(model._viterbi(observations))
-
-
-if __name__ == "__main__":
-    test()
