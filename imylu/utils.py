@@ -69,7 +69,6 @@ def load_tagged_speech():
     """
 
     file_names = ["observations", "states"]
-    ret = []
 
     def data_process(file_name):
         path = os.path.join(BASE_PATH, "dataset", "%s.csv" % file_name)
