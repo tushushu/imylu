@@ -40,12 +40,12 @@ def main():
     assert emit_probs_check, "Emit probs incorrect!"
     print("Correctness test passed!")
     # Model accuracy.
-    predictions = model.predict(X_test[:100])
+    predictions = model.predict(X_test)
     numerator = sum(prediction == yi for prediction, yi
-                    in zip(chain(*predictions), chain(*y_test[:100])))
-    denominator = sum(map(len, y_test[:100]))
+                    in zip(chain(*predictions), chain(*y_test)))
+    denominator = sum(map(len, y_test))
     acc = numerator / denominator
-    print("Train accuracy is %.3f%%!" % (acc * 100))
+    print("Test accuracy is %.3f%%!" % (acc * 100))
 
 
 if __name__ == "__main__":

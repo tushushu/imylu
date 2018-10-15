@@ -77,7 +77,7 @@ def load_tagged_speech():
         f.close()
         ret.append(data)
     assert all(len(Xi) == len(yi)
-               for Xi, yi in zip(*ret)), "Data lenghts does not match!"
+               for Xi, yi in zip(*ret)), "Data lengths does not match!"
     return ret
 
 
