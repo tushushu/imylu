@@ -70,15 +70,14 @@ def load_tagged_speech():
 
     file_names = ["observations", "states"]
     ret = []
-    for file_name in file_names:
+
+    def data_process(file_name):
         path = os.path.join(BASE_PATH, "dataset", "%s.csv" % file_name)
         f = open(path)
         data = [line[:-1].split("|") for line in f]
         f.close()
-        ret.append(data)
-    assert all(len(Xi) == len(yi)
-               for Xi, yi in zip(*ret)), "Data lengths does not match!"
-    return ret
+        return data
+    return [data_process(file_name) for file_name in file_names]
 
 
 def min_max_scale(X):
