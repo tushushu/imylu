@@ -79,6 +79,25 @@ def load_tagged_speech():
     return [data_process(file_name) for file_name in file_names]
 
 
+def load_movie_ratings():
+    """Load movie ratings data for recommedation.
+
+    Returns:
+        list -- userId, movieId, rating
+    """
+
+    file_name = "movie_ratings"
+    path = os.path.join(BASE_PATH, "dataset", "%s.csv" % file_name)
+    f = open(path)
+    lines = iter(f)
+    col_names = ", ".join(next(lines)[:-1].split(",")[:-1])
+    print("The column names are: %s." % col_names)
+    data = [[float(x) if i == 2 else int(x)
+             for i, x in enumerate(line[:-1].split(",")[:-1])] for line in lines]
+    f.close()
+    return data
+
+
 def min_max_scale(X):
     """Scale the element of X into an interval [0, 1].
 
