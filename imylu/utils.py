@@ -4,7 +4,7 @@ from time import time
 from math import exp
 from copy import copy
 from statistics import median
-from itertools import tee
+from itertools import tee, product
 
 BASE_PATH = os.path.split(os.path.realpath(__file__))[0]
 
@@ -365,3 +365,47 @@ def pairwise(iterable):
 def arg_max_2d(dic):
     return max(((k, *max(dic_inner.items(), key=lambda x: x[1]))
                 for k, dic_inner in dic.items()), key=lambda x: x[2])[:2]
+
+
+def _row_mul(row_A, row_B):
+    """Multiply the elements with the same subscript in both arrays and sum them.
+
+    Arguments:
+        row_A {list} -- 1d list with float or int
+        row_B {list} -- 1d list with float or int
+
+    Returns:
+        float or int
+    """
+
+    return sum(x[0] * x[1] for x in zip(row_A, row_B))
+
+
+def _maxtrix_mul(row_A, B):
+    """An auxiliary function of the maxtrix_mul function.
+
+    Arguments:
+        row_A {list} -- 1d list with float or int
+        B {list} -- 2d list with int or float
+
+    Returns:
+        list -- 1d list with float or int
+    """
+
+    B_transpose = map(list, zip(*B))
+    row_pairs = product([row_A], B_transpose)
+    return [_row_mul(*row_pair) for row_pair in row_pairs]
+
+
+def maxtrix_mul(A, B):
+    """Matrix multiplication.
+
+    Arguments:
+        A {list} -- 2d list with int or float
+        B {list} -- 2d list with int or float
+    """
+
+    error_msg = "A's column count does not match B's row count!"
+    assert len(A[0]) == len(B), error_msg
+
+    return [_maxtrix_mul(row_A, B) for row_A in A]
