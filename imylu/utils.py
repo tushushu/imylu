@@ -9,7 +9,7 @@ from itertools import tee
 BASE_PATH = os.path.split(os.path.realpath(__file__))[0]
 
 
-def load_data(file_name):
+def _load_data(file_name):
     """Read csv file.
 
     Arguments:
@@ -46,7 +46,7 @@ def load_breast_cancer():
         y {list} -- 1d list object with int or float
     """
 
-    return load_data("breast_cancer")
+    return _load_data("breast_cancer")
 
 
 def load_boston_house_prices():
@@ -57,7 +57,28 @@ def load_boston_house_prices():
         y {list} -- 1d list object with int or float
     """
 
-    return load_data("boston_house_prices")
+    return _load_data("boston_house_prices")
+
+
+def load_tagged_speech():
+    """Load tagged speech data for classification.
+
+    Returns:
+        X {list} -- 2d list object with str.
+        y {list} -- 1d list object with str.
+    """
+
+    file_names = ["observations", "states"]
+    ret = []
+    for file_name in file_names:
+        path = os.path.join(BASE_PATH, "dataset", "%s.csv" % file_name)
+        f = open(path)
+        data = [line[:-1].split("|") for line in f]
+        f.close()
+        ret.append(data)
+    assert all(len(Xi) == len(yi)
+               for Xi, yi in zip(*ret)), "Data lenghts does not match!"
+    return ret
 
 
 def min_max_scale(X):
