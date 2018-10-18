@@ -14,6 +14,10 @@ class Matrix(object):
         self.shape = (len(data), len(data[0]))
 
     @property
+    def is_square(self):
+        return self.shape[0] == self.shape[1]
+
+    @property
     def transpose(self):
         """Find the transpose of the original matrix.
 
@@ -22,7 +26,7 @@ class Matrix(object):
         """
 
         data = list(map(list, zip(*self.data)))
-        return Matrix(data=data)
+        return Matrix(data)
 
     def _eye(self, n):
         """Get a unit matrix with shape (n, n).
@@ -44,10 +48,9 @@ class Matrix(object):
             Matrix
         """
 
-        error_msg = "The matrix has to be square!"
-        assert self.shape[0] == self.shape[1], error_msg
+        assert self.is_square, "The matrix has to be square!"
         data = self._eye(self.shape[0])
-        return Matrix(data=data)
+        return Matrix(data)
 
     def _gaussian_elimination(self, aug_matrix):
         """To simplify the left square matrix of the augmented matrix
@@ -117,8 +120,6 @@ class Matrix(object):
             list -- 2d list with int or float.
         """
 
-        error_msg = "The matrix has to be square!"
-        assert len(data) == len(data[0]), error_msg
         n = len(data)
         unit_matrix = self._eye(n)
         aug_matrix = [a + b for a, b in zip(self.data, unit_matrix)]
@@ -133,8 +134,9 @@ class Matrix(object):
             Matrix
         """
 
+        assert self.is_square, "The matrix has to be square!"
         data = self._inverse(self.data)
-        return Matrix(data=data)
+        return Matrix(data)
 
     def _row_mul(self, row_A, row_B):
         """Multiply the elements with the same subscript in both arrays and sum them.
@@ -149,8 +151,8 @@ class Matrix(object):
 
         return sum(x[0] * x[1] for x in zip(row_A, row_B))
 
-    def _maxtrix_mul(self, row_A, B):
-        """An auxiliary function of the maxtrix_mul function.
+    def _mat_mul(self, row_A, B):
+        """An auxiliary function of the mat_mul function.
 
         Arguments:
             row_A {list} -- 1d list with float or int.
@@ -163,7 +165,7 @@ class Matrix(object):
         row_pairs = product([row_A], B.transpose.data)
         return [self._row_mul(*row_pair) for row_pair in row_pairs]
 
-    def maxtrix_mul(self, B):
+    def mat_mul(self, B):
         """Matrix multiplication.
 
         Arguments:
@@ -173,4 +175,4 @@ class Matrix(object):
         error_msg = "A's column count does not match B's row count!"
         assert self.shape[1] == B.shape[0], error_msg
 
-        return [self._maxtrix_mul(row_A, B) for row_A in self.data]
+        return [self._mat_mul(row_A, B) for row_A in self.data]
