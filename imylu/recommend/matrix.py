@@ -13,8 +13,38 @@ class Matrix(object):
         self.data = data
         self.shape = (len(data), len(data[0]))
 
+    def row(self, row_no):
+        """Get a row of the matrix.
+
+        Arguments:
+            row_no {int} -- Row number of the matrix.
+
+        Returns:
+            Matrix
+        """
+
+        return Matrix([self.data[row_no]])
+
+    def col(self, col_no):
+        """Get a column of the matrix.
+
+        Arguments:
+            col_no {int} -- Column number of the matrix.
+
+        Returns:
+            Matrix
+        """
+        m = self.shape[0]
+        return Matrix([[self.data[i][col_no]] for i in range(m)])
+
     @property
     def is_square(self):
+        """Check if the matrix is a square matrix.
+
+        Returns:
+            bool
+        """
+
         return self.shape[0] == self.shape[1]
 
     @property
@@ -170,9 +200,11 @@ class Matrix(object):
 
         Arguments:
             B {Matrix}
+
+        Returns:
+            Matrix
         """
 
         error_msg = "A's column count does not match B's row count!"
         assert self.shape[1] == B.shape[0], error_msg
-
-        return [self._mat_mul(row_A, B) for row_A in self.data]
+        return Matrix([self._mat_mul(row_A, B) for row_A in self.data])

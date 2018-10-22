@@ -93,7 +93,8 @@ def load_movie_ratings():
     col_names = ", ".join(next(lines)[:-1].split(",")[:-1])
     print("The column names are: %s." % col_names)
     data = [[float(x) if i == 2 else int(x)
-             for i, x in enumerate(line[:-1].split(",")[:-1])] for line in lines]
+             for i, x in enumerate(line[:-1].split(",")[:-1])]
+            for line in lines]
     f.close()
     return data
 
