@@ -1,7 +1,7 @@
 提到ALS相信大家应该都不会觉得陌生（不陌生你点进来干嘛[捂脸]），它是协同过滤的一种，并被集成到Spark的Mllib库中。本文就ALS的基本原理进行讲解，并手把手、肩并肩地带您实现这一算法。
 
 完整实现代码请参考本人的p...哦不是...github：  
-[als.py](hhttps://github.com/tushushu/imylu/blob/master/imylu/recommend/als.py)  
+[als.py](https://github.com/tushushu/imylu/blob/master/imylu/recommend/als.py)  
 [als_example.py](https://github.com/tushushu/imylu/blob/master/examples/als_example.py)  
 
 
@@ -48,11 +48,10 @@
 
 # 2. 实现篇
 本人用全宇宙最简单的编程语言——Python实现了ALS算法，没有依赖任何第三方库，便于学习和使用。简单说明一下实现过程，更详细的注释请参考本人github上的代码。  
-注：代码中用到的Matrix类是笔者自己写的一个矩阵类，可以取出矩阵的行或列，计算矩阵的乘法、转置和逆。代码链接如下：  
-[matrix.py](https://github.com/tushushu/imylu/blob/master/imylu/recommend/matrix.py)  
+注：代码中用到的Matrix类是我写的一个矩阵类，可以取出矩阵的行或列，计算矩阵的乘法、转置和逆。代码链接：[matrix.py](https://github.com/tushushu/imylu/blob/master/imylu/recommend/matrix.py)  
 
 ## 2.1 创建ALS类
-初始化，存储用户ID、物品ID、用户ID与用户矩阵列号的对应关系、物品ID与物品矩阵列号的对应关系、评分矩阵的Shape以及RMSE。
+初始化，存储用户ID、物品ID、用户ID与用户矩阵列号的对应关系、物品ID与物品矩阵列号的对应关系、用户已经看过哪些物品、评分矩阵的Shape以及RMSE。
 ```Python
 class ALS(object):
     def __init__(self):
@@ -203,9 +202,7 @@ def _predict(self, user_id, n_items):
     users_col = users_col.transpose
 
     items_col = enumerate(users_col.mat_mul(self.item_matrix).data[0])
-
     items_scores = map(lambda x: (self.item_ids[x[0]], x[1]), items_col)
-
     viewed_items = self.user_items[user_id]
     items_scores = filter(lambda x: x[0] not in viewed_items, items_scores)
 
@@ -221,7 +218,7 @@ def predict(self, user_ids, n_items=10):
 
 # 3 效果评估
 ## 3.1 main函数
-使用电影评分数据集，训练模型，并统计RMSE。
+使用电影评分数据集，训练模型并统计RMSE。
 ```Python
 @run_time
 def main():
@@ -247,8 +244,7 @@ def main():
 ![als](https://github.com/tushushu/imylu/blob/master/pic/als.png)
 
 ## 3.3 工具函数
-本人自定义了一些工具函数，可以在github上查看  
-[utils.py](https://github.com/tushushu/imylu/blob/master/imylu/utils.py)  
+本人自定义了一些工具函数，可以在github上查看：[utils.py](https://github.com/tushushu/imylu/blob/master/imylu/utils.py)  
 1. run_time - 测试函数运行时间
 2. load_movie_ratings - 加载电影评分数据
 
