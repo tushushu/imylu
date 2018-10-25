@@ -196,7 +196,7 @@ class RegressionTree(object):
             # Stop split when number of node samples is less than
             # min_samples_split or Node is 100% pure.
             if len(idxs) < min_samples_split or \
-                    len(set(map(lambda i: y[i], idxs))) == 1:
+                    all(map(lambda i: y[idxs[0]] == y[i], idxs)):
                 continue
             # Stop split if no feature has more than 2 unique elements
             split_ret = self._choose_feature(X, y, idxs)
