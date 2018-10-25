@@ -26,7 +26,7 @@ def main():
         X, y, random_state=10)
     # Train model
     reg = RegressionTree()
-    reg.fit(X=X_train, y=y_train, max_depth=3)
+    reg.fit(X=X_train, y=y_train, max_depth=5)
     # Show rules
     reg.rules
     # Model accuracy

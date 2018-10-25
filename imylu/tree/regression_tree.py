@@ -183,6 +183,7 @@ class RegressionTree(object):
         """
 
         # Initialize with depth, node, indexes
+        self.root.score = sum(y) / len(y)
         idxs = list(range(len(y)))
         que = [(self.depth + 1, self.root, idxs)]
         # Breadth-First Search
