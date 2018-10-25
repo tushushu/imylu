@@ -65,7 +65,7 @@ class Matrix(object):
             n {int} -- Rank of unit matrix.
 
         Returns:
-            Matrix
+            list
         """
 
         return [[0 if i != j else 1 for j in range(n)] for i in range(n)]

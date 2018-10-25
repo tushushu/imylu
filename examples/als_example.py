@@ -26,7 +26,7 @@ def main():
     X = load_movie_ratings()
     # Train model
     model = ALS()
-    model.fit(X, k=3, max_iter=5)
+    model.fit(X, k=3, max_iter=10)
     print()
 
     print("Showing the predictions of users...")

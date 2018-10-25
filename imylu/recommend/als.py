@@ -22,7 +22,8 @@ class ALS(object):
         item_matrix {Matrix} -- k * n matrix, n equals number of item_ids.
         user_items {dict} -- Store what items has been viewed by users.
         shape {tuple} -- Dimension of ratings matrix.
-        rmse {float} -- Mean square error, Sum((R - U_T * I)) ^ 2 / n_elements.
+        rmse {float} -- Square root of mse,
+        (Sum((R - U_T * I)) ^ 2 / n_elements) ^ 0.5.
     """
 
     def __init__(self):
@@ -127,7 +128,7 @@ class ALS(object):
         return Matrix(ret)
 
     def _gen_random_matrix(self, n_rows, n_colums):
-        """
+        """Generate a n_rows * n_columns matrix with random numbers.
 
         Arguments:
             n_rows {int} -- The number of rows.
@@ -147,7 +148,7 @@ class ALS(object):
             ratings {dict} -- The items ratings by users.
 
         Returns:
-            float -- [description]
+            float
         """
 
         m, n = self.shape
