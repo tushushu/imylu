@@ -30,9 +30,9 @@
    $R = U^{T} * I$
 2. 用MSE作为损失函数，为了方便化简，加法符号左侧的常数改为-1/2    
    $L = -\large\frac{1}{2}\normalsize\sum_{i=0}^{n}(R_{ai} - U^{T}_{a} * I_{i})^2$
-3. 对损失函数求U_i的一阶偏导数，那么  
-   $\large\frac{dL}{dU_{i}}\normalsize=(R_{a} - U^{T}_{a} * I) * I^{T}$  
-   $\large\frac{dL}{dU_{i}}\normalsize=I * (R^{T}_{a} -  I_{T} * U_{a})$  
+3. 对损失函数求U_a的一阶偏导数，那么  
+   $\large\frac{dL}{dU_{a}}\normalsize=(R_{a} - U^{T}_{a} * I) * I^{T}$  
+   $\large\frac{dL}{dU_{a}}\normalsize=I * (R^{T}_{a} -  I_{T} * U_{a})$  
 4. 令一阶偏导数等于0  
    $I * R^{T}_{a} =   I * I^{T} * U_{a}$  
    $U{a} = (I * I^{T})^{-1} * I * R^{T}_{a}$  
