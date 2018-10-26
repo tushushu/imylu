@@ -56,24 +56,11 @@ class LogisticRegression(RegressionBase):
             tuple -- Gradient delta of bias and weight
         """
 
-        z = self._linear(Xi)
+        z = self._predict(Xi)
         y_hat = sigmoid(z)
         bias_grad_delta = yi - y_hat
         weights_grad_delta = [bias_grad_delta * Xij for Xij in Xi]
         return bias_grad_delta, weights_grad_delta
-
-    def _predict(self, Xi):
-        """Auxiliary function of predict.
-
-        Arguments:
-            Xi {list} -- 1d list object with int or float
-
-        Returns:
-            float -- prediction of yi
-        """
-
-        z = self._linear(Xi)
-        return sigmoid(z)
 
     def predict(self, X, threshold=0.5):
         """Get the prediction of y.
@@ -89,4 +76,4 @@ class LogisticRegression(RegressionBase):
             list -- 1d list object with float
         """
 
-        return [int(self._predict(Xi) >= threshold) for Xi in X]
+        return [int(sigmoid(self._predict(Xi)) >= threshold) for Xi in X]

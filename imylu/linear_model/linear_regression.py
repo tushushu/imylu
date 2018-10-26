@@ -39,23 +39,10 @@ class LinearRegression(RegressionBase):
             tuple -- Gradient delta of bias and weight
         """
 
-        y_hat = self._linear(Xi)
+        y_hat = self._predict(Xi)
         bias_grad_delta = yi - y_hat
         weights_grad_delta = [bias_grad_delta * Xij for Xij in Xi]
         return bias_grad_delta, weights_grad_delta
-
-    def _predict(self, Xi):
-        """Auxiliary function of predict.
-
-        Arguments:
-            Xi {list} -- 1d list object with int or float
-
-        Returns:
-            int or float -- prediction of yi
-        """
-
-        # Product the weighs and Xi then add the bias
-        return self._linear(Xi)
 
     def predict(self, X):
         """Get the prediction of y.

@@ -15,12 +15,14 @@ class RegressionBase(object):
         Attributes:
             bias: b
             weights: W
+            alpha: α
         """
 
         self.bias = None
         self.weights = None
+        self.alpha = None
 
-    def _linear(self, Xi):
+    def _predict(self, Xi):
         """y = WX + b.
 
         Arguments:
@@ -103,7 +105,8 @@ class RegressionBase(object):
                 self.weights = [w + lr * w_grad for w,
                                 w_grad in zip(self.weights, weights_grad)]
 
-    def fit(self, X, y, lr, epochs, method="batch", sample_rate=1.0):
+    def fit(self, X, y, lr, epochs, method="batch", sample_rate=1.0,
+            alpha=None):
         """Train regression model.
 
         Arguments:
@@ -115,8 +118,11 @@ class RegressionBase(object):
         Keyword Arguments:
             method {str} -- "batch" or "stochastic" (default: {"batch"})
             sample_rate {float} -- Between 0 and 1 (default: {1.0})
+            alpha {float} -- Regularization strength. (default: {None})
         """
 
+        if alpha:
+            self.alpha = alpha
         assert method in ("batch", "stochastic")
         # batch gradient descent
         if method == "batch":
@@ -124,18 +130,6 @@ class RegressionBase(object):
         # stochastic gradient descent
         if method == "stochastic":
             self._stochastic_gradient_descent(X, y, lr, epochs, sample_rate)
-
-    def _predict(self, Xi):
-        """Auxiliary function of predict.
-
-        Arguments:
-            Xi {list} -- 1d list object with int or float.
-
-        Returns:
-            NotImplemented
-        """
-
-        return NotImplemented
 
     def predict(self, X):
         """Get the prediction of y.
