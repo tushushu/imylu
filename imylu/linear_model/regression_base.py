@@ -121,7 +121,7 @@ class RegressionBase(object):
             alpha {float} -- Regularization strength. (default: {None})
         """
 
-        if alpha:
+        if alpha is not None:
             self.alpha = alpha
         assert method in ("batch", "stochastic")
         # batch gradient descent
