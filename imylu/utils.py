@@ -187,7 +187,7 @@ def run_time(fn):
         function
     """
 
-    def wrapper():
+    def inner():
         start = time()
         fn()
         ret = time() - start
@@ -203,7 +203,7 @@ def run_time(fn):
         else:
             unit = "s"
         print("Total run time is %.1f %s" % (ret, unit))
-    return wrapper
+    return inner
 
 
 def get_r2(reg, X, y):
@@ -344,7 +344,21 @@ def get_euclidean_distance(arr1, arr2):
         float -- Euclidean distance
     """
 
-    return sum((x1 - x2) ** 2 for x1, x2 in zip(arr1, arr2))
+    return sum((x1 - x2) ** 2 for x1, x2 in zip(arr1, arr2)) ** 0.5
+
+
+def get_cosine_distance(arr1, arr2):
+    """Calculate the cosine distance of two vectors.
+    Arguments:
+        arr1 {list} -- 1d list object with int or float
+        arr2 {list} -- 1d list object with int or float
+    Returns:
+        float -- cosine distance
+    """
+    numerator = sum(x1 * x2 for x1, x2 in zip(arr1, arr2))
+    denominator = (sum(x1 ** 2 for x1 in arr1) *
+                   sum(x2 ** 2 for x2 in arr2)) ** 0.5
+    return numerator / denominator
 
 
 def gen_data(low, high, n_rows, n_cols=None):
