@@ -244,7 +244,7 @@ class KDTree(object):
 
         j = nd.feature
         X0 = nd.split[0]
-        return (Xi[j] - X0[j]) ** 2
+        return abs(Xi[j] - X0[j])
 
     def nearest_neighbour_search(self, Xi):
         """Nearest neighbour search and backtracking.
