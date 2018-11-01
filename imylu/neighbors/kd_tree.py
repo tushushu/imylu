@@ -5,7 +5,7 @@
 @Last Modified by:   tushushu
 @Last Modified time: 2018-08-21 19:19:52
 """
-from ..utils import min_max_scale, get_euclidean_distance
+from ..utils import get_euclidean_distance
 
 
 class Node(object):
@@ -158,15 +158,13 @@ class KDTree(object):
         return idxs_split
 
     def build_tree(self, X, y):
-        """Build a KD Tree.
+        """Build a KD Tree. The data should be scaled so as to calculate variances.
 
         Arguments:
             X {list} -- 2d list object with int or float.
             y {list} -- 1d list object with int or float.
         """
 
-        # Scale the data for calculating variances
-        X_scale = min_max_scale(X)
         # Initialize with node, indexes
         nd = self.root
         idxs = range(len(X))
@@ -180,7 +178,7 @@ class KDTree(object):
                 nd.split = (X[idxs[0]], y[idxs[0]])
                 continue
             # Split
-            feature = self._choose_feature(X_scale, idxs)
+            feature = self._choose_feature(X, idxs)
             median_idx = self._get_median_idx(X, idxs, feature)
             idxs_left, idxs_right = self._split_feature(
                 X, idxs, feature, median_idx)

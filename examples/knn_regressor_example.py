@@ -12,7 +12,7 @@ import sys
 sys.path.append(os.path.abspath(".."))
 
 from imylu.utils import get_r2, load_boston_house_prices, run_time, \
-    train_test_split
+    train_test_split, min_max_scale
 from imylu.neighbors.knn_regressor import KNeighborsRegressor
 
 
@@ -21,6 +21,7 @@ def main():
     print("Tesing the accuracy of KNN regressor...")
     # Load data
     X, y = load_boston_house_prices()
+    X = min_max_scale(X)
     # Split data randomly, train set rate 70%
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, random_state=10)
