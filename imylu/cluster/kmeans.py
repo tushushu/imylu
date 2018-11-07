@@ -6,8 +6,9 @@
 @Last Modified time: 2018-11-01 14:31:13
 """
 from ..utils import get_euclidean_distance, get_cosine_distance
-from random import random
+from random import random, randint
 from collections import Counter
+from copy import deepcopy
 
 
 class KMeans(object):
@@ -18,7 +19,71 @@ class KMeans(object):
         self.distance_fn = None
         self.cluster_samples_cnt = None
 
-    def _cmp_arr(self, arr1, arr2, tolerance=1e-5):
+    def _bin_search(self, target, nums):
+        """Binary search a number from array-like object.
+
+        Arguments:
+            target {float}
+            nums {list}
+
+        Returns:
+            int
+        """
+
+        low = 0
+        high = len(nums) - 1
+        assert nums[low] <= target < nums[high], "Cannot find target!"
+        while 1:
+            mid = (low + high) // 2
+            if mid == 1 or target >= nums[mid]:
+                low = mid + 1
+            elif target < nums[mid - 1]:
+                high = mid - 1
+            else:
+                break
+        return mid
+
+    def _init_cluster_centers(self, X, k, n_features, distance_fn):
+        """Generate initial cluster centers with K-means++.
+
+        Arguments:
+            X {list} -- 2d list with int or float.
+            k {int} -- Number of cluster centers.
+            n_features {int} -- Number of features.
+
+        Returns:
+            list
+        """
+
+        n = len(X)
+        centers = [X[randint(0, n - 1)]]
+        for _ in range(k - 1):
+            center_pre = centers[-1]
+            # Calculate distances of center_pre to all the rows in X.
+            indexes_dists = ([i, distance_fn(Xi, center_pre)]
+                             for i, Xi in enumerate(X))
+            # Sort the distances.
+            indexes_dists = sorted(indexes_dists, key=lambda x: x[1])
+            # Get distances.
+            dists = [x[1] for x in indexes_dists]
+            # Scale.
+            tot = sum(dists)
+            dists = [dist / tot for dist in dists]
+            # Cumsum.
+            for i in range(1, n):
+                dists[i] += dists[i - 1]
+            # In case of duplicate cluster centers.
+            while 1:
+                num = random()
+                i = self._bin_search(num, dists)
+                center_cur = X[i]
+                if not any(self._cmp_arr(center_cur, center)
+                           for center in centers):
+                    break
+            centers.append(center_cur)
+        return centers
+
+    def _cmp_arr(self, arr1, arr2, tolerance=1e-8):
         """Compare if the elements of two lists are the same.
 
         Arguments:
@@ -27,25 +92,14 @@ class KMeans(object):
 
         Keyword Arguments:
             tolerance {float} -- The minimum acceptable difference.
-            (default: {1e-5})
+            (default: {1e-8})
 
         Returns:
             bool
         """
 
-        return all(abs(a - b) < tolerance for a, b in zip(arr1, arr2))
-
-    def _init_cluster_centers(self, k):
-        """Generate initial cluster centers with empty list.
-
-        Arguments:
-            k {int} -- Number of cluster centers.
-
-        Returns:
-            list
-        """
-
-        return [[] for _ in range(k)]
+        return len(arr1) == len(arr2) and \
+            all(abs(a - b) < tolerance for a, b in zip(arr1, arr2))
 
     def _get_cluster_centers(self, X, k, n_features, cluster_nums,
                              cluster_samples_cnt):
@@ -64,7 +118,8 @@ class KMeans(object):
 
         ret = [[0 for _ in range(n_features)] for _ in range(k)]
         for Xi, cetner_num in zip(X, cluster_nums):
-            ret[cetner_num] += Xi / cluster_samples_cnt[cetner_num]
+            for j in range(n_features):
+                ret[cetner_num][j] += Xi[j] / cluster_samples_cnt[cetner_num]
         return ret
 
     def _get_nearest_center(self, Xi, centers, distance_fn):
@@ -79,8 +134,8 @@ class KMeans(object):
             int -- Cluster center number.
         """
 
-        return min(((i, distance_fn(Xi, center))
-                    for i, center in enumerate(centers)), key=lambda x: x[1])
+        return min(((i, distance_fn(Xi, center)) for i, center
+                    in enumerate(centers)), key=lambda x: x[1])[0]
 
     def _get_nearest_centers(self, X, centers, distance_fn):
         """Search the nearest cluster centers of X.
@@ -96,51 +151,40 @@ class KMeans(object):
 
         return [self._get_nearest_center(Xi, centers, distance_fn) for Xi in X]
 
-    def _get_empty_cluster_nums(self, cluster_samples_cnt):
+    def _get_empty_cluster_nums(self, cluster_samples_cnt, k):
         """Filter empty cluster numbers.
 
         Arguments:
             cluster_samples_cnt {Counter} -- Count of samples in each cluster.
+            k {int} -- Number of cluster centers.
 
         Returns:
             list
         """
 
-        empty_clusters = filter(
-            lambda x: x[1] == 0, cluster_samples_cnt.items())
+        clusters = ((i, cluster_samples_cnt[i]) for i in range(k))
+        empty_clusters = filter(lambda x: x[1] == 0, clusters)
         return [empty_cluster[0] for empty_cluster in empty_clusters]
 
-    def _process_empty_clusters(self, centers, empty_cluster_nums):
+    def _process_empty_clusters(self, centers, empty_cluster_nums, n_features):
         """Replace empty clusters with new clusters centers.
 
         Arguments:
             centers {list} -- 2d list with int or float.
             empty_cluster_nums {list} -- 1d list with int.
+            n_features {int} -- Number of features.
 
         Returns:
             list
         """
-        n_features = len(centers[0])
+
         for i in empty_cluster_nums:
-            center_cur = []
+            center_cur = [random() for _ in range(n_features)]
             # In case of duplicate cluster centers.
             while any(self._cmp_arr(center_cur, center) for center in centers):
                 center_cur = [random() for _ in range(n_features)]
             centers[i] = center_cur
         return centers
-
-    def _has_empty_cluster(self, k, cluster_samples_cnt):
-        """If empty cluster exists.
-
-        Arguments:
-            k {int} -- Number of cluster centers.
-            cluster_samples_cnt{Counter} -- Count of samples in each cluster.
-
-        Returns:
-            bool
-        """
-
-        return any(map(lambda i: cluster_samples_cnt[i] == 0, range(k)))
 
     def _is_converged(self, centers, centers_new):
         """If the algorithm converges.
@@ -185,22 +229,24 @@ class KMeans(object):
 
         # Calculate cluster centers.
         # Initialization.
-        centers = self._init_cluster_centers(k, n_features)
-        cluster_samples_cnt = Counter()
-        for _ in range(n_iter):
-            # No empty clusters.
-            while self._has_empty_cluster(k, cluster_samples_cnt):
-                # Empty cluster numbers.
-                empty_cluster_nums = self._get_empty_cluster_nums(
-                    cluster_samples_cnt)
-                # Process empty clusters.
-                centers = self._process_empty_clusters(
-                    centers, empty_cluster_nums)
+        centers = self._init_cluster_centers(X, k, n_features, distance_fn)
+        for i in range(n_iter):
+            while 1:
                 # Search the nearest cluster centers of X
                 cluster_nums = self._get_nearest_centers(
                     X, centers, distance_fn)
                 # Count of samples in each cluster.
                 cluster_samples_cnt = Counter(cluster_nums)
+                # Empty cluster numbers.
+                empty_cluster_nums = self._get_empty_cluster_nums(
+                    cluster_samples_cnt, k)
+                # No empty clusters.
+                if empty_cluster_nums:
+                    # Process empty clusters.
+                    centers = self._process_empty_clusters(
+                        centers, empty_cluster_nums, n_features)
+                else:
+                    break
 
             # New cluster centers.
             centers_new = self._get_cluster_centers(
@@ -209,8 +255,9 @@ class KMeans(object):
             if self._is_converged(centers, centers_new):
                 break
             # Update current cluster centers.
-            centers = centers_new
+            centers = deepcopy(centers_new)
 
+        print("Iteration: %d" % i)
         # The properties of K-Means model.
         self.k = k
         self.n_features = n_features
