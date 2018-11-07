@@ -12,6 +12,16 @@ from copy import deepcopy
 
 
 class KMeans(object):
+    """KMeans class.
+
+    Attributes:
+        k {int} -- Number of cluster centers.
+        n_features {int} -- Number of features.
+        cluster_centers {list} -- 2d list with int or float.
+        distance_fn {function} -- The function to measure the distance.
+        cluster_samples_cnt {Counter} --  Count of samples in each cluster.
+    """
+
     def __init__(self):
         self.k = None
         self.n_features = None
