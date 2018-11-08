@@ -31,13 +31,14 @@ class KMeans(object):
 
     def _bin_search(self, target, nums):
         """Binary search a number from array-like object.
+        The result is the minimum number greater than target in nums.
 
         Arguments:
             target {float}
             nums {list}
 
         Returns:
-            int
+            int -- The index result in nums.
         """
 
         low = 0
@@ -45,7 +46,7 @@ class KMeans(object):
         assert nums[low] <= target < nums[high], "Cannot find target!"
         while 1:
             mid = (low + high) // 2
-            if mid == 1 or target >= nums[mid]:
+            if mid == 0 or target >= nums[mid]:
                 low = mid + 1
             elif target < nums[mid - 1]:
                 high = mid - 1
@@ -60,6 +61,7 @@ class KMeans(object):
             X {list} -- 2d list with int or float.
             k {int} -- Number of cluster centers.
             n_features {int} -- Number of features.
+            distance_fn {function} -- The function to measure the distance.
 
         Returns:
             list
@@ -69,24 +71,31 @@ class KMeans(object):
         centers = [X[randint(0, n - 1)]]
         for _ in range(k - 1):
             center_pre = centers[-1]
-            # Calculate distances of center_pre to all the rows in X.
-            indexes_dists = ([i, distance_fn(Xi, center_pre)]
-                             for i, Xi in enumerate(X))
-            # Sort the distances.
-            indexes_dists = sorted(indexes_dists, key=lambda x: x[1])
-            # Get distances.
-            dists = [x[1] for x in indexes_dists]
-            # Scale.
+            # Get the indexes and distances of center_pre to all the rows in X.
+            idxs_dists = ([i, distance_fn(Xi, center_pre)]
+                          for i, Xi in enumerate(X))
+            # Sort the indexes and distance pair by distance.
+            idxs_dists = sorted(idxs_dists, key=lambda x: x[1])
+            # Get the distances for index dist pairs.
+            dists = [x[1] for x in idxs_dists]
+            # Get the summary of distances.
             tot = sum(dists)
-            dists = [dist / tot for dist in dists]
-            # Cumsum.
+            # Scale the distances.
+            for i in range(1, n):
+                dists[i] /= tot
+            # Cumulative sum the distances.
             for i in range(1, n):
                 dists[i] += dists[i - 1]
-            # In case of duplicate cluster centers.
+            # Randomly choose a row in X as cluster center.
             while 1:
                 num = random()
-                i = self._bin_search(num, dists)
-                center_cur = X[i]
+                # Search the minimum distances greater than num.
+                dist_idx = self._bin_search(num, dists)
+                row_idx = idxs_dists[dist_idx][0]
+                # Set the corresponding row to the distance we searched
+                # as the new cluster center.
+                center_cur = X[row_idx]
+                # In case of duplicate cluster centers.
                 if not any(self._cmp_arr(center_cur, center)
                            for center in centers):
                     break
@@ -111,15 +120,14 @@ class KMeans(object):
         return len(arr1) == len(arr2) and \
             all(abs(a - b) < tolerance for a, b in zip(arr1, arr2))
 
-    def _get_cluster_centers(self, X, k, n_features, cluster_nums,
-                             cluster_samples_cnt):
+    def _get_cluster_centers(self, X, k, n_features, y, cluster_samples_cnt):
         """Calculate the cluster centers by the average of each cluster's samples.
 
         Arguments:
             X {list} -- 2d list with int or float.
             k {int} -- Number of cluster centers.
             n_features {int} -- Number of features.
-            cluster_nums {list} -- 1d list with int.
+            y {list} -- 1d list with int.
             cluster_samples_cnt{Counter} -- Count of samples in each cluster.
 
         Returns:
@@ -127,7 +135,7 @@ class KMeans(object):
         """
 
         ret = [[0 for _ in range(n_features)] for _ in range(k)]
-        for Xi, cetner_num in zip(X, cluster_nums):
+        for Xi, cetner_num in zip(X, y):
             for j in range(n_features):
                 ret[cetner_num][j] += Xi[j] / cluster_samples_cnt[cetner_num]
         return ret
@@ -147,13 +155,13 @@ class KMeans(object):
         return min(((i, distance_fn(Xi, center)) for i, center
                     in enumerate(centers)), key=lambda x: x[1])[0]
 
-    def _get_nearest_centers(self, X, centers, distance_fn):
+    def _get_nearest_centers(self, X, distance_fn, centers):
         """Search the nearest cluster centers of X.
 
         Arguments:
             X {list} -- 2d list with int or float.
-            centers {list} -- 2d list with int or float.
             distance_fn {function} -- The function to measure the distance.
+            centers {list} -- 2d list with int or float.
 
         Returns:
             list
@@ -161,8 +169,8 @@ class KMeans(object):
 
         return [self._get_nearest_center(Xi, centers, distance_fn) for Xi in X]
 
-    def _get_empty_cluster_nums(self, cluster_samples_cnt, k):
-        """Filter empty cluster numbers.
+    def _get_empty_cluster_idxs(self, cluster_samples_cnt, k):
+        """Filter the index of empty cluster.
 
         Arguments:
             cluster_samples_cnt {Counter} -- Count of samples in each cluster.
@@ -176,23 +184,52 @@ class KMeans(object):
         empty_clusters = filter(lambda x: x[1] == 0, clusters)
         return [empty_cluster[0] for empty_cluster in empty_clusters]
 
-    def _process_empty_clusters(self, centers, empty_cluster_nums, n_features):
+    def _get_furthest_row(self, X, distance_fn, centers,
+                          empty_cluster_idxs):
+        """Find the row in X which is furthest to all the non empty centers.
+
+        Arguments:
+            X {list} -- 2d list with int or float.
+            distance_fn {function} -- The function to measure the distance.
+            centers {list} -- 2d list with int or float.
+            empty_cluster_idxs {list} -- Non empty cluster centers' indexes.
+
+        Returns:
+            list -- 1d list with int or float.
+        """
+
+        # Function to calculate the distance of Xi to each cluster centers.
+        def f(Xi, centers):
+            return sum(distance_fn(Xi, centers) for center in centers)
+        # Filter the non empty cluster centers.
+        non_empty_centers = map(lambda x: x[1], filter(
+            lambda x: x[0] not in empty_cluster_idxs, enumerate(centers)))
+        # Find the row in X which is furthest to all the non empty centers.
+        return max(map(lambda x: [x, f(x, non_empty_centers)], X),
+                   key=lambda x: x[1])[0]
+
+    def _process_empty_clusters(self, X, distance_fn, n_features, centers,
+                                empty_cluster_idxs):
         """Replace empty clusters with new clusters centers.
 
         Arguments:
+            X {list} -- 2d list with int or float.
+            distance_fn {function} -- The function to measure the distance.
+            n_features {int} -- Number of features.
             centers {list} -- 2d list with int or float.
             empty_cluster_nums {list} -- 1d list with int.
-            n_features {int} -- Number of features.
 
         Returns:
             list
         """
 
-        for i in empty_cluster_nums:
-            center_cur = [random() for _ in range(n_features)]
+        for i in empty_cluster_idxs:
+            center_cur = self._get_furthest_row(X, distance_fn, centers,
+                                                empty_cluster_idxs)
             # In case of duplicate cluster centers.
             while any(self._cmp_arr(center_cur, center) for center in centers):
-                center_cur = [random() for _ in range(n_features)]
+                center_cur = self._get_furthest_row(X, distance_fn, centers,
+                                                    empty_cluster_idxs)
             centers[i] = center_cur
         return centers
 
@@ -243,31 +280,31 @@ class KMeans(object):
         for i in range(n_iter):
             while 1:
                 # Search the nearest cluster centers of X
-                cluster_nums = self._get_nearest_centers(
-                    X, centers, distance_fn)
+                y = self._get_nearest_centers(
+                    X, distance_fn, centers)
                 # Count of samples in each cluster.
-                cluster_samples_cnt = Counter(cluster_nums)
+                cluster_samples_cnt = Counter(y)
                 # Empty cluster numbers.
-                empty_cluster_nums = self._get_empty_cluster_nums(
+                empty_cluster_idxs = self._get_empty_cluster_idxs(
                     cluster_samples_cnt, k)
                 # No empty clusters.
-                if empty_cluster_nums:
+                if empty_cluster_idxs:
                     # Process empty clusters.
                     centers = self._process_empty_clusters(
-                        centers, empty_cluster_nums, n_features)
+                        centers, empty_cluster_idxs, n_features)
                 else:
                     break
 
             # New cluster centers.
             centers_new = self._get_cluster_centers(
-                X, k, n_features, cluster_nums, cluster_samples_cnt)
+                X, k, n_features, y, cluster_samples_cnt)
             # If the algorithm converges.
             if self._is_converged(centers, centers_new):
                 break
             # Update current cluster centers.
             centers = deepcopy(centers_new)
 
-        print("Iteration: %d" % i)
+        print("Iterations: %d" % i)
         # The properties of K-Means model.
         self.k = k
         self.n_features = n_features
