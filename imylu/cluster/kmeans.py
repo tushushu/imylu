@@ -5,10 +5,11 @@
 @Last Modified by:   tushushu
 @Last Modified time: 2018-11-01 14:31:13
 """
-from ..utils import get_euclidean_distance, get_cosine_distance
-from random import random, randint
+
 from collections import Counter
 from copy import deepcopy
+from random import random, randint
+from ..utils.utils import get_euclidean_distance, get_cosine_distance
 
 
 class KMeans(object):
