@@ -312,9 +312,10 @@ class DecisionTree(object):
             literals, prob = rule
             print("Rule %d: " % i, ' | '.join(
                 literals) + ' => y_hat %.4f' % prob)
+        print()
 
-    def _predict_prob(self, Xi):
-        """Auxiliary function of predict_prob.
+    def _predict(self, Xi):
+        """Auxiliary function of predict.
 
         Arguments:
             Xi {list} -- 1D list with int or float
@@ -332,18 +333,6 @@ class DecisionTree(object):
                 nd = nd.right
         return nd.prob
 
-    def predict_prob(self, X):
-        """Get the probability that y is positive.
-
-        Arguments:
-            X {list} -- 2d list object with int or float
-
-        Returns:
-            list -- 1d list object with float
-        """
-
-        return [self._predict_prob(Xi) for Xi in X]
-
     def predict(self, X, threshold=0.5):
         """Get the prediction of y.
 
@@ -358,4 +347,4 @@ class DecisionTree(object):
             list -- 1d list object with float
         """
 
-        return [int(y >= threshold) for y in self.predict_prob(X)]
+        return [int(self._predict(Xi) >= threshold) for Xi in X]

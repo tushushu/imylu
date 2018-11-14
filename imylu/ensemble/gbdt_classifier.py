@@ -12,8 +12,7 @@ from .gbdt_base import GradientBoostingBase
 
 class GradientBoostingClassifier(GradientBoostingBase):
     def __init__(self):
-        super(GradientBoostingClassifier, self).__init__()
-        self.fn = lambda x: sigmoid(x)
+        self.fn = sigmoid
 
     def _get_init_val(self, y):
         """Calculate the initial prediction of y

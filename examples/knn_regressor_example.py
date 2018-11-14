@@ -20,7 +20,7 @@ from imylu.utils.utils import run_time
 
 @run_time
 def main():
-    print("Tesing the accuracy of KNN regressor...")
+    print("Tesing the performance of KNN regressor...")
     # Load data
     X, y = load_boston_house_prices()
     X = min_max_scale(X)
@@ -30,7 +30,7 @@ def main():
     # Train model
     reg = KNeighborsRegressor()
     reg.fit(X=X_train, y=y_train, k_neighbors=3)
-    # Model accuracy
+    # Model evaluation
     get_r2(reg, X_test, y_test)
 
 

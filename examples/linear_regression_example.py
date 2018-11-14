@@ -21,21 +21,21 @@ from imylu.utils.utils import run_time
 def main():
     @run_time
     def batch():
-        print("Tesing the accuracy of LinearRegression(batch)...")
+        print("Tesing the performance of LinearRegression(batch)...")
         # Train model
         reg = LinearRegression()
         reg.fit(X=X_train, y=y_train, lr=0.02, epochs=5000)
-        # Model accuracy
+        # Model evaluation
         get_r2(reg, X_test, y_test)
 
     @run_time
     def stochastic():
-        print("Tesing the accuracy of LinearRegression(stochastic)...")
+        print("Tesing the performance of LinearRegression(stochastic)...")
         # Train model
         reg = LinearRegression()
         reg.fit(X=X_train, y=y_train, lr=0.001, epochs=1000,
                 method="stochastic", sample_rate=0.5)
-        # Model accuracy
+        # Model evaluation
         get_r2(reg, X_test, y_test)
 
     # Load data

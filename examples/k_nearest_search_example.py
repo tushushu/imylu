@@ -60,7 +60,7 @@ def test():
 
 
 def main():
-    print("Testing KD Tree...")
+    print("Testing K nearest search...")
     test_times = 100
     run_time_1 = run_time_2 = 0
     for _ in range(test_times):

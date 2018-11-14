@@ -22,7 +22,7 @@ def format_prediction(item_id, score):
 
 @run_time
 def main():
-    print("Tesing the accuracy of ALS...")
+    print("Tesing the performance of ALS...")
     # Load data
     X = load_movie_ratings()
     # Train model

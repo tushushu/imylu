@@ -201,9 +201,10 @@ class GradientBoostingBase(object):
             int or float -- prediction of yi.
         """
 
-        # Sum y_hat with residuals of each tree and then calulate sigmoid value
-        return self.fn(self.init_val +
-                       sum(self.lr * tree._predict(Xi) for tree in self.trees))
+        # Sum y_hat with residuals of each tree.
+        ret = self.init_val + sum(self.lr * tree._predict(Xi)
+                                  for tree in self.trees)
+        return self.fn(ret)
 
     def predict(self, X):
         """Get the prediction of y.

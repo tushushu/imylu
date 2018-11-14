@@ -40,7 +40,7 @@ def run_time(fn):
             ret *= 1e3
         else:
             unit = "s"
-        print("Total run time is %.1f %s" % (ret, unit))
+        print("Total run time is %.1f %s\n" % (ret, unit))
     return inner
 
 

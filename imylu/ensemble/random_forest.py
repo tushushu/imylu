@@ -76,7 +76,7 @@ class RandomForest(object):
         # Count positive vote
         pos_vote = 0
         for tree, features in zip(self.trees, self.tree_features):
-            score = tree._predict_prob([Xi[j] for j in features])
+            score = tree._predict([Xi[j] for j in features])
             if score >= 0.5:
                 pos_vote += 1
         # Get negative vote

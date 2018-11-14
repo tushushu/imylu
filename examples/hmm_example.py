@@ -21,6 +21,7 @@ from itertools import chain
 
 @run_time
 def main():
+    print("Tesing the performance of HMM...")
     # Load data
     X, y = load_tagged_speech()
     X_train, X_test, y_train, y_test = train_test_split(
@@ -42,7 +43,7 @@ def main():
                            for dic in model.emit_probs.values())
     assert emit_probs_check, "Emit probs incorrect!"
     print("Correctness test passed!")
-    # Model accuracy.
+    # Model evaluation.
     predictions = model.predict(X_test)
     numerator = sum(prediction == yi for prediction, yi
                     in zip(chain(*predictions), chain(*y_test)))

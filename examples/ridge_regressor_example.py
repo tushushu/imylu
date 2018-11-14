@@ -20,7 +20,7 @@ from imylu.utils.utils import run_time
 
 @run_time
 def main():
-    print("Tesing the accuracy of Ridge Regressor(stochastic)...")
+    print("Tesing the performance of Ridge Regressor(stochastic)...")
     # Load data
     X, y = load_boston_house_prices()
     X = min_max_scale(X)
@@ -30,7 +30,7 @@ def main():
     reg = Ridge()
     reg.fit(X=X_train, y=y_train, lr=0.001, epochs=1000,
             method="stochastic", sample_rate=0.5, alpha=1e-7)
-    # Model accuracy
+    # Model evaluation
     get_r2(reg, X_test, y_test)
 
 

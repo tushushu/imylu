@@ -21,6 +21,7 @@ class RegressionBase(object):
         self.bias = None
         self.weights = None
         self.alpha = None
+        self.fn = None
 
     def _predict(self, Xi):
         """y = WX + b.
@@ -32,7 +33,8 @@ class RegressionBase(object):
             float -- y
         """
 
-        return sum(wi * xij for wi, xij in zip(self.weights, Xi)) + self.bias
+        ret = sum(wi * xij for wi, xij in zip(self.weights, Xi)) + self.bias
+        return self.fn(ret) if self.fn else ret
 
     def _get_gradient_delta(self, Xi, yi):
         """Calculate the gradient delta of the partial derivative.

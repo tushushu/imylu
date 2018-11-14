@@ -13,14 +13,14 @@ sys.path.append(os.path.abspath(".."))
 
 from imylu.neighbors.knn_classifier import KNeighborsClassifier
 from imylu.utils.load_data import load_breast_cancer
-from imylu.utils.model_selection import get_acc, train_test_split
+from imylu.utils.model_selection import model_evaluation, train_test_split
 from imylu.utils.preprocessing import min_max_scale
 from imylu.utils.utils import run_time
 
 
 @run_time
 def main():
-    print("Tesing the accuracy of KNN classifier...")
+    print("Tesing the performance of KNN classifier...")
     # Load data
     X, y = load_breast_cancer()
     X = min_max_scale(X)
@@ -29,8 +29,8 @@ def main():
     # Train model
     clf = KNeighborsClassifier()
     clf.fit(X_train, y_train, k_neighbors=21)
-    # Model accuracy
-    get_acc(clf, X_test, y_test)
+    # Model evaluation
+    model_evaluation(clf, X_test, y_test)
 
 
 if __name__ == "__main__":

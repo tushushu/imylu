@@ -9,6 +9,7 @@ from .knn_base import KNeighborsBase
 
 
 class KNeighborsRegressor(KNeighborsBase):
+
     def _predict(self, Xi):
         """Auxiliary function of predict.
 

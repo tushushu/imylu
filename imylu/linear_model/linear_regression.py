@@ -16,6 +16,9 @@ class LinearRegression(RegressionBase):
         weights: W
     """
 
+    def __init__(self):
+        self.fn = None
+
     def _get_gradient_delta(self, Xi, yi):
         """Calculate the gradient delta of the partial derivative of MSE
         Loss function:

@@ -17,6 +17,9 @@ class LogisticRegression(RegressionBase):
         weights: W
     """
 
+    def __init__(self):
+        self.fn = sigmoid
+
     def _get_gradient_delta(self, Xi, yi):
         """Calculate the gradient delta of the partial derivative of Loss
         Estimation function (Maximize the likelihood):
@@ -56,8 +59,7 @@ class LogisticRegression(RegressionBase):
             tuple -- Gradient delta of bias and weight
         """
 
-        z = self._predict(Xi)
-        y_hat = sigmoid(z)
+        y_hat = self._predict(Xi)
         bias_grad_delta = yi - y_hat
         weights_grad_delta = [bias_grad_delta * Xij for Xij in Xi]
         return bias_grad_delta, weights_grad_delta
@@ -69,11 +71,11 @@ class LogisticRegression(RegressionBase):
             X {list} -- 2d list object with int or float
 
         Keyword Arguments:
-            threshold {float} -- Prediction = 1 when probability >= threshold 
+            threshold {float} -- Prediction = 1 when probability >= threshold
             (default: {0.5})
 
         Returns:
             list -- 1d list object with float
         """
 
-        return [int(sigmoid(self._predict(Xi)) >= threshold) for Xi in X]
+        return [int(self._predict(Xi) >= threshold) for Xi in X]

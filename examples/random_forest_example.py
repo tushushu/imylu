@@ -13,13 +13,13 @@ sys.path.append(os.path.abspath(".."))
 
 from imylu.ensemble.random_forest import RandomForest
 from imylu.utils.load_data import load_breast_cancer
-from imylu.utils.model_selection import train_test_split, get_acc
+from imylu.utils.model_selection import train_test_split, model_evaluation
 from imylu.utils.utils import run_time
 
 
 @run_time
 def main():
-    print("Tesing the accuracy of RandomForest...")
+    print("Tesing the performance of RandomForest...")
     # Load data
     X, y = load_breast_cancer()
     # Split data randomly, train set rate 70%
@@ -28,8 +28,8 @@ def main():
     # Train model
     rf = RandomForest()
     rf.fit(X_train, y_train, n_samples=300, max_depth=3, n_estimators=20)
-    # Model accuracy
-    get_acc(rf, X_test, y_test)
+    # Model evaluation
+    model_evaluation(rf, X_test, y_test)
 
 
 if __name__ == "__main__":

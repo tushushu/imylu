@@ -13,13 +13,13 @@ sys.path.append(os.path.abspath(".."))
 
 from imylu.probability_model.gaussian_nb import GaussianNB
 from imylu.utils.load_data import load_breast_cancer
-from imylu.utils.model_selection import train_test_split, get_acc
+from imylu.utils.model_selection import train_test_split, _get_acc
 from imylu.utils.utils import run_time
 
 
 @run_time
 def main():
-    print("Tesing the accuracy of Gaussian NaiveBayes...")
+    print("Tesing the performance of Gaussian NaiveBayes...")
     # Load data
     X, y = load_breast_cancer()
     # Split data randomly, train set rate 70%
@@ -27,8 +27,10 @@ def main():
     # Train model
     clf = GaussianNB()
     clf.fit(X_train, y_train)
-    # Model accuracy
-    get_acc(clf, X_test, y_test)
+    # Model evaluation
+    y_hat = clf.predict(X_test)
+    acc = _get_acc(y_test, y_hat)
+    print("Accuracy is %.3f" % acc)
 
 
 if __name__ == "__main__":

@@ -13,7 +13,7 @@ sys.path.append(os.path.abspath(".."))
 
 from imylu.linear_model.logistic_regression import LogisticRegression
 from imylu.utils.load_data import load_breast_cancer
-from imylu.utils.model_selection import train_test_split, get_acc
+from imylu.utils.model_selection import train_test_split, model_evaluation
 from imylu.utils.preprocessing import min_max_scale
 from imylu.utils.utils import run_time
 
@@ -21,22 +21,22 @@ from imylu.utils.utils import run_time
 def main():
     @run_time
     def batch():
-        print("Tesing the accuracy of LogisticRegression(batch)...")
+        print("Tesing the performance of LogisticRegression(batch)...")
         # Train model
         clf = LogisticRegression()
         clf.fit(X=X_train, y=y_train, lr=0.05, epochs=200)
-        # Model accuracy
-        get_acc(clf, X_test, y_test)
+        # Model evaluation
+        model_evaluation(clf, X_test, y_test)
 
     @run_time
     def stochastic():
-        print("Tesing the accuracy of LogisticRegression(stochastic)...")
+        print("Tesing the performance of LogisticRegression(stochastic)...")
         # Train model
         clf = LogisticRegression()
         clf.fit(X=X_train, y=y_train, lr=0.01, epochs=200,
                 method="stochastic", sample_rate=0.5)
-        # Model accuracy
-        get_acc(clf, X_test, y_test)
+        # Model evaluation
+        model_evaluation(clf, X_test, y_test)
 
     # Load data
     X, y = load_breast_cancer()
