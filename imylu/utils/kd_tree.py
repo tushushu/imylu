@@ -5,7 +5,7 @@
 @Last Modified by:   tushushu
 @Last Modified time: 2018-08-21 19:19:52
 """
-from ..utils import get_euclidean_distance
+from ..utils.utils import get_euclidean_distance
 
 
 class Node(object):

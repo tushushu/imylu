@@ -11,9 +11,11 @@ os.chdir(os.path.split(os.path.realpath(__file__))[0])
 import sys
 sys.path.append(os.path.abspath(".."))
 
-from imylu.utils import get_acc, load_breast_cancer, run_time, \
-    train_test_split, min_max_scale
 from imylu.neighbors.knn_classifier import KNeighborsClassifier
+from imylu.utils.load_data import load_breast_cancer
+from imylu.utils.model_selection import get_acc, train_test_split
+from imylu.utils.preprocessing import min_max_scale
+from imylu.utils.utils import run_time
 
 
 @run_time

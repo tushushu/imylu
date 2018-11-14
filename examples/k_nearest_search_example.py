@@ -11,10 +11,10 @@ os.chdir(os.path.split(os.path.realpath(__file__))[0])
 import sys
 sys.path.append(os.path.abspath(".."))
 
-
-from time import time
 from imylu.neighbors.knn_base import KNeighborsBase
-from imylu.utils import gen_data, get_euclidean_distance
+from imylu.utils.load_data import gen_data
+from imylu.utils.utils import get_euclidean_distance
+from time import time
 
 
 def exhausted_search(X, Xi, k):

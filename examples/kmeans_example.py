@@ -12,7 +12,9 @@ import sys
 sys.path.append(os.path.abspath(".."))
 
 from imylu.cluster.kmeans import KMeans
-from imylu.utils import load_breast_cancer, run_time, min_max_scale
+from imylu.utils.load_data import load_breast_cancer
+from imylu.utils.preprocessing import min_max_scale
+from imylu.utils.utils import run_time
 
 
 @run_time

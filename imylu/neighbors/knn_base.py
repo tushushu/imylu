@@ -5,8 +5,8 @@
 @Last Modified by:   tushushu
 @Last Modified time: 2018-08-13 17:15:29
 """
-from .kd_tree import KDTree
-from .max_heap import MaxHeap
+from ..utils.kd_tree import KDTree
+from ..utils.max_heap import MaxHeap
 
 
 class KNeighborsBase(object):

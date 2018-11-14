@@ -6,7 +6,7 @@
 @Last Modified time: 2018-07-05 17:51:04
 """
 from copy import copy
-from ..utils import list_split
+from ..utils.utils import list_split
 
 
 class Node(object):

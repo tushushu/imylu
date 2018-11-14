@@ -5,14 +5,17 @@
 @Last Modified by:   tushushu
 @Last Modified time: 2018-08-21 17:32:24
 """
+
 import os
 os.chdir(os.path.split(os.path.realpath(__file__))[0])
 
 import sys
 sys.path.append(os.path.abspath(".."))
 
-from imylu.utils import load_breast_cancer, train_test_split, get_acc, run_time
 from imylu.tree.decision_tree import DecisionTree
+from imylu.utils.load_data import load_breast_cancer
+from imylu.utils.model_selection import train_test_split, get_acc
+from imylu.utils.utils import run_time
 
 
 @run_time

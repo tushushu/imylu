@@ -6,7 +6,7 @@
 @Last Modified time: 2018-10-15 15:19:14
 """
 from collections import defaultdict
-from .matrix import Matrix
+from ..utils.matrix import Matrix
 from random import random
 
 

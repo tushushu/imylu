@@ -6,7 +6,7 @@
 @Last Modified time: 2018-07-05 17:37:34
 """
 from math import log
-from ..utils import sigmoid
+from ..utils.utils import sigmoid
 from .gbdt_base import GradientBoostingBase
 
 

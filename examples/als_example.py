@@ -11,8 +11,9 @@ os.chdir(os.path.split(os.path.realpath(__file__))[0])
 import sys
 sys.path.append(os.path.abspath(".."))
 
-from imylu.utils import load_movie_ratings, run_time
 from imylu.recommend.als import ALS
+from imylu.utils.load_data import load_movie_ratings
+from imylu.utils.utils import run_time
 
 
 def format_prediction(item_id, score):

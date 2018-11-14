@@ -11,9 +11,9 @@ os.chdir(os.path.split(os.path.realpath(__file__))[0])
 import sys
 sys.path.append(os.path.abspath(".."))
 
-from random import random
-from imylu.utils import run_time
 from imylu.ensemble.isolation_forest import IsolationForest
+from imylu.utils.utils import run_time
+from random import random
 
 
 @run_time

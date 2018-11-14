@@ -11,10 +11,10 @@ os.chdir(os.path.split(os.path.realpath(__file__))[0])
 import sys
 sys.path.append(os.path.abspath(".."))
 
-from imylu.neighbors.max_heap import MaxHeap
-from imylu.utils import gen_data
-from time import time
 from copy import copy
+from imylu.utils.load_data import gen_data
+from imylu.utils.max_heap import MaxHeap
+from time import time
 
 
 def exhausted_search(nums, k):

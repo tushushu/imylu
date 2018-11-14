@@ -8,7 +8,7 @@ The paper links:
 http://cs.nju.edu.cn/zhouzh/zhouzh.files/publication/tkdd11.pdf
 """
 from random import sample, random, choice
-from ..utils import list_split
+from ..utils.utils import list_split
 
 
 class Node(object):

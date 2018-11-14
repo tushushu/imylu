@@ -6,7 +6,7 @@
 @Last Modified time: 2018-07-05 16:41:03
 """
 from .regression_base import RegressionBase
-from ..utils import sigmoid
+from ..utils.utils import sigmoid
 
 
 class LogisticRegression(RegressionBase):

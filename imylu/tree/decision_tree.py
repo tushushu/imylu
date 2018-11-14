@@ -8,7 +8,7 @@
 
 from math import log2
 from copy import copy
-from ..utils import list_split
+from ..utils.utils import list_split
 
 
 class Node(object):
