@@ -6,6 +6,7 @@
 @Last Modified time: 2018-11-14 11:02:02
 """
 from random import random, seed
+from itertools import chain
 
 
 def train_test_split(X, y, prob=0.7, random_state=None):
@@ -102,11 +103,27 @@ def _get_r2(y, y_hat):
         float
     """
 
+    m = len(y)
+    n = len(y_hat)
+    assert m == n, "Lengths of two arrays do not match!"
+    assert m != 0, "Empty array!"
+
     sse = sum((yi - yi_hat) ** 2 for yi, yi_hat in zip(y, y_hat))
     y_avg = sum(y) / len(y)
     sst = sum((yi - y_avg) ** 2 for yi in y)
     r2 = 1 - sse / sst
     return r2
+
+
+def _clf_input_check(y, y_hat):
+    m = len(y)
+    n = len(y_hat)
+    elements = chain(y, y_hat)
+    valid_elements = {0, 1}
+    assert m == n, "Lengths of two arrays do not match!"
+    assert m != 0, "Empty array!"
+    assert all(element in valid_elements
+               for element in elements), "Array values have to be 0 or 1!"
 
 
 def _get_acc(y, y_hat):
@@ -120,6 +137,7 @@ def _get_acc(y, y_hat):
         float
     """
 
+    _clf_input_check(y, y_hat)
     return sum(yi == yi_hat for yi, yi_hat in zip(y, y_hat)) / len(y)
 
 
@@ -134,6 +152,7 @@ def _get_precision(y, y_hat):
         float
     """
 
+    _clf_input_check(y, y_hat)
     true_positive = sum(yi and yi_hat for yi, yi_hat in zip(y, y_hat))
     predicted_positive = sum(y_hat)
     return true_positive / predicted_positive
@@ -164,6 +183,7 @@ def _get_tpr(y, y_hat):
         float
     """
 
+    _clf_input_check(y, y_hat)
     true_positive = sum(yi and yi_hat for yi, yi_hat in zip(y, y_hat))
     actual_positive = sum(y)
     return true_positive / actual_positive
@@ -180,6 +200,7 @@ def _get_tnr(y, y_hat):
         float
     """
 
+    _clf_input_check(y, y_hat)
     true_negative = sum(1 - (yi or yi_hat) for yi, yi_hat in zip(y, y_hat))
     actual_negative = len(y) - sum(y)
     return true_negative / actual_negative
