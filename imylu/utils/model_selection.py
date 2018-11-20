@@ -217,14 +217,32 @@ def _get_auc(y, y_hat_prob):
         float
     """
 
-    thresholds = sorted(set(y_hat_prob))
-    tpr = 1
-    tnr = 0
+    roc = _get_roc(y, y_hat_prob)
+    tpr_pre = 1
+    tnr_pre = 0
     auc = 0
+    for tpr, tnr in roc:
+        auc += (tpr + tpr_pre) * (tnr - tnr_pre) / 2
+        tpr_pre = tpr
+        tnr_pre = tnr
+    return auc
+
+
+def _get_roc(y, y_hat_prob):
+    """Calculate the points of ROC.
+
+    Arguments:
+        y {list} -- 1d list object with int.
+        y_hat_prob {list} -- 1d list object with int.
+
+    Returns:
+        list
+    """
+
+    thresholds = sorted(set(y_hat_prob))
+    ret = []
     for threshold in thresholds:
         y_hat = [int(yi_hat_prob >= threshold) for yi_hat_prob in y_hat_prob]
-        tpr_pre, tpr = tpr, _get_tpr(y, y_hat)
-        tnr_pre, tnr = tnr, _get_tnr(y, y_hat)
-        auc += (tpr + tpr_pre) * (tnr - tnr_pre) / 2
-    auc += (1 - tnr) * tpr / 2
-    return auc
+        ret.append([_get_tpr(y, y_hat), _get_tnr(y, y_hat)])
+    ret.append([0, 1])
+    return ret
