@@ -217,14 +217,13 @@ def _get_auc(y, y_hat_prob):
         float
     """
 
-    roc = _get_roc(y, y_hat_prob)
-    tpr_pre = 1
-    tnr_pre = 0
+    roc = iter(_get_roc(y, y_hat_prob))
+    tpr_pre, fpr_pre = next(roc)
     auc = 0
-    for tpr, tnr in roc:
-        auc += (tpr + tpr_pre) * (tnr - tnr_pre) / 2
+    for tpr, fpr in roc:
+        auc += (tpr + tpr_pre) * (fpr - fpr_pre) / 2
         tpr_pre = tpr
-        tnr_pre = tnr
+        fpr_pre = fpr
     return auc
 
 
@@ -239,10 +238,9 @@ def _get_roc(y, y_hat_prob):
         list
     """
 
-    thresholds = sorted(set(y_hat_prob))
-    ret = []
+    thresholds = sorted(set(y_hat_prob), reverse=True)
+    ret = [[0, 0]]
     for threshold in thresholds:
         y_hat = [int(yi_hat_prob >= threshold) for yi_hat_prob in y_hat_prob]
-        ret.append([_get_tpr(y, y_hat), _get_tnr(y, y_hat)])
-    ret.append([0, 1])
+        ret.append([_get_tpr(y, y_hat), 1 - _get_tnr(y, y_hat)])
     return ret
