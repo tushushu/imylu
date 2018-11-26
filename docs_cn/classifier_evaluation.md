@@ -295,7 +295,7 @@ df.plot(x="fpr", y="tpr", label="roc")
 ```
 ![classifier_evaluation6.png](https://github.com/tushushu/imylu/blob/master/pic/classifier_evaluation6.png)
 
-### 10.9 预测值恒等于0.9的ROC曲线
+### 10.8 预测值恒等于0.9的ROC曲线
 
 ```python
 y_pred = np.array([0.9] * len(y))
