@@ -23,7 +23,7 @@ def get_acc(y, y_hat):
 如何解决准确率的陷阱呢，接下来轮到混淆矩阵矩阵出场了。混淆矩阵，顾名思义，就是可以让你混淆各种模型评价指标的矩阵。矩阵的形状是2 x
 2，其中，
 - 矩阵的左上角表示，预测值为1，实际值为1(True Positive，简称TP)；
-- 右上角表示被预测值为1，实际值为0(False
+- 右上角表示预测值为1，实际值为0(False
 Positive，简称FP)；
 - 左下角表示预测值为0，实际值为1(False Negative，简称FN)；
 - 右下角表示预测值为0，实际值为0(True
@@ -67,16 +67,17 @@ def get_tnr(y, y_hat):
 
 ## 9. ROC
 由于TPR = TP / Number of
-Positive，所以当阈值为0时，所有的样本都会被预测为Positive，所以TPR等于1，同理这时的TNR为0，当阈值为1时TPR等于0，TNR等于1。如果我们让阈值从0逐渐提升到1，会得到很多对TPR和TNR，将这些值当做数据点，以TPR为y轴，TNR为x轴绘制出一条曲线，这条曲线就是ROC曲线。用全宇宙最简单的编程语言Python实现ROC数据点的计算函数如下：
+Positive，所以当阈值为0时，所有的样本都会被预测为Positive，所以TPR等于1，同理这时的1 - TNR为1，当阈值为1时TPR等于0，1-
+TNR等于0。如果我们让阈值从1逐渐降低到0，会得到很多对TPR和1 - TNR，将这些值当做数据点，以TPR为y轴，1 -
+TNR为x轴绘制出一条曲线，这条曲线就是ROC曲线。用全宇宙最简单的编程语言Python实现ROC数据点的计算函数如下：
 
 ```python
 def get_roc(y, y_hat_prob):
-    thresholds = sorted(set(y_hat_prob))
-    ret = []
+    thresholds = sorted(set(y_hat_prob), reverse=True)
+    ret = [[0, 0]]
     for threshold in thresholds:
         y_hat = [int(yi_hat_prob >= threshold) for yi_hat_prob in y_hat_prob]
-        ret.append([get_tpr(y, y_hat), get_tnr(y, y_hat)])
-    ret.append([0, 1])
+        ret.append([get_tpr(y, y_hat), 1 - get_tnr(y, y_hat)])
     return ret
 ```
 
@@ -85,14 +86,13 @@ ROC曲线下的面积被称为AUC，可以评估模型的性能。用全宇宙�
 
 ```python
 def get_auc(y, y_hat_prob):
-    roc = get_roc(y, y_hat_prob)
-    tpr_pre = 1
-    tnr_pre = 0
+    roc = iter(get_roc(y, y_hat_prob))
+    tpr_pre, fpr_pre = next(roc)
     auc = 0
-    for tpr, tnr in roc:
-        auc += (tpr + tpr_pre) * (tnr - tnr_pre) / 2
+    for tpr, fpr in roc:
+        auc += (tpr + tpr_pre) * (fpr - fpr_pre) / 2
         tpr_pre = tpr
-        tnr_pre = tnr
+        fpr_pre = fpr
     return auc
 ```
 
@@ -123,10 +123,11 @@ y_pred = rand(1000)
 
 ```python
 points = get_roc(y, y_pred)
-df = pd.DataFrame(points, columns=["tpr", "tnr"])
+df = pd.DataFrame(points, columns=["tpr", "fpr"])
 print("AUC is %.3f." % get_auc(y, y_pred))
-df.plot(x="tpr", y="tnr", label="roc")
+df.plot(x="fpr", y="tpr", label="roc")
 ```
+
 ![classifier_evaluation.png](https://github.com/tushushu/imylu/blob/master/pic/classifier_evaluation.png)
 
 ### 10.2 AUC值为1，模型的预测能力最强
@@ -141,9 +142,9 @@ y_pred = np.array(y)
 
 ```python
 points = get_roc(y, y_pred)
-df = pd.DataFrame(points, columns=["tpr", "tnr"])
+df = pd.DataFrame(points, columns=["tpr", "fpr"])
 print("AUC is %.3f." % get_auc(y, y_pred))
-df.plot(x="tpr", y="tnr", label="roc")
+df.plot(x="fpr", y="tpr", label="roc")
 ```
 ![classifier_evaluation1.png](https://github.com/tushushu/imylu/blob/master/pic/classifier_evaluation1.png)
 
@@ -162,9 +163,9 @@ y_pred = np.array([f(yi) if rand() > 0.3 else f(1 - yi) for yi in y])
 
 ```python
 points = get_roc(y, y_pred)
-df = pd.DataFrame(points, columns=["tpr", "tnr"])
+df = pd.DataFrame(points, columns=["tpr", "fpr"])
 print("AUC is %.3f." % get_auc(y, y_pred))
-df.plot(x="tpr", y="tnr", label="roc")
+df.plot(x="fpr", y="tpr", label="roc")
 ```
 ![classifier_evaluation2.png](https://github.com/tushushu/imylu/blob/master/pic/classifier_evaluation2.png)
 
@@ -190,13 +191,13 @@ def f(x):
 y_pred = np.array([f(yi) for yi in y])
 ```
 
-计算出ROC曲线的数据点，并绘制ROC曲线。可以看出ROC曲线的形状是偏右的。
+计算出ROC曲线的数据点，并绘制ROC曲线。可以看出ROC曲线的形状是偏上的。
 
 ```python
 points = get_roc(y, y_pred)
-df = pd.DataFrame(points, columns=["tpr", "tnr"])
+df = pd.DataFrame(points, columns=["tpr", "fpr"])
 print("AUC is %.3f." % get_auc(y, y_pred))
-df.plot(x="tpr", y="tnr", label="roc")
+df.plot(x="fpr", y="tpr", label="roc")
 ```
 ![classifier_evaluation3.png](https://github.com/tushushu/imylu/blob/master/pic/classifier_evaluation3.png)
 
@@ -222,13 +223,13 @@ def f(x):
 y_pred = np.array([f(yi) for yi in y])
 ```
 
-计算出ROC曲线的数据点，并绘制ROC曲线。可以看出ROC曲线的形状是偏上的。
+计算出ROC曲线的数据点，并绘制ROC曲线。可以看出ROC曲线的形状是偏左的。
 
 ```python
 points = get_roc(y, y_pred)
-df = pd.DataFrame(points, columns=["tpr", "tnr"])
+df = pd.DataFrame(points, columns=["tpr", "fpr"])
 print("AUC is %.3f." % get_auc(y, y_pred))
-df.plot(x="tpr", y="tnr", label="roc")
+df.plot(x="fpr", y="tpr", label="roc")
 ```
 ![classifier_evaluation4.png](https://github.com/tushushu/imylu/blob/master/pic/classifier_evaluation4.png)
 
@@ -257,9 +258,9 @@ y_pred = np.array([f(yi) for yi in y])
 
 ```python
 points = get_roc(y, y_pred)
-df = pd.DataFrame(points, columns=["tpr", "tnr"])
+df = pd.DataFrame(points, columns=["tpr", "fpr"])
 print("AUC is %.3f." % get_auc(y, y_pred))
-df.plot(x="tpr", y="tnr", label="roc")
+df.plot(x="fpr", y="tpr", label="roc")
 ```
 ![classifier_evaluation5.png](https://github.com/tushushu/imylu/blob/master/pic/classifier_evaluation5.png)
 
@@ -288,8 +289,28 @@ y_pred = np.array([f(yi) for yi in y])
 
 ```python
 points = get_roc(y, y_pred)
-df = pd.DataFrame(points, columns=["tpr", "tnr"])
+df = pd.DataFrame(points, columns=["tpr", "fpr"])
 print("AUC is %.3f." % get_auc(y, y_pred))
-df.plot(x="tpr", y="tnr", label="roc")
+df.plot(x="fpr", y="tpr", label="roc")
 ```
 ![classifier_evaluation6.png](https://github.com/tushushu/imylu/blob/master/pic/classifier_evaluation6.png)
+
+### 10.9 预测值恒等于0.9的ROC曲线
+
+```python
+y_pred = np.array([0.9] * len(y))
+```
+
+计算出ROC曲线的数据点，并绘制ROC曲线。发现预测值为定值的模型，ROC曲线是一条直线，AUC恒等于0.5。
+
+```python
+points = get_roc(y, y_pred)
+df = pd.DataFrame(points, columns=["tpr", "fpr"])
+print("AUC is %.3f." % get_auc(y, y_pred))
+df.plot(x="fpr", y="tpr", label="roc")
+```
+![classifier_evaluation7.png](https://github.com/tushushu/imylu/blob/master/pic/classifier_evaluation7.png)
+
+### 利用notedown包将ipython notebook文件转为markdown文件
+notedown
+classifier_evaluation.ipynb --to markdown --strip > classifier_evaluation.md
