@@ -2,7 +2,7 @@
 提到KD-Tree相信大家应该都不会觉得陌生（不陌生你点进来干嘛[捂脸]），大名鼎鼎的KNN算法就用到了KD-Tree。本文就KD-Tree的基本原理进行讲解，并手把手、肩并肩地带您实现这一算法。
 
 完整实现代码请参考本人的p...哦不是...github：  
-[kd_tree.py](https://github.com/tushushu/imylu/blob/master/imylu/neighbors/kd_tree.py)  
+[kd_tree.py](https://github.com/tushushu/imylu/blob/master/imylu/utils/kd_tree.py)  
 [kd_tree_example.py](https://github.com/tushushu/imylu/blob/master/examples/kd_tree_example.py)  
 
 
@@ -335,9 +335,9 @@ def main():
 
 ## 3.4 工具函数
 本人自定义了一些工具函数，可以在github上查看  
-[utils.py](https://github.com/tushushu/imylu/blob/master/imylu/utils.py)
-1. gen_data  - 随机生成一维或者二维列表
-2. get_euclidean_distance - 计算欧氏距离的平方
+[utils](https://github.com/tushushu/imylu/tree/master/imylu/utils)  
+1. gen_data  - 随机生成一维或者二维列表  
+2. get_euclidean_distance - 计算欧氏距离的平方  
 3. min_max_scale - 对二维列表进行归一化
 
 # 总结

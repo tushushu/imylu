@@ -2,7 +2,7 @@
 提到大顶堆相信大家应该都不会觉得陌生（不陌生你点进来干嘛[捂脸]），大名鼎鼎的KNN算法就用到了大顶堆。本文就大顶堆的基本原理进行讲解，并手把手、肩并肩地带您实现这一算法。
 
 完整实现代码请参考本人的p...哦不是...github：  
-[max_heap.py](https://github.com/tushushu/imylu/blob/master/imylu/neighbors/max_heap.py)  
+[max_heap.py](https://github.com/tushushu/imylu/blob/master/imylu/utils/max_heap.py)  
 [max_heap_example.py](https://github.com/tushushu/imylu/blob/master/examples/max_heap_example.py)  
 
 

@@ -12,10 +12,10 @@
 
 ## 1.1 温故知新
 GBDT分类只是在GBDT回归上做了一点点改造，而GBDT分类又是建立在回归树的基础上的。
-之前写过一篇GBDT回归的文章，链接如下：
-[GBDT回归的原理与Python实现](https://www.cnblogs.com/lixiaoxiaowen/articles/9598093.html)
-之前写过一篇回归树的文章，链接如下：
-[回归树的原理与Python实现](https://www.cnblogs.com/lixiaoxiaowen/articles/9597983.html)
+之前写过一篇GBDT回归的文章，链接如下：  
+[gbdt_regressor.md](https://github.com/tushushu/imylu/blob/master/docs_cn/gbdt_regressor.md)
+之前写过一篇回归树的文章，链接如下：  
+[regression_tree.md](https://github.com/tushushu/imylu/blob/master/docs_cn/regression_tree.md)
 
 ## 1.2 Sigmoid函数
 如果对逻辑回归或者神经网络有所了解的话，那么对Sigmoid函数应该不会感到陌生，它的函数表达式是：  
@@ -315,11 +315,11 @@ def main():
 ![gbdt_classifier.png](https://github.com/tushushu/imylu/blob/master/pic/gbdt_classifier.png)
 
 ## 3.3 工具函数
-本人自定义了一些工具函数，可以在github上查看
-[utils.py](https://github.com/tushushu/imylu/blob/master/imylu/utils.py)
-1. run_time - 测试函数运行时间
-2. load_breast_cancer - 加载乳腺癌数据
-3. train_test_split - 拆分训练集、测试集
+本人自定义了一些工具函数，可以在github上查看：  
+[utils](https://github.com/tushushu/imylu/tree/master/imylu/utils)  
+1. run_time - 测试函数运行时间  
+2. load_breast_cancer - 加载乳腺癌数据  
+3. train_test_split - 拆分训练集、测试集  
 4. get_acc - 计算准确度
 
 

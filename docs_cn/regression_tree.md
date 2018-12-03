@@ -260,11 +260,12 @@ def main():
 
 ## 3.3 工具函数
 本人自定义了一些工具函数，可以在github上查看  
-[utils.py](https://github.com/tushushu/imylu/blob/master/imylu/utils.py)  
-1. run_time - 测试函数运行时间
-2. load_boston_house_prices - 加载波士顿房价数据
-3. train_test_split - 拆分训练集、测试集
-4. get_r2 - 计算拟合优度
+[utils](https://github.com/tushushu/imylu/tree/master/imylu/utils)  
+
+1. run_time - 测试函数运行时间  
+2. load_boston_house_prices - 加载波士顿房价数据  
+3. train_test_split - 拆分训练集、测试集  
+4. get_r2 - 计算拟合优度  
 
 
 # 总结

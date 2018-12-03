@@ -48,7 +48,7 @@
 
 # 2. 实现篇
 本人用全宇宙最简单的编程语言——Python实现了ALS算法，没有依赖任何第三方库，便于学习和使用。简单说明一下实现过程，更详细的注释请参考本人github上的代码。  
-注：代码中用到的Matrix类是我写的一个矩阵类，可以取出矩阵的行或列，计算矩阵的乘法、转置和逆。代码链接：[matrix.py](https://github.com/tushushu/imylu/blob/master/imylu/recommend/matrix.py)  
+注：代码中用到的Matrix类是我写的一个矩阵类，可以取出矩阵的行或列，计算矩阵的乘法、转置和逆。代码链接：[matrix.py](https://github.com/tushushu/imylu/blob/master/imylu/utils/matrix.py)  
 
 ## 2.1 创建ALS类
 初始化，存储用户ID、物品ID、用户ID与用户矩阵列号的对应关系、物品ID与物品矩阵列号的对应关系、用户已经看过哪些物品、评分矩阵的Shape以及RMSE。
@@ -244,7 +244,7 @@ def main():
 ![als](https://github.com/tushushu/imylu/blob/master/pic/als.png)
 
 ## 3.3 工具函数
-本人自定义了一些工具函数，可以在github上查看：[utils.py](https://github.com/tushushu/imylu/blob/master/imylu/utils.py)  
+本人自定义了一些工具函数，可以在github上查看：[utils](https://github.com/tushushu/imylu/tree/master/imylu/utils)  
 1. run_time - 测试函数运行时间
 2. load_movie_ratings - 加载电影评分数据
 
