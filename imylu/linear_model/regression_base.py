@@ -15,12 +15,10 @@ class RegressionBase(object):
         Attributes:
             bias: b
             weights: W
-            alpha: α
         """
 
         self.bias = None
         self.weights = None
-        self.alpha = None
         self.fn = None
 
     def _predict(self, Xi):
@@ -44,10 +42,13 @@ class RegressionBase(object):
             yi {float}
 
         Returns:
-            NotImplemented
+            tuple -- Gradient delta of bias and weight
         """
 
-        return NotImplemented
+        y_hat = self._predict(Xi)
+        bias_grad_delta = yi - y_hat
+        weights_grad_delta = [bias_grad_delta * Xij for Xij in Xi]
+        return bias_grad_delta, weights_grad_delta
 
     def _batch_gradient_descent(self, X, y, lr, epochs):
         """Update the gradient by the whole dataset.
@@ -107,8 +108,7 @@ class RegressionBase(object):
                 self.weights = [w + lr * w_grad for w,
                                 w_grad in zip(self.weights, weights_grad)]
 
-    def fit(self, X, y, lr, epochs, method="batch", sample_rate=1.0,
-            alpha=None):
+    def fit(self, X, y, lr, epochs, method="batch", sample_rate=1.0):
         """Train regression model.
 
         Arguments:
@@ -120,11 +120,8 @@ class RegressionBase(object):
         Keyword Arguments:
             method {str} -- "batch" or "stochastic" (default: {"batch"})
             sample_rate {float} -- Between 0 and 1 (default: {1.0})
-            alpha {float} -- Regularization strength. (default: {None})
         """
 
-        if alpha is not None:
-            self.alpha = alpha
         assert method in ("batch", "stochastic")
         # batch gradient descent
         if method == "batch":
