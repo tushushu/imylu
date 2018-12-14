@@ -46,6 +46,7 @@ class LogisticRegression(RegressionBase):
     """
 
     def __init__(self):
+        RegressionBase.__init__(self)
         self.fn = sigmoid
 
     def predict(self, X, threshold=0.5):
@@ -62,4 +63,4 @@ class LogisticRegression(RegressionBase):
             list -- 1d list object with float
         """
 
-        return [int(self._predict(Xi) >= threshold) for Xi in X]
+        return [int(sigmoid(self._predict(Xi)) >= threshold) for Xi in X]

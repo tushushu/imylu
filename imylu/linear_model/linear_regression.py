@@ -29,7 +29,7 @@ class LinearRegression(RegressionBase):
     """
 
     def __init__(self):
-        self.fn = None
+        RegressionBase.__init__(self)
 
     def predict(self, X):
         """Get the prediction of y.
