@@ -21,16 +21,16 @@ class RegressionBase(object):
         self.weights = None
 
     def _predict(self, Xi):
-        """y = WX + b.
+        """Auxiliary function of predict.
 
         Arguments:
             Xi {list} -- 1d list object with int or float.
 
         Returns:
-            float -- y
+            NotImplemented
         """
 
-        return sum(wi * xij for wi, xij in zip(self.weights, Xi)) + self.bias
+        return NotImplemented
 
     def _get_gradient_delta(self, Xi, yi):
         """Calculate the gradient delta of the partial derivative.
