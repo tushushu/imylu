@@ -9,6 +9,8 @@ from .knn_base import KNeighborsBase
 
 
 class KNeighborsClassifier(KNeighborsBase):
+    def __init__(self):
+        KNeighborsBase.__init__(self)
 
     def _predict(self, Xi):
         """Auxiliary function of predict.

@@ -12,6 +12,7 @@ from .gbdt_base import GradientBoostingBase
 
 class GradientBoostingClassifier(GradientBoostingBase):
     def __init__(self):
+        GradientBoostingBase.__init__(self)
         self.fn = sigmoid
 
     def _get_init_val(self, y):

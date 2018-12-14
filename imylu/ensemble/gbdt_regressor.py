@@ -11,6 +11,7 @@ from .gbdt_base import GradientBoostingBase
 
 class GradientBoostingRegressor(GradientBoostingBase):
     def __init__(self):
+        GradientBoostingBase.__init__(self)
         self.fn = lambda x: x
 
     def _get_init_val(self, y):
