@@ -172,9 +172,10 @@ def main():
 ```
 
 ## 3.2 效果展示
-批量梯度下降拟合优度0.801，运行时间1.74秒；
-随机梯度下降拟合优度0.801，运行时间1.74秒。
+批量梯度下降拟合优度0.784，运行时间12.6秒；
+随机梯度下降拟合优度0.784，运行时间1.6秒。
 效果还算不错~
+![linear_regression.png](https://github.com/tushushu/imylu/blob/master/pic/linear_regression.png)
 
 ## 3.3 工具函数
 本人自定义了一些工具函数，可以在github上查看  
