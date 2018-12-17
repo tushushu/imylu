@@ -63,7 +63,6 @@ class RegressionBase(object):
         m, n = len(X), len(X[0])
         self.bias = 0
         self.weights = [normalvariate(0, 0.01) for _ in range(n)]
-        # Calculate the gradient of each epoch(iteration)
         for _ in range(epochs):
             bias_grad = 0
             weights_grad = [0 for _ in range(n)]
@@ -96,7 +95,6 @@ class RegressionBase(object):
         k = int(m * sample_rate)
         self.bias = 0
         self.weights = [normalvariate(0, 0.01) for _ in range(n)]
-        # Calculate the gradient of each epoch(iteration)
         for _ in range(epochs):
             # Calculate the gradient delta of each sample
             for i in sample(range(m), k):
