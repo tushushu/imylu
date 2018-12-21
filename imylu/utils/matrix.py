@@ -208,3 +208,30 @@ class Matrix(object):
         error_msg = "A's column count does not match B's row count!"
         assert self.shape[1] == B.shape[0], error_msg
         return Matrix([self._mat_mul(row_A, B) for row_A in self.data])
+
+    def _mean(self, data):
+        """Calculate the average of all the samples.
+
+        Arguments:
+            X {list} -- 2d list with int or float.
+
+        Returns:
+            list -- 1d list with int or float.
+        """
+
+        m = len(data)
+        n = len(data[0])
+        ret = [0 for _ in range(n)]
+        for row in data:
+            for j in range(n):
+                ret[j] += row[j] / m
+        return ret
+
+    def mean(self):
+        """Calculate the average of all the samples.
+
+        Returns:
+            Matrix
+        """
+
+        return Matrix(self._mean(self.data))
