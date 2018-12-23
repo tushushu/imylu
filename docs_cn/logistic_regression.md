@@ -42,29 +42,28 @@ $L = \large\frac{1}{m}\normalsize\sum_{1}^{m}(Y_{i} - \large\frac{1}{1 + e^{-WX_
 
 ## 1.6 极大似然估计
 既然不能用最小二乘法，那么肯定是有方法求解的，极大似然估计闪亮登场。前方小段数学公式低能预警：  
-1. 线性函数  
-$z = WX + b$
-2. Sigmoid函数  
-$y = \large\frac{1}{1 + e^{-z}}$
-3. 似然函数  
-$P(Y | X, W, b) = \prod_{1}^{m} \hat y_{i}^{y_{i}} * (1-\hat y_{i})^{1-y_{i}}$  
-4. 对似然函数两边取对数的负值  
-$L = -\sum_{1}^{m}(y_{i} * log \hat y_{i} + (1-y_{i}) * log(1-\hat y_{i}))$
+线性函数  
+1. $z = WX + b$   
+Sigmoid函数   
+2. $\hat y = \large\frac{1}{1 + e^{-z}}$  
+似然函数   
+3. $P(Y | X, W, b) = \prod_{1}^{m} \hat y_{i}^{y_{i}} * (1-\hat y_{i})^{1-y_{i}}$  
+对似然函数两边取对数的负值  
+4. $L = -\sum_{1}^{m}(y_{i} * log \hat y_{i} + (1-y_{i}) * log(1-\hat y_{i}))$  
+对1式求导   
+5. $\large\frac{\mathrm{d}Z}{\mathrm{d}W}\normalsize=X$  
+对2式求导  
+6. $\large\frac{\mathrm{d}\hat{y}}{\mathrm{d}z}\normalsize=z * (1 - z)$  
+对3式求导  
+7. $\large\frac{\mathrm{d}L}{\mathrm{d}\hat{y}}\normalsize=y/\hat{y} - (1-y)/(1-\hat{y})$  
+8. $\large\frac{\mathrm{d}Z}{\mathrm{d}b}\normalsize=1$  
 
-对W和b求偏导数:  
-$\large\frac{\mathrm{d}z}{\mathrm{d}W}\normalsize=X$  
-$dy_hat/dz = y_hat * (1-y_hat)$  
-$dlog(L)/dy_hat = y * 1/y_hat - (1-y) * 1/(1-y_hat)$  
-$dz/db = 1$  
 
+根据5, 6, 7式:  
+9. $\large\frac{\mathrm{d}L}{\mathrm{d}W}\normalsize=(y - \hat{y}) * X$ 
 
-According to 1,2,3:
-dlog(L)/dW = dlog(L)/dy_hat * dy_hat/dz * dz/dW
-dlog(L)/dW = (y - y_hat) * X
-
-According to 2,3,4:
-dlog(L)/db = dlog(L)/dy_hat * dy_hat/dz * dz/db
-dlog(L)/db = y - y_hat
+根据6, 7, 8式:  
+10. $\large\frac{\mathrm{d}L}{\mathrm{d}W}\normalsize=(y - \hat{y})$ 
 
 
 
@@ -91,7 +90,8 @@ class LogisticRegression(RegressionBase):
 ## 2.3 预测一个样本
 ```Python
 def _predict(self, Xi):
-    return sum(wi * xij for wi, xij in zip(self.weights, Xi)) + self.bias
+    z = sum(wi * xij for wi, xij in zip(self.weights, Xi)) + self.bias
+    return sigmoid(z)
 ```
 
 ## 2.4 计算梯度
@@ -159,30 +159,30 @@ def fit(self, X, y, lr, epochs, method="batch", sample_rate=1.0):
 ## 2.8 预测多个样本
 ```Python
 def predict(self, X):
-    return [self._predict(xi) for xi in X]
+    return [int(self._predict(Xi) >= threshold) for Xi in X]
 ```
 
 # 3 效果评估
 ## 3.1 main函数
-使用著名的波士顿房价数据集，按照7:3的比例拆分为训练集和测试集，训练模型，并统计准确度。
+使用著名的乳腺癌数据集，按照7:3的比例拆分为训练集和测试集，训练模型，并统计准确度。
 ```Python
 def main():
     @run_time
     def batch():
-        print("Tesing the performance of logisticRegression(batch)...")
-        reg = logisticRegression()
-        reg.fit(X=X_train, y=y_train, lr=0.02, epochs=5000)
-        get_r2(reg, X_test, y_test)
+        print("Tesing the performance of LogisticRegression(batch)...")
+        clf = LogisticRegression()
+        clf.fit(X=X_train, y=y_train, lr=0.05, epochs=200)
+        model_evaluation(clf, X_test, y_test)
 
     @run_time
     def stochastic():
-        print("Tesing the performance of logisticRegression(stochastic)...")
-        reg = logisticRegression()
-        reg.fit(X=X_train, y=y_train, lr=0.001, epochs=1000,
+        print("Tesing the performance of LogisticRegression(stochastic)...")
+        clf = LogisticRegression()
+        clf.fit(X=X_train, y=y_train, lr=0.01, epochs=200,
                 method="stochastic", sample_rate=0.5)
-        get_r2(reg, X_test, y_test)
+        model_evaluation(clf, X_test, y_test)
 
-    X, y = load_boston_house_prices()
+    X, y = load_breast_cancer()
     X = min_max_scale(X)
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
     batch()
@@ -190,8 +190,8 @@ def main():
 ```
 
 ## 3.2 效果展示
-批量梯度下降拟合优度0.784，运行时间12.6秒；
-随机梯度下降拟合优度0.784，运行时间1.6秒。
+批量梯度下降AUC 0.984，运行时间677.9 毫秒；
+随机梯度下降AUC 0.997，运行时间437.6 毫秒。
 效果还算不错~
 ![logistic_regression.png](https://github.com/tushushu/imylu/blob/master/pic/logistic_regression.png)
 
@@ -200,9 +200,10 @@ def main():
 [utils](https://github.com/tushushu/imylu/tree/master/imylu/utils)  
 
 1. run_time - 测试函数运行时间  
-2. load_boston_house_prices - 加载波士顿房价数据  
+2. load_breast_cancer - 加载乳腺癌数据  
 3. train_test_split - 拆分训练集、测试集  
-4. get_r2 - 计算拟合优度 
+4. model_evaluation - 计算AUC，准确度，召回率
+5. min_max_scale - 归一化
 
 
 # 总结
