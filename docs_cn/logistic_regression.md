@@ -60,10 +60,10 @@ Sigmoid函数
 
 
 根据5, 6, 7式:  
-9. $\large\frac{\mathrm{d}L}{\mathrm{d}W}\normalsize=(y - \hat{y}) * X$ 
+9. $\large\frac{\mathrm{d}L}{\mathrm{d}W}\normalsize=-\sum(y - \hat{y}) * X$ 
 
 根据6, 7, 8式:  
-10. $\large\frac{\mathrm{d}L}{\mathrm{d}W}\normalsize=(y - \hat{y})$ 
+10. $\large\frac{\mathrm{d}L}{\mathrm{d}W}\normalsize=-\sum(y - \hat{y})$ 
 
 
 
@@ -158,7 +158,7 @@ def fit(self, X, y, lr, epochs, method="batch", sample_rate=1.0):
 
 ## 2.8 预测多个样本
 ```Python
-def predict(self, X):
+def predict(self, X, threshold=0.5):
     return [int(self._predict(Xi) >= threshold) for Xi in X]
 ```
 
