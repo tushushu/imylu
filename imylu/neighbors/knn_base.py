@@ -93,7 +93,7 @@ class KNeighborsBase(object):
             X {list} -- 2d list object with int or float
 
         Returns:
-            NotImplemented
+            list -- 1d list object with int or float
         """
 
-        return NotImplemented
+        return [self._predict(Xi) for Xi in X]

@@ -23,20 +23,5 @@ class KNeighborsClassifier(KNeighborsBase):
         """
 
         heap = self._knn_search(Xi)
-        return sum(nd.split[1] for nd in heap._items) / self.k_neighbors
-
-    def predict(self, X, threshold=0.5):
-        """Get the prediction of y.
-
-        Arguments:
-            X {list} -- 2d list object with int or float
-
-        Keyword Arguments:
-            threshold {float} -- Prediction = 1 when probability >= threshold
-            (default: {0.5})
-
-        Returns:
-            list -- 1d list object with float
-        """
-
-        return [int(self._predict(Xi) >= threshold) for Xi in X]
+        n_pos = sum(nd.split[1] for nd in heap._items)
+        return int(n_pos * 2 > self.k_neighbors)
