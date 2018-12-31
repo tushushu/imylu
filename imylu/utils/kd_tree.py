@@ -169,7 +169,6 @@ class KDTree(object):
         nd = self.root
         idxs = range(len(X))
         que = [(nd, idxs)]
-        # Breadth-First Search
         while que:
             nd, idxs = que.pop(0)
             n = len(idxs)
