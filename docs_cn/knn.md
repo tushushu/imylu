@@ -75,7 +75,7 @@ def fit(self, X, y, k_neighbors=3):
 寻找Xi的k紧邻，代码看不懂没关系。慢慢来，毕竟我自己回过头来看这段代码也是一头雾水。  
 1. 获取kd_Tree
 2. 建立大顶堆
-3. 广度优先搜索
+3. 建立队列
 4. 外层循环更新大顶堆
 5. 内层循环遍历kd_Tree
 6. 满足堆顶是第k近邻时退出循环
@@ -132,24 +132,37 @@ def predict(self, X):
 ```Python
 @run_time
 def main():
-
-    print("Tesing the accuracy of GBDT classifier...")
-
+    print("Tesing the performance of KNN classifier...")
     X, y = load_breast_cancer()
-
+    X = min_max_scale(X)
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=20)
-
-    clf = GradientBoostingClassifier()
-    clf.fit(X_train, y_train, n_estimators=2,
-            lr=0.8, max_depth=3, min_samples_split=2)
-
-    get_acc(clf, X_test, y_test)
+    clf = KNeighborsClassifier()
+    clf.fit(X_train, y_train, k_neighbors=21)
+    model_evaluation(clf, X_test, y_test)
 ```
+
 ## 3.2 回归问题
+使用著名的波士顿房价数据集，按照7:3的比例拆分为训练集和测试集，训练模型，并统计准确度。(注意要对数据进行归一化)
+```Python
+@run_time
+def main():
+    print("Tesing the performance of KNN regressor...")
+    X, y = load_boston_house_prices()
+    X = min_max_scale(X)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, random_state=10)
+    reg = KNeighborsRegressor()
+    reg.fit(X=X_train, y=y_train, k_neighbors=3)
+    get_r2(reg, X_test, y_test)
+```
 
 ## 3.3 效果展示
-最终准确度93.082%，运行时间14.9秒，效果还算不错~
-![gbdt_classifier.png](https://github.com/tushushu/imylu/blob/master/pic/gbdt_classifier.png)
+分类模型AUC 0.947，运行时间1.1秒；
+回归模型R2 0.780，运行时间212毫秒；
+效果还算不错~
+![knn_classifier.png](https://github.com/tushushu/imylu/blob/master/pic/knn_classifier.png)
+
+![knn_regressor.png](https://github.com/tushushu/imylu/blob/master/pic/knn_regressor.png)
 
 ## 3.4 工具函数
 本人自定义了一些工具函数，可以在github上查看：  
@@ -157,11 +170,12 @@ def main():
 1. run_time - 测试函数运行时间  
 2. load_breast_cancer - 加载乳腺癌数据  
 3. train_test_split - 拆分训练集、测试集  
-4. get_acc - 计算准确度
+4. min_max_scale - 归一化
+5. model_evaluation - 分类模型的acc，precision，recall，AUC
+6. get_r2 - 回归模型的r2
+7. load_boston_house_prices - 加载波士顿房价数据
 
 
 # 总结
-GBDT分类的原理：GBDT回归加Sigmoid
-
-GBDT分类的实现：一言难尽[哭]
-
+KNN分类的原理：用KD-Tree和大顶堆寻找最k近邻  
+KNN分类的实现：队列加两层while循环
