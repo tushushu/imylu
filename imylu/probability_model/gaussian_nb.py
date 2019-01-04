@@ -77,10 +77,10 @@ class GaussianNB(object):
             for i in range(n):
                 feature_sum[y[i]] += X[i][j]
                 feature_sqr_sum[y[i]] += X[i][j] ** 2
-            feature_avg = [feature_sum[i] / n for i in range(n_class)]
+            feature_avg = [x / n for x in feature_sum]
             # D(X) = E{[X-E(X)]^2} = E(X^2)-[E(X)]^2
-            feature_var = [feature_sqr_sum[i] / n -
-                           feature_avg[i] ** 2 for i in range(n_class)]
+            feature_var = [x / n - y ** 2 for x,
+                           y in zip(feature_sqr_sum, feature_avg)]
             avgs.append(feature_avg)
             variances.append(feature_var)
         return avgs, variances
@@ -114,8 +114,8 @@ class GaussianNB(object):
         probs = [1] * self.n_class
         # Caculate the joint probabilities of each feature and each class.
         for xij, avgs, variances in zip(row, self.avgs, self.variances):
-            probs = [probs[i] * self._get_posterior(xij, avgs[i], variances[i])
-                     for i in range(self.n_class)]
+            probs = [prob * self._get_posterior(xij, avg, var)
+                     for prob, avg, var in zip(probs, avgs, variances)]
         # Scale the probabilities
         probs_sum = sum(probs)
         return [prob / probs_sum for prob in probs]
