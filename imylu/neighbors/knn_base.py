@@ -50,7 +50,7 @@ class KNeighborsBase(object):
         heap = MaxHeap(self.k_neighbors, lambda x: x.dist)
         # The path from root to a leaf node when searching Xi.
         nd = tree._search(Xi, tree.root)
-        # BFS
+        # Initialize a queue.
         que = [(tree.root, nd)]
         while que:
             nd_root, nd_cur = que.pop(0)
@@ -93,7 +93,7 @@ class KNeighborsBase(object):
             X {list} -- 2d list object with int or float
 
         Returns:
-            NotImplemented
+            list -- 1d list object with int or float
         """
 
-        return NotImplemented
+        return [self._predict(Xi) for Xi in X]
