@@ -6,12 +6,17 @@
 @Last Modified time: 2018-11-14 11:11:35
 """
 
-from random import randint
-from time import time
-from math import exp
 from copy import copy
-from statistics import median
 from itertools import tee
+from math import exp
+from random import randint
+from statistics import median
+from time import time
+
+
+def array2str(array, n_digits):
+    ret = ", ".join(map(lambda x: str(round(x, n_digits)), array))
+    return "[%s]" % ret
 
 
 def run_time(fn):

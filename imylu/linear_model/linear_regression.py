@@ -31,18 +31,6 @@ class LinearRegression(RegressionBase):
     def __init__(self):
         RegressionBase.__init__(self)
 
-    def _predict(self, Xi):
-        """y = WX + b.
-
-        Arguments:
-            Xi {list} -- 1d list object with int or float.
-
-        Returns:
-            float -- y
-        """
-
-        return sum(wi * xij for wi, xij in zip(self.weights, Xi)) + self.bias
-
     def predict(self, X):
         """Get the prediction of y.
 
@@ -53,4 +41,4 @@ class LinearRegression(RegressionBase):
             list -- prediction of y
         """
 
-        return [self._predict(xi) for xi in X]
+        return X.dot(self.weights) + self.bias

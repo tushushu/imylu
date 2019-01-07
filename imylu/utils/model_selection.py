@@ -5,8 +5,9 @@
 @Last Modified by:   tushushu
 @Last Modified time: 2018-11-14 11:02:02
 """
-from random import random, seed
 from itertools import chain
+import numpy as np
+from numpy.random import choice, seed
 
 
 def train_test_split(X, y, prob=0.7, random_state=None):
@@ -30,19 +31,14 @@ def train_test_split(X, y, prob=0.7, random_state=None):
 
     if random_state is not None:
         seed(random_state)
-    X_train = []
-    X_test = []
-    y_train = []
-    y_test = []
-    for i in range(len(X)):
-        if random() < prob:
-            X_train.append(X[i])
-            y_train.append(y[i])
-        else:
-            X_test.append(X[i])
-            y_test.append(y[i])
-    # Make the fixed random_state random again
-    seed()
+    m, n = X.shape
+    k = int(m * prob)
+    train_indexes = choice(range(m), size=k, replace=False)
+    test_indexes = np.array([i for i in range(m) if i not in train_indexes])
+    X_train = X[train_indexes]
+    X_test = X[test_indexes]
+    y_train = y[train_indexes]
+    y_test = y[test_indexes]
     return X_train, X_test, y_train, y_test
 
 
@@ -103,14 +99,13 @@ def _get_r2(y, y_hat):
         float
     """
 
-    m = len(y)
-    n = len(y_hat)
+    m = y.shape[0]
+    n = y_hat.shape[0]
     assert m == n, "Lengths of two arrays do not match!"
     assert m != 0, "Empty array!"
 
-    sse = sum((yi - yi_hat) ** 2 for yi, yi_hat in zip(y, y_hat))
-    y_avg = sum(y) / len(y)
-    sst = sum((yi - y_avg) ** 2 for yi in y)
+    sse = ((y - y_hat) ** 2).mean()
+    sst = y.var()
     r2 = 1 - sse / sst
     return r2
 
