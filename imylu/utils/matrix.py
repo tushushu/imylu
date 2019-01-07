@@ -6,6 +6,7 @@
 @Last Modified time: 2018-10-15 19:46:58
 """
 from itertools import product, chain
+from copy import deepcopy
 
 
 class Matrix(object):
@@ -235,3 +236,20 @@ class Matrix(object):
         """
 
         return Matrix(self._mean(self.data))
+
+    def scala_mul(self, scala):
+        """Scala multiplication.
+
+        Arguments:
+            scala {float}
+
+        Returns:
+            Matrix
+        """
+
+        m, n = self.shape
+        data = deepcopy(self.data)
+        for i in range(m):
+            for j in range(n):
+                data[i][j] *= scala
+        return Matrix(data)
