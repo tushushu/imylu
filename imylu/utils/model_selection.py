@@ -10,23 +10,23 @@ import numpy as np
 from numpy.random import choice, seed
 
 
-def train_test_split(X, y, prob=0.7, random_state=None):
+def train_test_split(X, y=None, prob=0.7, random_state=None):
     """Split X, y into train set and test set.
 
     Arguments:
-        X {list} -- 2d list object with int or float.
-        y {list} -- 1d list object with int or float.
+        X {array} -- 2d array object with int or float.
 
     Keyword Arguments:
+        y {array} -- 1d array object with int or float.
         prob {float} -- Train data expected rate between 0 and 1.
         (default: {0.7})
         random_state {int} -- Random seed. (default: {None})
 
     Returns:
-        X_train {list} -- 2d list object with int or float.
-        X_test {list} -- 2d list object with int or float.
-        y_train {list} -- 1d list object with int 0 or 1.
-        y_test {list} -- 1d list object with int 0 or 1.
+        X_train {array} -- 2d array object with int or float.
+        X_test {array} -- 2d array object with int or float.
+        y_train {array} -- 1d array object with int 0 or 1.
+        y_test {array} -- 1d array object with int 0 or 1.
     """
 
     if random_state is not None:
@@ -37,9 +37,12 @@ def train_test_split(X, y, prob=0.7, random_state=None):
     test_indexes = np.array([i for i in range(m) if i not in train_indexes])
     X_train = X[train_indexes]
     X_test = X[test_indexes]
-    y_train = y[train_indexes]
-    y_test = y[test_indexes]
-    return X_train, X_test, y_train, y_test
+    if y:
+        y_train = y[train_indexes]
+        y_test = y[test_indexes]
+        return X_train, X_test, y_train, y_test
+    else:
+        return X_train, X_test
 
 
 def get_r2(reg, X, y):
