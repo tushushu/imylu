@@ -4,7 +4,6 @@
 """
 from numpy.linalg import eig
 import heapq
-import numpy as np
 
 
 class PCA(object):
