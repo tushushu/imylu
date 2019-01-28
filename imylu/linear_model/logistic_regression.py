@@ -48,17 +48,17 @@ class LogisticRegression(RegressionBase):
     def __init__(self):
         RegressionBase.__init__(self)
 
-    def _predict(self, Xi):
-        """y = sigmoid(WX + b).
+    def _predict(self, X):
+        """Get the probability of y.
 
         Arguments:
-            Xi {list} -- 1d list object with int or float.
+            X {list} -- 2d list object with int or float
 
         Returns:
-            float -- y
+            list -- 1d list object with float
         """
-        z = sum(wi * xij for wi, xij in zip(self.weights, Xi)) + self.bias
-        return sigmoid(z)
+
+        return sigmoid(X.dot(self.weights) + self.bias)
 
     def predict(self, X, threshold=0.5):
         """Get the prediction of y.
@@ -71,7 +71,7 @@ class LogisticRegression(RegressionBase):
             (default: {0.5})
 
         Returns:
-            list -- 1d list object with float
+            list -- 1d list object with int
         """
-
-        return [int(self._predict(Xi) >= threshold) for Xi in X]
+        y_prob = self._predict(X)
+        return (y_prob >= threshold).astype(int)

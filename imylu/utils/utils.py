@@ -8,7 +8,7 @@
 
 from copy import copy
 from itertools import tee
-from math import exp
+from numpy import exp
 from random import randint
 from statistics import median
 from time import time
@@ -49,22 +49,19 @@ def run_time(fn):
     return inner
 
 
-def sigmoid(x, x_min=-100):
+def sigmoid(x):
     """Calculate the sigmoid value of x.
     Sigmoid(x) = 1 / (1 + e^(-x))
+    It would cause math range error when x < -709
 
     Arguments:
         x {float}
-
-    Keyword Arguments:
-        x_min {int} -- It would cause math range error when x < -709
-        (default: {-100})
 
     Returns:
         float -- between 0 and 1
     """
 
-    return 1 / (1 + exp(-x)) if x > x_min else 0
+    return 1 / (1 + exp(-x))
 
 
 def split_list(X, idxs, feature, split, low, high):
