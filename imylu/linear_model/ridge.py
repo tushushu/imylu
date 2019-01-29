@@ -33,22 +33,24 @@ class Ridge(LinearRegression):
         LinearRegression.__init__(self)
         self.alpha = None
 
-    def _get_gradient_delta(self, Xi, yi):
-        """Calculate the gradient delta of the partial derivative of MSE
+    def _get_gradient(self, X, y):
+        """Calculate the gradient of the partial derivative.
 
         Arguments:
-            Xi {list} -- 1d list object with int
-            yi {float}
+            X {array} -- 2d array object with int.
+            y {float}
 
         Returns:
-            tuple -- Gradient delta of bias and weight
+            tuple -- Gradient of bias and weight
         """
 
-        y_hat = self._predict(Xi)
-        bias_grad_delta = yi - y_hat - self.alpha * self.bias
-        weights_grad_delta = [(yi - y_hat) * Xij - self.alpha * wj
-                              for Xij, wj in zip(Xi, self.weights)]
-        return bias_grad_delta, weights_grad_delta
+        y_hat = self.predict(X)
+        bias_grad = y - y_hat - self.alpha * self.bias
+        try:
+            weights_grad = (y - y_hat)[:, None] * X - self.alpha * self.weights
+        except IndexError:
+            weights_grad = (y - y_hat) * X - self.alpha * self.weights
+        return bias_grad, weights_grad
 
     def fit(self, X, y, lr, epochs, alpha, method="batch", sample_rate=1.0):
         """Train regression model.
