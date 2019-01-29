@@ -77,7 +77,7 @@ def model_evaluation(clf, X, y):
     """
 
     y_hat = clf.predict(X)
-    y_hat_prob = clf._predict(X)
+    y_hat_prob = clf.predict_prob(X)
 
     ret = dict()
     ret["Accuracy"] = _get_acc(y, y_hat)

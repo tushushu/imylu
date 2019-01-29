@@ -48,7 +48,7 @@ class LogisticRegression(RegressionBase):
     def __init__(self):
         RegressionBase.__init__(self)
 
-    def _predict(self, X):
+    def predict_prob(self, X):
         """Get the probability of y.
 
         Arguments:
@@ -73,5 +73,5 @@ class LogisticRegression(RegressionBase):
         Returns:
             list -- 1d list object with int
         """
-        y_prob = self._predict(X)
+        y_prob = self.predict_prob(X)
         return (y_prob >= threshold).astype(int)
