@@ -11,7 +11,7 @@ import sys
 sys.path.append(os.path.abspath(".."))
 
 
-from imylu.utils.utils import run_time, array2str
+from imylu.utils.utils import run_time
 from imylu.utils.preprocessing import min_max_scale
 from imylu.utils.model_selection import get_r2, train_test_split
 from imylu.utils.load_data import load_boston_house_prices
@@ -27,8 +27,7 @@ def main():
         reg.fit(X=X_train, y=y_train, lr=0.1, epochs=1000)
         # Model evaluation
         get_r2(reg, X_test, y_test)
-        weights = array2str(reg.weights, 2)
-        print("The weighs and bias are:\n%s\n%.2f" % (weights, reg.bias))
+        print(reg)
 
     @run_time
     def stochastic():
@@ -39,8 +38,7 @@ def main():
                 method="stochastic", sample_rate=0.5)
         # Model evaluation
         get_r2(reg, X_test, y_test)
-        weights = array2str(reg.weights, 2)
-        print("The weighs and bias are:\n%s\n%.2f" % (weights, reg.bias))
+        print(reg)
 
     # Load data
     X, y = load_boston_house_prices()

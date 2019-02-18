@@ -59,7 +59,7 @@ def get_r2(reg, X, y):
 
     y_hat = reg.predict(X)
     r2 = _get_r2(y, y_hat)
-    print("Test r2 is %.3f!" % r2)
+    print("Test r2 is %.3f!\n" % r2)
     return r2
 
 

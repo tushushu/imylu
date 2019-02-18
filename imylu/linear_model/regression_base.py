@@ -7,6 +7,7 @@
 """
 import numpy as np
 from numpy.random import choice
+from ..utils.utils import array2str
 
 
 class RegressionBase(object):
@@ -20,6 +21,10 @@ class RegressionBase(object):
 
         self.bias = None
         self.weights = None
+
+    def __str__(self):
+        weights = array2str(self.weights, 2)
+        return "Weighs: %s\nBias: %.2f\n" % (weights, self.bias)
 
     def _get_gradient(self, X, y):
         """Calculate the gradient of the partial derivative.

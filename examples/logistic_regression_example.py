@@ -27,6 +27,7 @@ def main():
         clf.fit(X=X_train, y=y_train, lr=0.05, epochs=200)
         # Model evaluation
         model_evaluation(clf, X_test, y_test)
+        print(clf)
 
     @run_time
     def stochastic():
@@ -37,6 +38,7 @@ def main():
                 method="stochastic", sample_rate=0.5)
         # Model evaluation
         model_evaluation(clf, X_test, y_test)
+        print(clf)
 
     # Load data
     X, y = load_breast_cancer()
