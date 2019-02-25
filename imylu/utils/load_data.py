@@ -24,7 +24,7 @@ def _load_data(file_name):
 
     path = os.path.join(BASE_PATH, "dataset", "%s.csv" % file_name)
     data = np.loadtxt(path, delimiter=',')
-    X, y = data[:, ::-1], data[:, -1]
+    X, y = data[:, :-1], data[:, -1]
     return X, y
 
 
