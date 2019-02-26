@@ -8,14 +8,14 @@
 
 from copy import copy
 from itertools import tee
-from numpy import exp
+from numpy import exp, array
 from random import randint
 from statistics import median
 from time import time
 
 
-def array2str(array, n_digits):
-    ret = ", ".join(map(lambda x: str(round(x, n_digits)), array))
+def arr2str(arr: array, n_digits: int)->str:
+    ret = ", ".join(map(lambda x: str(round(x, n_digits)), arr))
     return "[%s]" % ret
 
 
