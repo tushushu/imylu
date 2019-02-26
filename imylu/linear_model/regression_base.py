@@ -7,7 +7,8 @@
 """
 import numpy as np
 from numpy.random import choice
-from ..utils.utils import array2str
+from numpy import array
+from ..utils.utils import arr2str
 
 
 class RegressionBase(object):
@@ -23,10 +24,10 @@ class RegressionBase(object):
         self.weights = None
 
     def __str__(self):
-        weights = array2str(self.weights, 2)
+        weights = arr2str(self.weights, 2)
         return "Weighs: %s\nBias: %.2f\n" % (weights, self.bias)
 
-    def _get_gradient(self, X, y):
+    def _get_gradient(self, X: array, y: array):
         """Calculate the gradient of the partial derivative.
 
         Arguments:
@@ -37,12 +38,21 @@ class RegressionBase(object):
             tuple -- Gradient of bias and weight
         """
 
-        y_hat = self.predict(X)
+        # Use predict_prob method if this is a classifier.
+        if hasattr(self, "predict_prob"):
+            y_hat = self.predict_prob(X)
+        else:
+            y_hat = self.predict(X)
+
+        # Calculate the gradient according to the dimention of X, y.
         bias_grad = y - y_hat
-        try:
+        if X.ndim is 1:
             weights_grad = bias_grad[:, None] * X
-        except IndexError:
-            weights_grad = bias_grad * X
+        elif X.ndim is 2:
+            weights_grad = (bias_grad * X).mean(axis=0)
+            bias_grad = bias_grad.mean()
+        else:
+            raise ValueError("Dimension of X has to be 1 or 2!")
         return bias_grad, weights_grad
 
     def _batch_gradient_descent(self, X, y, lr, epochs):
@@ -64,8 +74,8 @@ class RegressionBase(object):
             # Calculate and sum the gradient delta of each sample
             bias_grad, weights_grad = self._get_gradient(X, y)
             # Update the bias and weight by gradient of current epoch
-            self.bias += lr * bias_grad.mean() * 2
-            self.weights += lr * weights_grad.mean(axis=0) * 2
+            self.bias += lr * bias_grad.mean()
+            self.weights += lr * weights_grad.mean(axis=0)
 
     def _stochastic_gradient_descent(self, X, y, lr, epochs, sample_rate):
         """Update the gradient by the random sample of dataset.
@@ -92,7 +102,8 @@ class RegressionBase(object):
                 self.bias += lr * bias_grad
                 self.weights += lr * weights_grad
 
-    def fit(self, X, y, lr, epochs, method="batch", sample_rate=1.0):
+    def fit(self, X: array, y: array, lr: float, epochs: int,
+            method: str = "batch", sample_rate: float = 1.0):
         """Train regression model.
 
         Arguments:
@@ -114,7 +125,7 @@ class RegressionBase(object):
         if method == "stochastic":
             self._stochastic_gradient_descent(X, y, lr, epochs, sample_rate)
 
-    def predict(self, X):
+    def predict(self, X: array):
         """Get the prediction of y.
 
         Arguments:
