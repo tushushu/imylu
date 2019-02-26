@@ -45,15 +45,16 @@ class RegressionBase(object):
             y_hat = self.predict(X)
 
         # Calculate the gradient according to the dimention of X, y.
-        bias_grad = y - y_hat
+        grad_bias = y - y_hat
         if X.ndim is 1:
-            weights_grad = bias_grad[:, None] * X
+            grad_weights = grad_bias * X
         elif X.ndim is 2:
-            weights_grad = (bias_grad * X).mean(axis=0)
-            bias_grad = bias_grad.mean()
+            grad_weights = grad_bias[:, None] * X
+            grad_weights = grad_weights.mean(axis=0)
+            grad_bias = grad_bias.mean()
         else:
             raise ValueError("Dimension of X has to be 1 or 2!")
-        return bias_grad, weights_grad
+        return grad_bias, grad_weights
 
     def _batch_gradient_descent(self, X, y, lr, epochs):
         """Update the gradient by the whole dataset.
@@ -67,15 +68,22 @@ class RegressionBase(object):
             epochs {int} -- Number of epochs to update the gradient.
         """
 
+        # Initialize the bias and weights.
         _, n = X.shape
         self.bias = 0
         self.weights = np.random.normal(size=n)
-        for _ in range(epochs):
+
+        for i in range(epochs):
             # Calculate and sum the gradient delta of each sample
-            bias_grad, weights_grad = self._get_gradient(X, y)
+            grad_bias, grad_weights = self._get_gradient(X, y)
+
+            # Show the gradient of each epoch.
+            grad = (grad_bias + grad_weights.mean()) / 2
+            print("Epochs %d gradient %.3f" % (i + 1, grad), flush=True)
+
             # Update the bias and weight by gradient of current epoch
-            self.bias += lr * bias_grad.mean()
-            self.weights += lr * weights_grad.mean(axis=0)
+            self.bias += lr * grad_bias
+            self.weights += lr * grad_weights
 
     def _stochastic_gradient_descent(self, X, y, lr, epochs, sample_rate):
         """Update the gradient by the random sample of dataset.
@@ -90,17 +98,25 @@ class RegressionBase(object):
             sample_rate {float} -- Between 0 and 1.
         """
 
+        # Initialize the bias and weights.
         m, n = X.shape
-        k = int(m * sample_rate)
         self.bias = 0
         self.weights = np.random.normal(size=n)
-        for _ in range(epochs):
-            # Calculate the gradient delta of each sample
-            for i in choice(range(m), k, replace=False):
-                bias_grad, weights_grad = self._get_gradient(X[i], y[i])
+
+        n_sample = int(m * sample_rate)
+        for i in range(epochs):
+            for idx in choice(range(m), n_sample, replace=False):
+                # Calculate the gradient delta of each sample
+                grad_bias, grad_weights = self._get_gradient(X[idx], y[idx])
+
                 # Update the bias and weight by gradient of current sample
-                self.bias += lr * bias_grad
-                self.weights += lr * weights_grad
+                self.bias += lr * grad_bias
+                self.weights += lr * grad_weights
+
+            # Show the gradient of each epoch.
+            grad_bias, grad_weights = self._get_gradient(X, y)
+            grad = (grad_bias + grad_weights.mean()) / 2
+            print("Epochs %d gradient %.3f" % (i + 1, grad), flush=True)
 
     def fit(self, X: array, y: array, lr: float, epochs: int,
             method: str = "batch", sample_rate: float = 1.0):
