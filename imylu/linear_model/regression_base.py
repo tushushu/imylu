@@ -25,7 +25,7 @@ class RegressionBase(object):
 
     def __str__(self):
         weights = arr2str(self.weights, 2)
-        return "Weighs: %s\nBias: %.2f\n" % (weights, self.bias)
+        return "Weights: %s\nBias: %.2f\n" % (weights, self.bias)
 
     def _get_gradient(self, X: array, y: array):
         """Calculate the gradient of the partial derivative.

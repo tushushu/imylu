@@ -52,10 +52,10 @@ class LogisticRegression(RegressionBase):
         """Get the probability of y.
 
         Arguments:
-            X {list} -- 2d list object with int or float
+            X {array} -- 2d array object with int or float
 
         Returns:
-            list -- 1d list object with float
+            array -- 1d array object with float
         """
 
         return sigmoid(X.dot(self.weights) + self.bias)
@@ -64,14 +64,14 @@ class LogisticRegression(RegressionBase):
         """Get the prediction of y.
 
         Arguments:
-            X {list} -- 2d list object with int or float
+            X {array} -- 2d array object with int or float
 
         Keyword Arguments:
             threshold {float} -- Prediction = 1 when probability >= threshold
             (default: {0.5})
 
         Returns:
-            list -- 1d list object with int
+            array -- 1d array object with int
         """
         y_prob = self.predict_prob(X)
         return (y_prob >= threshold).astype(int)
