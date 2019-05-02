@@ -11,20 +11,12 @@ def min_max_scale(X):
     """Scale the element of X into an interval [0, 1].
 
     Arguments:
-        X {list} -- 2d list object with int or float
+        X {array} -- 2d array object with int or float
 
     Returns:
-        list -- 2d list object with float
+        array -- 2d array object with float
     """
 
-    m = len(X[0])
-    x_max = [-float('inf') for _ in range(m)]
-    x_min = [float('inf') for _ in range(m)]
-    for row in X:
-        x_max = [max(a, b) for a, b in zip(x_max, row)]
-        x_min = [min(a, b) for a, b in zip(x_min, row)]
-    ret = []
-    for row in X:
-        tmp = [(x - b) / (a - b) for a, b, x in zip(x_max, x_min, row)]
-        ret.append(tmp)
-    return ret
+    X_max = X.max(axis=0)
+    X_min = X.min(axis=0)
+    return (X - X_min) / (X_max - X_min)

@@ -24,19 +24,21 @@ def main():
         print("Tesing the performance of LogisticRegression(batch)...")
         # Train model
         clf = LogisticRegression()
-        clf.fit(X=X_train, y=y_train, lr=0.05, epochs=200)
+        clf.fit(X=X_train, y=y_train, lr=0.1, epochs=1000)
         # Model evaluation
         model_evaluation(clf, X_test, y_test)
+        print(clf)
 
     @run_time
     def stochastic():
         print("Tesing the performance of LogisticRegression(stochastic)...")
         # Train model
         clf = LogisticRegression()
-        clf.fit(X=X_train, y=y_train, lr=0.01, epochs=200,
-                method="stochastic", sample_rate=0.5)
+        clf.fit(X=X_train, y=y_train, lr=0.01, epochs=100,
+                method="stochastic", sample_rate=0.8)
         # Model evaluation
         model_evaluation(clf, X_test, y_test)
+        print(clf)
 
     # Load data
     X, y = load_breast_cancer()
@@ -44,6 +46,7 @@ def main():
     # Split data randomly, train set rate 70%
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
     batch()
+    print()
     stochastic()
 
 

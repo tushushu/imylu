@@ -3,7 +3,7 @@
 @Author: tushushu
 @Date: 2018-08-21 17:29:45
 @Last Modified by:   tushushu
-@Last Modified time: 2018-08-21 17:29:45
+@Last Modified time: 2019-05-02 18:50:45
 """
 import os
 os.chdir(os.path.split(os.path.realpath(__file__))[0])
@@ -19,17 +19,20 @@ from imylu.utils.utils import run_time
 
 @run_time
 def main():
+    """Tesing the performance of Gaussian NaiveBayes.
+    """
+
     print("Tesing the performance of Gaussian NaiveBayes...")
     # Load data
-    X, y = load_breast_cancer()
+    data, label = load_breast_cancer()
     # Split data randomly, train set rate 70%
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
+    data_train, data_test, label_train, label_test = train_test_split(data, label, random_state=10)
     # Train model
     clf = GaussianNB()
-    clf.fit(X_train, y_train)
+    clf.fit(data_train, label_train)
     # Model evaluation
-    y_hat = clf.predict(X_test)
-    acc = _get_acc(y_test, y_hat)
+    y_hat = clf.predict(data_test)
+    acc = _get_acc(label_test, y_hat)
     print("Accuracy is %.3f" % acc)
 
 
