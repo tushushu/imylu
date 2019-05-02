@@ -1,14 +1,14 @@
 
-提到线性回归相信大家应该都不会觉得陌生（不陌生你点进来干嘛[捂脸]），本文就线性回归的基本原理进行讲解，并手把手、肩并肩地带您实现这一算法。
+提到PCA(主成分分析)相信大家应该都不会觉得陌生（不陌生你点进来干嘛[捂脸]），本文就PCA(主成分分析)的基本原理进行讲解，并手把手、肩并肩地带您实现这一算法。
 
 完整实现代码请参考本人的p...哦不是...github：  
-[regression_base.py](https://github.com/tushushu/imylu/blob/0.2/imylu/linear_model/regression_base.py)  
-[linear_regression.py](https://github.com/tushushu/imylu/blob/0.2/imylu/linear_model/linear_regression.py)  
-[linear_regression_example.py](https://github.com/tushushu/imylu/blob/0.2/examples/linear_regression_example.py)  
+[regression_base.py](https://github.com/tushushu/imylu/blob/master/imylu/linear_model/regression_base.py)  
+[linear_regression.py](https://github.com/tushushu/imylu/blob/master/imylu/linear_model/linear_regression.py)  
+[linear_regression_example.py](https://github.com/tushushu/imylu/blob/master/examples/linear_regression_example.py)  
 
 
 # 1. 原理篇
-我们用人话而不是大段的数学公式来讲讲线性回归是怎么一回事。
+我们用人话而不是大段的数学公式来讲讲PCA(主成分分析)是怎么一回事。
 
 ## 1.1 线性方程组
 上小学或者中学的时候，很多人就接触过线性方程组了。举个栗子，如果x + y = 2且2x + y = 3，那么3x + 4y = ?。我们可以轻松地得出结论，解线性方程组得到x = 1且y = 1，所以3x + 4y = 3 + 4 = 7。
@@ -17,8 +17,8 @@
 ## 1.2 超定方程组
 对于方程组Ra=y，R为n×m矩阵，如果R列满秩，且n>m。则方程组没有精确解，此时称方程组为超定方程组。翻译成人话就是方程组里方程的个数n太多了，比要求解的变量数m还多，这个方程是没办法求出精确解的。比如x + y = 2, 2x + y = 3且x + 2y = 4，那么我们是无法求出x和y能够同时满足这三个等式的。
 
-## 1.3 线性回归问题
-我们假设公司有n个同事(n = 10000)，他们的年龄为A = [a1, a2...an]，职级为B = [b1, b2...bn]，工资为C = [c1, c2...cn]，满足方程组Ax + By + z = C，我们想求出x, y 和z的值从而预测同事的工资，这样的问题就是典型的线性回归问题。我们有3个未知数x, y, z要求解，却有10000个方程，这显然是一个超定方程组。
+## 1.3 PCA(主成分分析)问题
+我们假设公司有n个同事(n = 10000)，他们的年龄为A = [a1, a2...an]，职级为B = [b1, b2...bn]，工资为C = [c1, c2...cn]，满足方程组Ax + By + z = C，我们想求出x, y 和z的值从而预测同事的工资，这样的问题就是典型的PCA(主成分分析)问题。我们有3个未知数x, y, z要求解，却有10000个方程，这显然是一个超定方程组。
 
 ## 1.4 最小二乘法
 如何求解这个超定方程组呢？当当当当，最小二乘法闪亮登场了。假设n个同事有m个特征（年龄、职级等），收集这些特征组成m行n列的矩阵X，同事的工资为m行1列的矩阵Y，且满足m > n。我们要求解n个未知数W = [w1, w2...wn]和1个未知数b，满足方程组W * X + b = Y。  
@@ -51,15 +51,11 @@ $\large\frac{\mathrm{d}L}{\mathrm{d}b}\normalsize= -\large\frac{2}{m}\normalsize
 使用数据集中随机的一个样本，计算梯度并更新参数，直至算法收敛或终止，计算量较小。
 
 # 2. 实现篇
-本人用全宇宙最简单的编程语言——Python实现了线性回归算法，便于学习和使用。简单说明一下实现过程，更详细的注释请参考本人github上的代码。
+本人用全宇宙最简单的编程语言——Python实现了PCA(主成分分析)算法，没有依赖任何第三方库，便于学习和使用。简单说明一下实现过程，更详细的注释请参考本人github上的代码。
 
 ## 2.1 创建RegressionBase类
 初始化，存储权重weights和偏置项bias。
 ```Python
-import numpy as np
-from numpy.random import choice
-
-
 class RegressionBase(object):
     def __init__(self):
         self.bias = None
@@ -74,48 +70,64 @@ class LinearRegression(RegressionBase):
         RegressionBase.__init__(self)
 ```
 
-## 2.3 计算梯度
+## 2.3 预测一个样本
+```Python
+def _predict(self, Xi):
+    return sum(wi * xij for wi, xij in zip(self.weights, Xi)) + self.bias
+```
+
+## 2.4 计算梯度
 根据损失函数的一阶导数计算梯度。
 ```Python
-def _get_gradient(self, X, y):
-    y_hat = self.predict(X)
-    bias_grad = y - y_hat
-    try:
-        weights_grad = bias_grad[:, None] * X
-    except IndexError:
-        weights_grad = bias_grad * X
-    return bias_grad, weights_grad
+def _get_gradient_delta(self, Xi, yi):
+    y_hat = self._predict(Xi)
+    bias_grad_delta = yi - y_hat
+    weights_grad_delta = [bias_grad_delta * Xij for Xij in Xi]
+    return bias_grad_delta, weights_grad_delta
 ```
 
-## 2.4 批量梯度下降
-正态分布初始化weights，循环计算梯度,更新参数。
+## 2.5 批量梯度下降
+正态分布初始化weights，外层循环更新参数，内层循环计算梯度。
 ```Python
 def _batch_gradient_descent(self, X, y, lr, epochs):
-    _, n = X.shape
+    m, n = len(X), len(X[0])
     self.bias = 0
-    self.weights = np.random.normal(size=n)
+    self.weights = [normalvariate(0, 0.01) for _ in range(n)]
+
     for _ in range(epochs):
-        bias_grad, weights_grad = self._get_gradient(X, y)
-        self.bias += lr * bias_grad.mean() * 2
-        self.weights += lr * weights_grad.mean(axis=0) * 2
+        bias_grad = 0
+        weights_grad = [0 for _ in range(n)]
+
+        for i in range(m):
+            bias_grad_delta, weights_grad_delta = self._get_gradient_delta(
+                X[i], y[i])
+            bias_grad += bias_grad_delta
+            weights_grad = [w_grad + w_grad_d for w_grad, w_grad_d
+                            in zip(weights_grad, weights_grad_delta)]
+
+        self.bias += lr * bias_grad * 2 / m
+        self.weights = [w + lr * w_grad * 2 / m for w,
+                        w_grad in zip(self.weights, weights_grad)]
 ```
 
-## 2.5 随机梯度下降
+## 2.6 随机梯度下降
 正态分布初始化weights，外层循环迭代epochs，内层循环随机抽样计算梯度。
 ```Python
 def _stochastic_gradient_descent(self, X, y, lr, epochs, sample_rate):
-    m, n = X.shape
+    m, n = len(X), len(X[0])
     k = int(m * sample_rate)
     self.bias = 0
-    self.weights = np.random.normal(size=n)
+    self.weights = [normalvariate(0, 0.01) for _ in range(n)]
+
     for _ in range(epochs):
-        for i in choice(range(m), k, replace=False):
-            bias_grad, weights_grad = self._get_gradient(X[i], y[i])
+        for i in sample(range(m), k):
+            bias_grad, weights_grad = self._get_gradient_delta(X[i], y[i])
             self.bias += lr * bias_grad
-            self.weights += lr * weights_grad
+            self.weights = [w + lr * w_grad for w,
+                            w_grad in zip(self.weights, weights_grad)]
 ```
 
-## 2.6 训练模型
+## 2.7 训练模型
 使用批量梯度下降或随机梯度下降训练模型。
 ```Python
 def fit(self, X, y, lr, epochs, method="batch", sample_rate=1.0):
@@ -126,10 +138,10 @@ def fit(self, X, y, lr, epochs, method="batch", sample_rate=1.0):
         self._stochastic_gradient_descent(X, y, lr, epochs, sample_rate)
 ```
 
-## 2.7 预测多个样本
+## 2.8 预测多个样本
 ```Python
 def predict(self, X):
-    return X.dot(self.weights) + self.bias
+    return [self._predict(xi) for xi in X]
 ```
 
 # 3 效果评估
@@ -141,20 +153,16 @@ def main():
     def batch():
         print("Tesing the performance of LinearRegression(batch)...")
         reg = LinearRegression()
-        reg.fit(X=X_train, y=y_train, lr=0.1, epochs=1000)
+        reg.fit(X=X_train, y=y_train, lr=0.02, epochs=5000)
         get_r2(reg, X_test, y_test)
-        weights = array2str(reg.weights, 2)
-        print("The weighs and bias are:\n%s\n%.2f" % (weights, reg.bias))
 
     @run_time
     def stochastic():
         print("Tesing the performance of LinearRegression(stochastic)...")
         reg = LinearRegression()
-        reg.fit(X=X_train, y=y_train, lr=0.01, epochs=100,
+        reg.fit(X=X_train, y=y_train, lr=0.001, epochs=1000,
                 method="stochastic", sample_rate=0.5)
         get_r2(reg, X_test, y_test)
-        weights = array2str(reg.weights, 2)
-        print("The weighs and bias are:\n%s\n%.2f" % (weights, reg.bias))
 
     X, y = load_boston_house_prices()
     X = min_max_scale(X)
@@ -164,23 +172,21 @@ def main():
 ```
 
 ## 3.2 效果展示
-批量梯度下降拟合优度0.994，运行时间83.7毫秒；
-随机梯度下降拟合优度0.991，运行时间258.5毫秒。
+批量梯度下降拟合优度0.784，运行时间12.6秒；
+随机梯度下降拟合优度0.784，运行时间1.6秒。
 效果还算不错~
-![linear_regression.png](https://github.com/tushushu/imylu/blob/0.2/pic/linear_regression.png)
+![linear_regression.png](https://github.com/tushushu/imylu/blob/master/pic/linear_regression.png)
 
 ## 3.3 工具函数
 本人自定义了一些工具函数，可以在github上查看  
-[utils](https://github.com/tushushu/imylu/tree/0.2/imylu/utils)  
+[utils](https://github.com/tushushu/imylu/tree/master/imylu/utils)  
 
 1. run_time - 测试函数运行时间  
 2. load_boston_house_prices - 加载波士顿房价数据  
 3. train_test_split - 拆分训练集、测试集  
 4. get_r2 - 计算拟合优度 
-5. array2str - 数组转字符串
-6. min_max_scale - 归一化
 
 
 # 总结
-线性回归的原理：求解超定方程组。
-线性回归的实现：加减法，for循环。
+PCA(主成分分析)的原理：求解超定方程组。
+PCA(主成分分析)的实现：加减法，for循环。

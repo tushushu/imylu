@@ -6,12 +6,17 @@
 @Last Modified time: 2018-11-14 11:11:35
 """
 
-from random import randint
-from time import time
-from math import exp
 from copy import copy
-from statistics import median
 from itertools import tee
+from numpy import exp, array
+from random import randint
+from statistics import median
+from time import time
+
+
+def arr2str(arr: array, n_digits: int)->str:
+    ret = ", ".join(map(lambda x: str(round(x, n_digits)), arr))
+    return "[%s]" % ret
 
 
 def run_time(fn):
@@ -44,22 +49,19 @@ def run_time(fn):
     return inner
 
 
-def sigmoid(x, x_min=-100):
+def sigmoid(x):
     """Calculate the sigmoid value of x.
     Sigmoid(x) = 1 / (1 + e^(-x))
+    It would cause math range error when x < -709
 
     Arguments:
         x {float}
-
-    Keyword Arguments:
-        x_min {int} -- It would cause math range error when x < -709
-        (default: {-100})
 
     Returns:
         float -- between 0 and 1
     """
 
-    return 1 / (1 + exp(-x)) if x > x_min else 0
+    return 1 / (1 + exp(-x))
 
 
 def split_list(X, idxs, feature, split, low, high):
