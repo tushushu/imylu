@@ -6,146 +6,123 @@
 @Last Modified time: 2018-07-06 21:13:34
 """
 
-from math import pi, exp, sqrt
 from collections import Counter
 
+import numpy as np
+from numpy import array, exp, pi, sqrt
 
-class GaussianNB(object):
+
+class GaussianNB:
     """GaussianNB class support multiple classification.
 
     Attributes:
         prior: Prior probability.
-        avgs: Means of each column and class. e.g. [[0.5, 0.6], [0.2, 0.1]]
-        variances: Variances of each column and class.
+        avgs: Means of training data. e.g. [[0.5, 0.6], [0.2, 0.1]]
+        vars: Variances of training data.
         n_class: number of classes
     """
 
     def __init__(self):
         self.prior = None
         self.avgs = None
-        self.variances = None
+        self.vars = None
         self.n_class = None
 
-    def _get_prior(self, y):
+    @staticmethod
+    def _get_prior(label: array)->array:
         """Calculate prior probability.
 
         Arguments:
-            y {list} -- 1d list object with int
+            label {array} -- Target values.
 
         Returns:
-            dict -- {y_0: P(y_0), y_1: P(y_1)...y_n: P(y_n)]
+            array
         """
 
-        return Counter(y)
+        cnt = Counter(label)
+        prior = np.array([cnt[i] / len(label) for i in range(len(cnt))])
+        return prior
 
-    def _get_posterior(self, xij, avg, variance):
+    def _get_avgs(self, data: array, label: array)->array:
+        """Calculate means of training data.
+
+        Arguments:
+            data {array} -- Training data.
+            label {array} -- Target values.
+
+        Returns:
+            array
+        """
+        return np.array([data[label == i].mean(axis=0) for i in range(self.n_class)])
+
+    def _get_vars(self, data: array, label: array)->array:
+        """Calculate variances of training data.
+
+        Arguments:
+            data {array} -- Training data.
+            label {array} -- Target values.
+
+        Returns:
+            array
+        """
+        return np.array([data[label == i].var(axis=0) for i in range(self.n_class)])
+
+    def _get_posterior(self, row: array)->array:
         """Calculate posterior probability
 
         Arguments:
-            xij {float}
-            avg {float} -- Mean of column of Xj
-            variance {float} -- Variance of column of Xj
+            row {array} -- Sample of training data.
 
         Returns:
-            float -- P(y_1)
+            array
         """
 
-        return 1 / sqrt(2 * pi * variance) * \
-            exp(-(xij - avg)**2 / (2 * variance))
+        return (1 / sqrt(2 * pi * self.vars) * exp(
+            -(row - self.avgs)**2 / (2 * self.vars))).prod(axis=1)
 
-    def _get_avg_var(self, X, y, n_class):
-        """Calculate the variance and mean of each column of X
-
-        Arguments:
-            X {list} -- 2D list with int or float
-            y {list} -- 1d list object with int
-            n_class {int} -- Number of classes of y
-
-        Returns:
-            tuple -- avgs, variances of each column and each class.
-        """
-
-        avgs = []
-        variances = []
-        # Get the shape of X
-        m = len(X[0])
-        n = len(X)
-        for j in range(m):
-            # Initialize sum(x) and sum(x ** 2) for column j
-            feature_sum = [0] * n_class
-            feature_sqr_sum = [0] * n_class
-            for i in range(n):
-                feature_sum[y[i]] += X[i][j]
-                feature_sqr_sum[y[i]] += X[i][j] ** 2
-            feature_avg = [x / n for x in feature_sum]
-            # D(X) = E{[X-E(X)]^2} = E(X^2)-[E(X)]^2
-            feature_var = [x / n - y ** 2 for x,
-                           y in zip(feature_sqr_sum, feature_avg)]
-            avgs.append(feature_avg)
-            variances.append(feature_var)
-        return avgs, variances
-
-    def fit(self, X, y):
+    def fit(self, data: array, label: array):
         """Build a Gauss naive bayes classifier.
 
         Arguments:
-            X {list} -- 2d list with int or float
-            y {list} -- 1d list object with int 0 or 1
+            data {array} -- Training data.
+            label {array} -- Target values.
         """
 
         # Calculate prior probability.
-        self.prior = self._get_prior(y)
-        # Count number of classes
+        self.prior = self._get_prior(label)
+        # Count number of classes.
         self.n_class = len(self.prior)
-        # Calculate the variance and mean of each column of X
-        self.avgs, self.variances = self._get_avg_var(X, y, self.n_class)
+        # Calculate the mean.
+        self.avgs = self._get_avgs(data, label)
+        # Calculate the variance.
+        self.vars = self._get_vars(data, label)
 
-    def _predict_prob(self, row):
-        """Auxiliary function of predict_prob.
+    def predict_prob(self, data: array)->array:
+        """Get the probability of label.
 
         Arguments:
-            row {list} -- 1D list with int or float
+            data {array} -- Testing data.
 
         Returns:
-            float -- probabilities. e.g. [0.02, 0.03, 0.02]
+            array -- Probabilities of label. e.g. [[0.02, 0.03, 0.02], [0.02, 0.03, 0.02]]
         """
 
-        # Initialize probabilities
-        probs = [1] * self.n_class
         # Caculate the joint probabilities of each feature and each class.
-        for xij, avgs, variances in zip(row, self.avgs, self.variances):
-            probs = [prob * self._get_posterior(xij, avg, var)
-                     for prob, avg, var in zip(probs, avgs, variances)]
+        posterior = np.apply_along_axis(self._get_posterior, axis=1, arr=data)
+        probs = self.prior * posterior
         # Scale the probabilities
-        probs_sum = sum(probs)
-        return [prob / probs_sum for prob in probs]
+        probs_sum = probs.sum(axis=1)
+        return probs / probs_sum[:, None]
 
-    def predict_prob(self, X):
-        """Get the probability that y is positive.
-
-        Arguments:
-            X {list} -- 2d list object with int or float
-
-        Returns:
-            list -- 1d list object with float
-        """
-
-        return [self._predict_prob(row) for row in X]
-
-    def predict(self, X, threshold=0.5):
-        """Get the prediction of y.
+    def predict(self, data: array)->array:
+        """Get the prediction of label.
 
         Arguments:
-            X {list} -- 2d list object with int or float
-
-        Keyword Arguments:
-            threshold {float} -- Prediction = 1 when probability >= threshold
-            (default: {0.5})
+            data {array} -- Training data.
 
         Returns:
-            list -- 1d list object with float
+            array -- Prediction of label.
         """
 
         # Choose the class which has the maximum probability
-        return [max(enumerate(y), key=lambda x: x[1])[0]
-                for y in self.predict_prob(X)]
+        return self.predict_prob(data).argmax(axis=1)
