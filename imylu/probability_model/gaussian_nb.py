@@ -29,7 +29,7 @@ class GaussianNB:
         self.n_class = None
 
     @staticmethod
-    def _get_prior(label: array)->array:
+    def _get_prior(label: array) -> array:
         """Calculate prior probability.
 
         Arguments:
@@ -43,7 +43,7 @@ class GaussianNB:
         prior = np.array([cnt[i] / len(label) for i in range(len(cnt))])
         return prior
 
-    def _get_avgs(self, data: array, label: array)->array:
+    def _get_avgs(self, data: array, label: array) -> array:
         """Calculate means of training data.
 
         Arguments:
@@ -53,9 +53,10 @@ class GaussianNB:
         Returns:
             array
         """
-        return np.array([data[label == i].mean(axis=0) for i in range(self.n_class)])
+        return np.array([data[label == i].mean(axis=0)
+                         for i in range(self.n_class)])
 
-    def _get_vars(self, data: array, label: array)->array:
+    def _get_vars(self, data: array, label: array) -> array:
         """Calculate variances of training data.
 
         Arguments:
@@ -65,9 +66,10 @@ class GaussianNB:
         Returns:
             array
         """
-        return np.array([data[label == i].var(axis=0) for i in range(self.n_class)])
+        return np.array([data[label == i].var(axis=0)
+                         for i in range(self.n_class)])
 
-    def _get_posterior(self, row: array)->array:
+    def _get_posterior(self, row: array) -> array:
         """Calculate posterior probability
 
         Arguments:
@@ -97,14 +99,15 @@ class GaussianNB:
         # Calculate the variance.
         self.vars = self._get_vars(data, label)
 
-    def predict_prob(self, data: array)->array:
+    def predict_prob(self, data: array) -> array:
         """Get the probability of label.
 
         Arguments:
             data {array} -- Testing data.
 
         Returns:
-            array -- Probabilities of label. e.g. [[0.02, 0.03, 0.02], [0.02, 0.03, 0.02]]
+            array -- Probabilities of label. 
+            e.g. [[0.02, 0.03, 0.02], [0.02, 0.03, 0.02]]
         """
 
         # Caculate the joint probabilities of each feature and each class.
@@ -114,7 +117,7 @@ class GaussianNB:
         probs_sum = probs.sum(axis=1)
         return probs / probs_sum[:, None]
 
-    def predict(self, data: array)->array:
+    def predict(self, data: array) -> array:
         """Get the prediction of label.
 
         Arguments:
