@@ -67,8 +67,8 @@ class GaussianNB:
         """
         return np.array([data[label == i].var(axis=0) for i in range(self.n_class)])
 
-    def _get_posterior(self, row: array)->array:
-        """Calculate posterior probability
+    def _get_likelihood(self, row: array)->array:
+        """Calculate likelihood.
 
         Arguments:
             row {array} -- Sample of training data.
@@ -108,8 +108,8 @@ class GaussianNB:
         """
 
         # Caculate the joint probabilities of each feature and each class.
-        posterior = np.apply_along_axis(self._get_posterior, axis=1, arr=data)
-        probs = self.prior * posterior
+        likelihood = np.apply_along_axis(self._get_likelihood, axis=1, arr=data)
+        probs = self.prior * likelihood
         # Scale the probabilities
         probs_sum = probs.sum(axis=1)
         return probs / probs_sum[:, None]

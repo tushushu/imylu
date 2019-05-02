@@ -1,211 +1,150 @@
 
+好久不更新了，五一劳动节，劳动一下:)
+
 提到朴素贝叶斯相信大家应该都不会觉得陌生（不陌生你点进来干嘛[捂脸]），本文就朴素贝叶斯的基本原理进行讲解，并手把手、肩并肩地带您实现这一算法。
 
 完整实现代码请参考本人的p...哦不是...github：  
-[regression_base.py](https://github.com/tushushu/imylu/blob/master/imylu/linear_model/regression_base.py)  
-[logistic_regression.py](https://github.com/tushushu/imylu/blob/master/imylu/linear_model/logistic_regression.py)  
-[logistic_regression_example.py](https://github.com/tushushu/imylu/blob/master/examples/logistic_regression_example.py)  
+[gaussian_nb.py](https://github.com/tushushu/imylu/blob/master/imylu/probability_model/gaussian_nb.py)   
+[gaussian_nb_example.py](https://github.com/tushushu/imylu/blob/master/examples/gaussian_nb_example.py)  
 
 
-# 1. 原理篇
+## 1. 原理篇
 我们用人话而不是大段的数学公式来讲讲朴素贝叶斯是怎么一回事。
 
-## 1.1 梯度下降法
-请参考我的另一篇文章，在这里就不赘述。链接如下：  
-[gradient_decent.md](https://github.com/tushushu/pads/blob/master/docs_cn/gradient_decent.md)
+### 1.1 条件概率
+条件概率故名思议就是在一定条件下发生某件事的概率。比如笔者向女生表白成功的概率是20%，记作P(A) = 20%，其中A代表“笔者向女生表白成功”。而笔者开着捷豹的前提下，向女生表白成功的概率是50%，则记作P(A|B) = 50%，其中B代表“笔者开着捷豹”。毕竟女生都喜欢小动物，像捷豹、路虎、宝马或者悍马什么的。咳咳，跑题了...这个P(A|B)就是条件概率了。
 
-## 1.2 线性回归
-请参考我的另一篇文章，在这里就不赘述。链接如下：  
-[linear_regression.md](https://github.com/tushushu/imylu/blob/master/docs_cn/linear_regression.md)
+### 1.2 联合概率
+那什么是联合概率呢，笔者开着捷豹且向女生表白成功的概率是1%，则记作P(AB) = 1%。您可能不禁要问，表白成功的概率不是20%吗？联合概率不是高达50%吗？为什么联合概率这么低？这个嘛，因为笔者特别穷，开捷豹的概率实在是太低了所以拖累了联合概率。
 
-## 1.3 Sigmoid函数
-Sigmoid函数的表达式是：  
-$f(x) = \Large\frac{1}{1 + e^{-x}}$  
+### 1.3 条件概率与联合概率的区别与联系
+总结一下，条件概率就是在B的条件下，事件A发生的概率。而联合概率是事件A和B同时发生的概率。大家可以搞清楚区别了吧:)
+而二者的联系，可以用如下公式表述：
+P(AB) = P(A|B)P(B) = P(B|A)P(A)
+即，联合概率 等于 条件概率 乘以 条件的概率。
 
-不难得出：  
-$\lim\limits_{x\rightarrow{-\infty}}\Large\frac{1}{1 + e^{-x}}\normalsize = 0$  
+### 1.4 全概率公式 
+问题复杂一些，如果事件B不是一个条件，而是一堆条件，这些条件互斥且能穷尽所有可能。比如我白天向女生表白，黑夜向女生求爱（貌似有点押韵[奸笑]）。表白记作事件A，白天记作事件B1，黑夜记作事件B2。不难得到：  
+P(A) = P(AB1) + P(AB2) = P(B1|A)P(A) + P(B2|A)P(A) = P(A|B1)P(B1) + P(A|B2)P(B2)  
+其一般形式为：  
+$P(A) = \normalsize\sum_{1}^{m}P(A|B_{i})P(B_{i})$
 
-$\lim\limits_{x\rightarrow{+\infty}}\Large\frac{1}{1 + e^{-x}}\normalsize = 1$  
+### 1.5 贝叶斯公式
+既然算法的名字叫朴素贝叶斯，当当当当，我们的主角——贝叶斯公式隆重登场了。为了便于理解，我们不再使用事件A和事件B而是用机器学习常用的X, y来表示：    
+$P(y_{i}|x) = P(x|y_{i})P(y_{i})/P(x)$
+根据全概率公式，展开分母P(A)，得到：  
+$P(y_{i}|x) = P(x|y_{i})P(y_{i})/\sum_{1}^{m}P(x|y_{j})P(y_{j})$
 
-$f'(x) = f(x) * (1 - f(x))$  
+也就是说已知特征x，想要求解yi，只需要知道先验概率P(yi)，和似然度P(x|yi)，即可求解后验概率P(yi|x)。而对于同一个样本x，P(x)是一个常量，可以不参与计算。
 
-所以，Sigmoid函数的值域是(0, 1)，导数为y * (1 - y)
+### 1.6 高斯分布
+如果x是连续变量，如何去估计似然度P(x|yi)呢？我们可以假设在yi的条件下，x服从高斯分布（正态分布）。根据正态分布的概率密度函数即可计算出P(x|yi)，公式如下：  
+$P(x) = \large\frac{1}{\sigma\sqrt{2\pi}}\normalsize e^{-\frac{(x-\mu)^{2}}{2\sigma^2{}}}$
 
-## 1.4 线性回归与朴素贝叶斯
-回归问题的值域是(-∞, +∞)，用线性回归可以进行预测。而分类问题的值域是[0, 1]，显然不可以直接用线性回归来预测这类问题。如果把线性回归的输出结果外面再套一层Sigmoid函数，正好可以让值域落在0和1之间，这样的算法就是朴素贝叶斯。
-
-## 1.5 最小二乘法
-那么朴素贝叶斯的损失函数是什么呢，根据之前线性回归的经验。  
-用MSE作为损失函数，有  
-$L = \large\frac{1}{m}\normalsize\sum_{1}^{m}(Y_{i} - \large\frac{1}{1 + e^{-WX_{i} - b}}\normalsize)^2$  
-网上很多文章都说这个函数是非凸的，不可以用梯度下降来优化，为什么非凸也没见人给出个证明。我一开始是不信的，后来对损失函数求了二阶导之后...发现求导太麻烦了，所以我还是信了吧。
-
-## 1.6 极大似然估计
-既然不能用最小二乘法，那么肯定是有方法求解的，极大似然估计闪亮登场。前方小段数学公式低能预警：  
-线性函数  
-1. $z = WX + b$   
-Sigmoid函数   
-2. $\hat y = \large\frac{1}{1 + e^{-z}}$  
-似然函数   
-3. $P(Y | X, W, b) = \prod_{1}^{m} \hat y_{i}^{y_{i}} * (1-\hat y_{i})^{1-y_{i}}$  
-对似然函数两边取对数的负值  
-4. $L = -\sum_{1}^{m}(y_{i} * log \hat y_{i} + (1-y_{i}) * log(1-\hat y_{i}))$  
-对1式求导   
-5. $\large\frac{\mathrm{d}Z}{\mathrm{d}W}\normalsize=X$  
-对2式求导  
-6. $\large\frac{\mathrm{d}\hat{y}}{\mathrm{d}z}\normalsize=z * (1 - z)$  
-对3式求导  
-7. $\large\frac{\mathrm{d}L}{\mathrm{d}\hat{y}}\normalsize=y/\hat{y} - (1-y)/(1-\hat{y})$  
-8. $\large\frac{\mathrm{d}Z}{\mathrm{d}b}\normalsize=1$  
+### 1.7 高斯朴素贝叶斯
+如果x是多维的数据，那么我们可以假设P(x1|yi),P(x2|yi)...P(xn|yi)对应的事件是彼此独立的，这些值连乘在一起得到P(x|yi)，“彼此独立”也就是朴素贝叶斯的朴素之处。高斯朴素贝叶斯的原理大概就这么多了，是不是很简单？
 
 
-根据5, 6, 7式:  
-9. $\large\frac{\mathrm{d}L}{\mathrm{d}W}\normalsize=-\sum(y - \hat{y}) * X$ 
+## 2. 实现篇
+本人用全宇宙最简单的编程语言——Python实现了朴素贝叶斯算法，便于学习和使用。简单说明一下实现过程，更详细的注释请参考本人github上的代码。
 
-根据6, 7, 8式:  
-10. $\large\frac{\mathrm{d}L}{\mathrm{d}W}\normalsize=-\sum(y - \hat{y})$ 
-
-
-
-# 2. 实现篇
-本人用全宇宙最简单的编程语言——Python实现了朴素贝叶斯算法，没有依赖任何第三方库，便于学习和使用。简单说明一下实现过程，更详细的注释请参考本人github上的代码。
-
-## 2.1 创建RegressionBase类
-初始化，存储权重weights和偏置项bias。
+### 2.1 创建GaussianNB类
+初始化，存储先验概率、训练集的均值、方差及label的类别数量。
 ```Python
-class RegressionBase(object):
+class GaussianNB:
     def __init__(self):
-        self.bias = None
-        self.weights = None
+        self.prior = None
+        self.avgs = None
+        self.vars = None
+        self.n_class = None
 ```
 
-## 2.2 创建LogisticRegression类
-初始化，继承RegressionBase类。
+### 2.2 计算先验概率
+通过Python自带的Counter计算每个类别的占比，再将结果存储到numpy数组中。
 ```Python
-class LogisticRegression(RegressionBase):
-    def __init__(self):
-        RegressionBase.__init__(self)
+def _get_prior(label: array)->array:
+    cnt = Counter(label)
+    prior = np.array([cnt[i] / len(label) for i in range(len(cnt))])
+    return prior
 ```
 
-## 2.3 预测一个样本
+### 2.3 计算训练集均值
+每个label类别分别计算均值。
 ```Python
-def _predict(self, Xi):
-    z = sum(wi * xij for wi, xij in zip(self.weights, Xi)) + self.bias
-    return sigmoid(z)
+def _get_avgs(self, data: array, label: array)->array:
+    return np.array([data[label == i].mean(axis=0) for i in range(self.n_class)])
 ```
 
-## 2.4 计算梯度
-根据损失函数的一阶导数计算梯度。
+### 2.4 计算训练集方差
+每个label类别分别计算方差。
 ```Python
-def _get_gradient_delta(self, Xi, yi):
-    y_hat = self._predict(Xi)
-    bias_grad_delta = yi - y_hat
-    weights_grad_delta = [bias_grad_delta * Xij for Xij in Xi]
-    return bias_grad_delta, weights_grad_delta
+def _get_vars(self, data: array, label: array)->array:
+    return np.array([data[label == i].var(axis=0) for i in range(self.n_class)])
 ```
 
-## 2.5 批量梯度下降
-正态分布初始化weights，外层循环更新参数，内层循环计算梯度。
+### 2.5 计算似然度
+通过高斯分布的概率密度函数计算出似然再连乘得到似然度。
 ```Python
-def _batch_gradient_descent(self, X, y, lr, epochs):
-    m, n = len(X), len(X[0])
-    self.bias = 0
-    self.weights = [normalvariate(0, 0.01) for _ in range(n)]
-
-    for _ in range(epochs):
-        bias_grad = 0
-        weights_grad = [0 for _ in range(n)]
-
-        for i in range(m):
-            bias_grad_delta, weights_grad_delta = self._get_gradient_delta(
-                X[i], y[i])
-            bias_grad += bias_grad_delta
-            weights_grad = [w_grad + w_grad_d for w_grad, w_grad_d
-                            in zip(weights_grad, weights_grad_delta)]
-
-        self.bias += lr * bias_grad * 2 / m
-        self.weights = [w + lr * w_grad * 2 / m for w,
-                        w_grad in zip(self.weights, weights_grad)]
+def _get_likelihood(self, row: array)->array:
+    return (1 / sqrt(2 * pi * self.vars) * exp(
+        -(row - self.avgs)**2 / (2 * self.vars))).prod(axis=1)
 ```
 
-## 2.6 随机梯度下降
-正态分布初始化weights，外层循环迭代epochs，内层循环随机抽样计算梯度。
+### 2.6 训练模型
 ```Python
-def _stochastic_gradient_descent(self, X, y, lr, epochs, sample_rate):
-    m, n = len(X), len(X[0])
-    k = int(m * sample_rate)
-    self.bias = 0
-    self.weights = [normalvariate(0, 0.01) for _ in range(n)]
-
-    for _ in range(epochs):
-        for i in sample(range(m), k):
-            bias_grad, weights_grad = self._get_gradient_delta(X[i], y[i])
-            self.bias += lr * bias_grad
-            self.weights = [w + lr * w_grad for w,
-                            w_grad in zip(self.weights, weights_grad)]
+def fit(self, data: array, label: array):
+    self.prior = self._get_prior(label)
+    self.n_class = len(self.prior)
+    self.avgs = self._get_avgs(data, label)
+    self.vars = self._get_vars(data, label)
 ```
 
-## 2.7 训练模型
-使用批量梯度下降或随机梯度下降训练模型。
+### 2.8 预测prob
+用先验概率乘以似然度再归一化得到每个label的prob。
 ```Python
-def fit(self, X, y, lr, epochs, method="batch", sample_rate=1.0):
-    assert method in ("batch", "stochastic")
-    if method == "batch":
-        self._batch_gradient_descent(X, y, lr, epochs)
-    if method == "stochastic":
-        self._stochastic_gradient_descent(X, y, lr, epochs, sample_rate)
+def predict_prob(self, data: array)->array:
+    likelihood = np.apply_along_axis(self._get_likelihood, axis=1, arr=data)
+    probs = self.prior * likelihood
+    probs_sum = probs.sum(axis=1)
+    return probs / probs_sum[:, None]
 ```
 
-## 2.8 预测多个样本
+### 2.9 预测label
+对于单个样本，取prob最大值所对应的类别，就是label的预测值。
 ```Python
-def predict(self, X, threshold=0.5):
-    return [int(self._predict(Xi) >= threshold) for Xi in X]
+def predict(self, data: array)->array:
+    return self.predict_prob(data).argmax(axis=1)
 ```
 
-# 3 效果评估
-## 3.1 main函数
+## 3 效果评估
+### 3.1 main函数
 使用著名的乳腺癌数据集，按照7:3的比例拆分为训练集和测试集，训练模型，并统计准确度。
 ```Python
 def main():
-    @run_time
-    def batch():
-        print("Tesing the performance of LogisticRegression(batch)...")
-        clf = LogisticRegression()
-        clf.fit(X=X_train, y=y_train, lr=0.05, epochs=200)
-        model_evaluation(clf, X_test, y_test)
-
-    @run_time
-    def stochastic():
-        print("Tesing the performance of LogisticRegression(stochastic)...")
-        clf = LogisticRegression()
-        clf.fit(X=X_train, y=y_train, lr=0.01, epochs=200,
-                method="stochastic", sample_rate=0.5)
-        model_evaluation(clf, X_test, y_test)
-
-    X, y = load_breast_cancer()
-    X = min_max_scale(X)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
-    batch()
-    stochastic()
+    print("Tesing the performance of Gaussian NaiveBayes...")
+    data, label = load_breast_cancer()
+    data_train, data_test, label_train, label_test = train_test_split(data, label, random_state=100)
+    clf = GaussianNB()
+    clf.fit(data_train, label_train)
+    y_hat = clf.predict(data_test)
+    acc = _get_acc(label_test, y_hat)
+    print("Accuracy is %.3f" % acc)
 ```
 
-## 3.2 效果展示
-批量梯度下降AUC 0.984，运行时间677.9 毫秒；
-随机梯度下降AUC 0.997，运行时间437.6 毫秒。
+### 3.2 效果展示
+ACC 0.942，运行时间22 毫秒。
 效果还算不错~
-![logistic_regression.png](https://github.com/tushushu/imylu/blob/master/pic/logistic_regression.png)
+![gaussian_nb.png](https://github.com/tushushu/imylu/blob/master/pic/gaussian_nb.png)
 
-## 3.3 工具函数
+### 3.3 工具函数
 本人自定义了一些工具函数，可以在github上查看  
 [utils](https://github.com/tushushu/imylu/tree/master/imylu/utils)  
 
 1. run_time - 测试函数运行时间  
 2. load_breast_cancer - 加载乳腺癌数据  
 3. train_test_split - 拆分训练集、测试集  
-4. model_evaluation - 计算AUC，准确度，召回率
-5. min_max_scale - 归一化
 
 
-# 总结
-朴素贝叶斯的原理：线性回归结合Sigmoid函数
-朴素贝叶斯的实现：加减法，for循环。
+## 总结
+朴素贝叶斯的原理：贝叶斯公式
+朴素贝叶斯的实现：加法、乘法、指数、开方。

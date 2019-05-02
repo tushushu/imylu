@@ -26,7 +26,7 @@ def main():
     # Load data
     data, label = load_breast_cancer()
     # Split data randomly, train set rate 70%
-    data_train, data_test, label_train, label_test = train_test_split(data, label, random_state=10)
+    data_train, data_test, label_train, label_test = train_test_split(data, label, random_state=100)
     # Train model
     clf = GaussianNB()
     clf.fit(data_train, label_train)
