@@ -3,25 +3,27 @@
 @Author: tushushu
 @Date: 2018-07-05 17:51:04
 @Last Modified by: tushushu
-@Last Modified time: 2018-07-05 17:51:04
+@Last Modified time: 2019-05-03 21:18:04
 """
 from copy import copy
 from ..utils.utils import list_split
+import numpy as np
+from numpy import array
 
 
-class Node(object):
+class Node:
+    """Node class to build tree leaves.
+
+    Attributes:
+        score {float} -- prediction of y (default: {None})
+        left {Node} -- Left child node
+        right {Node} -- Right child node
+        feature {int} -- Column index
+        split {int} --  Split point
+    """
+
     def __init__(self, score=None):
-        """Node class to build tree leaves.
-
-        Attributes:
-            score {float} -- prediction of y (default: {None})
-            left {Node} -- Left child node
-            right {Node} -- Right child node
-            feature {int} -- Column index
-            split {int} --  Split point
-        """
         self.score = score
-
         self.left = None
         self.right = None
         self.feature = None
@@ -29,102 +31,28 @@ class Node(object):
 
 
 class RegressionTree(object):
+    """RegressionTree class.
+
+    Attributes:
+        root{Node}: the root node of DecisionTree
+        depth{int}: the depth of DecisionTree
+    """
+
     def __init__(self):
-        """RegressionTree class.
-
-        Attributes:
-            root: the root node of DecisionTree
-            depth: the depth of DecisionTree
-        """
-
         self.root = Node()
         self.depth = 1
         self._rules = None
 
-    def _get_split_mse(self, X, y, idx, feature, split):
-        """Calculate the mse of each set when x is splitted into two pieces.
-        MSE as Loss fuction:
-        y_hat = Sum(y_i) / n, i <- [1, n]
-        Loss(y_hat, y) = Sum((y_hat - y_i) ^ 2), i <- [1, n]
-        Loss = LossLeftNode+ LossRightNode
-        --------------------------------------------------------------------
+    def __str__(self):
+        ret = []
+        for i, rule in enumerate(self._rules):
+            literals, score = rule
+            ret.append("Rule %d: " % i, ' | '.join(
+                literals) + ' => y_hat %.4f' % score)
+        return ret
 
-        Arguments:
-            X {list} -- 2d list object with int or float
-            y {list} -- 1d list object with int or float
-            idx {list} -- indexes, 1d list object with int
-            feature {int} -- Feature number
-            split {float} -- Split point of x
-
-        Returns:
-            tuple -- MSE, split point and average of splitted x
-        """
-
-        split_sum = [0, 0]
-        split_cnt = [0, 0]
-        split_sqr_sum = [0, 0]
-        # Iterate each Xi and compare with the split point
-        for i in idx:
-            xi, yi = X[i][feature], y[i]
-            if xi < split:
-                split_cnt[0] += 1
-                split_sum[0] += yi
-                split_sqr_sum[0] += yi ** 2
-            else:
-                split_cnt[1] += 1
-                split_sum[1] += yi
-                split_sqr_sum[1] += yi ** 2
-        # Calculate the mse of y, D(X) = E{[X-E(X)]^2} = E(X^2)-[E(X)]^2
-        split_avg = [split_sum[0] / split_cnt[0], split_sum[1] / split_cnt[1]]
-        split_mse = [split_sqr_sum[0] - split_sum[0] * split_avg[0],
-                     split_sqr_sum[1] - split_sum[1] * split_avg[1]]
-        return sum(split_mse), split, split_avg
-
-    def _choose_split(self, X, y, idx, feature):
-        """Iterate each xi and split x, y into two pieces,
-        and the best split point is the xi when we get minimum mse.
-
-        Arguments:
-            x {list} -- 1d list object with int or float
-            y {list} -- 1d list object with int or float
-            idx {list} -- indexes, 1d list object with int
-            feature {int} -- Feature number
-
-        Returns:
-            tuple -- The best choice of mse, feature, split point and average
-        """
-        # Feature cannot be splitted if there's only one unique element.
-        unique = set([X[i][feature] for i in idx])
-        if len(unique) == 1:
-            return None
-        # In case of empty split
-        unique.remove(min(unique))
-        # Get split point which has min mse
-        mse, split, split_avg = min(
-            (self._get_split_mse(X, y, idx, feature, split)
-             for split in unique), key=lambda x: x[0])
-        return mse, feature, split, split_avg
-
-    def _choose_feature(self, X, y, idx):
-        """Choose the feature which has minimum mse.
-
-        Arguments:
-            X {list} -- 2d list object with int or float
-            y {list} -- 1d list object with int or float
-            idx {list} -- indexes, 1d list object with int
-
-        Returns:
-            tuple -- (feature number, split point, average, idx_split)
-        """
-
-        m = len(X[0])
-        # Compare the mse of each feature and choose best one.
-        split_rets = map(lambda j: self._choose_split(X, y, idx, j), range(m))
-        split_rets = filter(lambda x: x is not None, split_rets)
-        # Terminate if no feature can be splitted
-        return min(split_rets, default=None, key=lambda x: x[0])
-
-    def _expr2literal(self, expr):
+    @staticmethod
+    def _expr2literal(expr):
         """Auxiliary function of print_rules.
 
         Arguments:
@@ -134,9 +62,9 @@ class RegressionTree(object):
             str
         """
 
-        feature, op, split = expr
-        op = ">=" if op == 1 else "<"
-        return "Feature%d %s %.4f" % (feature, op, split)
+        feature, operation, split = expr
+        operation = ">=" if operation == 1 else "<"
+        return "Feature%d %s %.4f" % (feature, operation, split)
 
     def _get_rules(self):
         """Get the rules of all the decision tree leaf nodes.
@@ -149,32 +77,108 @@ class RegressionTree(object):
         self._rules = []
         # Breadth-First Search
         while que:
-            nd, exprs = que.pop(0)
+            node, exprs = que.pop(0)
             # Generate a rule when the current node is leaf node
-            if not(nd.left or nd.right):
+            if not(node.left or node.right):
                 # Convert expression to text
                 literals = list(map(self._expr2literal, exprs))
-                self._rules.append([literals, nd.score])
+                self._rules.append([literals, node.score])
             # Expand when the current node has left child
-            if nd.left:
+            if node.left:
                 rule_left = copy(exprs)
-                rule_left.append([nd.feature, -1, nd.split])
-                que.append([nd.left, rule_left])
+                rule_left.append([node.feature, -1, node.split])
+                que.append([node.left, rule_left])
             # Expand when the current node has right child
-            if nd.right:
+            if node.right:
                 rule_right = copy(exprs)
-                rule_right.append([nd.feature, 1, nd.split])
-                que.append([nd.right, rule_right])
+                rule_right.append([node.feature, 1, node.split])
+                que.append([node.right, rule_right])
 
-    def fit(self, X, y, max_depth=5, min_samples_split=2):
+    @staticmethod
+    def _get_split_mse(col: array, score: array, split: float):
+        """Calculate the mse of each set when x is splitted into two pieces.
+        MSE as Loss fuction:
+        y_hat = Sum(y_i) / n, i <- [1, n]
+        Loss(y_hat, y) = Sum((y_hat - y_i) ^ 2), i <- [1, n]
+        Loss = LossLeftNode + LossRightNode
+        --------------------------------------------------------------------
+
+        Arguments:
+            col {array} -- A feature of training data.
+            score {array} -- Target values.
+            split {float} -- Split point of column.
+
+        Returns:
+            tuple -- MSE and average of splitted x
+        """
+
+        # Split score.
+        score_left = score[col < split]
+        score_right = score[col >= split]
+
+        # Calculate the means of score.
+        avg_left = score_left.mean()
+        avg_right = score_right.mean()
+
+        # Calculate the mse of score, D(X) = E{[X-E(X)]^2} = E(X^2)-[E(X)]^2.
+        mse_left = (score_left ** 2).mean() - avg_left ** 2
+        mse_right = (score_right ** 2).mean() - avg_right ** 2
+        mse = mse_left + mse_right
+
+        return mse, avg_left, avg_right
+
+    def _choose_split(self, col: array, score: array):
+        """Iterate each xi and split x, y into two pieces,
+        and the best split point is the xi when we get minimum mse.
+
+        Arguments:
+            col {array} -- A feature of training data.
+            score {array} -- Target values.
+
+        Returns:
+            tuple -- The best choice of mse, split point and average
+        """
+        # Feature cannot be splitted if there's only one unique element.
+        unique = set(col)
+        if len(unique) == 1:
+            return None
+        # In case of empty split
+        unique.remove(min(unique))
+
+        # Get split point which has min mse
+        ite = map(lambda x: (x, *self._get_split_mse(col, score, x)), unique)
+        split, mse, avg_left, avg_right = min(ite, key=lambda x: x[1])
+
+        return split, mse, avg_left, avg_right
+
+    def _choose_feature(self, data: array, score: array):
+        """Choose the feature which has minimum mse.
+
+        Arguments:
+            data {array} -- Training data.
+            score {array} -- Target values.
+
+        Returns:
+            tuple -- (feature number, split point, average)
+        """
+
+        # Compare the mse of each feature and choose best one.
+        ite = map(lambda x: (x, *self._choose_split(
+            data[:, x], score)), range(data.shape[1]))
+        ite = filter(lambda x: x is not None, ite)
+
+        # Terminate if no feature can be splitted
+        return min(ite, default=None, key=lambda x: x[1])
+
+    def fit(self, data: array, score: array, max_depth=5, min_samples_split=2):
         """Build a regression decision tree.
         Note:
             At least there's one column in X has more than 2 unique elements
             y cannot be all the same value
 
         Arguments:
-            X {list} -- 2d list object with int or float
-            y {list} -- 1d list object with int or float
+            data {array} -- Training data.
+            score {array} -- Target values.
 
         Keyword Arguments:
             max_depth {int} -- The maximum depth of the tree. (default: {5})
@@ -183,49 +187,40 @@ class RegressionTree(object):
         """
 
         # Initialize with depth, node, indexes
-        self.root.score = sum(y) / len(y)
-        idxs = list(range(len(y)))
-        que = [(self.depth + 1, self.root, idxs)]
+        self.root.score = score.mean()
+        que = [(self.depth + 1, self.root, data, score)]
         # Breadth-First Search
         while que:
-            depth, nd, idxs = que.pop(0)
+            depth, node, _data, _score = que.pop(0)
             # Terminate loop if tree depth is more than max_depth
             if depth > max_depth:
                 depth -= 1
                 break
             # Stop split when number of node samples is less than
             # min_samples_split or Node is 100% pure.
-            if len(idxs) < min_samples_split or \
-                    all(map(lambda i: y[idxs[0]] == y[i], idxs)):
+            if _score.shape[0] < min_samples_split or all(_score == score[0]):
                 continue
             # Stop split if no feature has more than 2 unique elements
-            split_ret = self._choose_feature(X, y, idxs)
+            split_ret = self._choose_feature(_data, _score)
             if split_ret is None:
                 continue
             # Split
-            _, feature, split, split_avg = split_ret
+            feature, split, avg_left, avg_right = split_ret
             # Update properties of current node
-            nd.feature = feature
-            nd.split = split
-            nd.left = Node(split_avg[0])
-            nd.right = Node(split_avg[1])
+            node.feature = feature
+            node.split = split
+            node.left = Node(avg_left)
+            node.right = Node(avg_right)
             # Put children of current node in que
-            idxs_split = list_split(X, idxs, feature, split)
-            que.append((depth + 1, nd.left, idxs_split[0]))
-            que.append((depth + 1, nd.right, idxs_split[1]))
+            idx_left = (_data[:, feature] >= split)
+            idx_right = (_data[:, feature] < split)
+            que.append(
+                (depth + 1, node.left, _data[idx_left], _score[idx_left]))
+            que.append(
+                (depth + 1, node.right, _data[idx_right], _score[idx_right]))
         # Update tree depth and rules
         self.depth = depth
         self._get_rules()
-
-    @property
-    def rules(self):
-        """Print the rules of all the regression decision tree leaf nodes.
-        """
-
-        for i, rule in enumerate(self._rules):
-            literals, score = rule
-            print("Rule %d: " % i, ' | '.join(
-                literals) + ' => y_hat %.4f' % score)
 
     def _predict(self, Xi):
         """Auxiliary function of predict.
