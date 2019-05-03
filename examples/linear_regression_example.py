@@ -19,14 +19,16 @@ from imylu.linear_model.linear_regression import LinearRegression
 
 
 def main():
+    """Tesing the performance of LinearRegression.
+    """
     @run_time
     def batch():
         print("Tesing the performance of LinearRegression(batch)...")
         # Train model
         reg = LinearRegression()
-        reg.fit(X=X_train, y=y_train, lr=0.1, epochs=1000)
+        reg.fit(X=data_train, y=label_train, lr=0.1, epochs=1000)
         # Model evaluation
-        get_r2(reg, X_test, y_test)
+        get_r2(reg, data_test, label_test)
         print(reg)
 
     @run_time
@@ -34,17 +36,18 @@ def main():
         print("Tesing the performance of LinearRegression(stochastic)...")
         # Train model
         reg = LinearRegression()
-        reg.fit(X=X_train, y=y_train, lr=0.05, epochs=50,
+        reg.fit(X=data_train, y=label_train, lr=0.05, epochs=50,
                 method="stochastic", sample_rate=0.6)
         # Model evaluation
-        get_r2(reg, X_test, y_test)
+        get_r2(reg, data_test, label_test)
         print(reg)
 
     # Load data
-    X, y = load_boston_house_prices()
-    X = min_max_scale(X)
+    data, label = load_boston_house_prices()
+    data = min_max_scale(data)
     # Split data randomly, train set rate 70%
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=20)
+    data_train, data_test, label_train, label_test = train_test_split(
+        data, label, random_state=20)
     batch()
     stochastic()
 
