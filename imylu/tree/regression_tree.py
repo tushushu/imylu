@@ -6,9 +6,9 @@
 @Last Modified time: 2019-05-03 21:18:04
 """
 from copy import copy
-from ..utils.utils import list_split
 import numpy as np
 from numpy import array
+from copy import deepcopy
 
 
 class Node:
@@ -47,9 +47,10 @@ class RegressionTree(object):
         ret = []
         for i, rule in enumerate(self._rules):
             literals, score = rule
-            ret.append("Rule %d: " % i, ' | '.join(
+
+            ret.append("Rule %d: " % i + ' | '.join(
                 literals) + ' => y_hat %.4f' % score)
-        return ret
+        return "\n".join(ret)
 
     @staticmethod
     def _expr2literal(expr):
@@ -100,7 +101,6 @@ class RegressionTree(object):
         MSE as Loss fuction:
         y_hat = Sum(y_i) / n, i <- [1, n]
         Loss(y_hat, y) = Sum((y_hat - y_i) ^ 2), i <- [1, n]
-        Loss = LossLeftNode + LossRightNode
         --------------------------------------------------------------------
 
         Arguments:
@@ -120,10 +120,9 @@ class RegressionTree(object):
         avg_left = score_left.mean()
         avg_right = score_right.mean()
 
-        # Calculate the mse of score, D(X) = E{[X-E(X)]^2} = E(X^2)-[E(X)]^2.
-        mse_left = (score_left ** 2).mean() - avg_left ** 2
-        mse_right = (score_right ** 2).mean() - avg_right ** 2
-        mse = mse_left + mse_right
+        # Calculate the mse of score.
+        mse = (((score_left - avg_left) ** 2).sum() +
+               ((score_right - avg_right) ** 2).sum()) / len(score)
 
         return mse, avg_left, avg_right
 
@@ -141,15 +140,15 @@ class RegressionTree(object):
         # Feature cannot be splitted if there's only one unique element.
         unique = set(col)
         if len(unique) == 1:
-            return None
+            return None, None, None, None
         # In case of empty split
         unique.remove(min(unique))
 
         # Get split point which has min mse
-        ite = map(lambda x: (x, *self._get_split_mse(col, score, x)), unique)
-        split, mse, avg_left, avg_right = min(ite, key=lambda x: x[1])
+        ite = map(lambda x: (*self._get_split_mse(col, score, x), x), unique)
+        mse, avg_left, avg_right, split = min(ite, key=lambda x: x[0])
 
-        return split, mse, avg_left, avg_right
+        return mse, avg_left, avg_right, split
 
     def _choose_feature(self, data: array, score: array):
         """Choose the feature which has minimum mse.
@@ -163,12 +162,12 @@ class RegressionTree(object):
         """
 
         # Compare the mse of each feature and choose best one.
-        ite = map(lambda x: (x, *self._choose_split(
-            data[:, x], score)), range(data.shape[1]))
-        ite = filter(lambda x: x is not None, ite)
+        ite = map(lambda x: (*self._choose_split(
+            data[:, x], score), x), range(data.shape[1]))
+        ite = filter(lambda x: x[0] is not None, ite)
 
         # Terminate if no feature can be splitted
-        return min(ite, default=None, key=lambda x: x[1])
+        return min(ite, default=None, key=lambda x: x[0])
 
     def fit(self, data: array, score: array, max_depth=5, min_samples_split=2):
         """Build a regression decision tree.
@@ -198,56 +197,56 @@ class RegressionTree(object):
                 break
             # Stop split when number of node samples is less than
             # min_samples_split or Node is 100% pure.
-            if _score.shape[0] < min_samples_split or all(_score == score[0]):
+            if len(_score) < min_samples_split or all(_score == score[0]):
                 continue
             # Stop split if no feature has more than 2 unique elements
             split_ret = self._choose_feature(_data, _score)
             if split_ret is None:
                 continue
             # Split
-            feature, split, avg_left, avg_right = split_ret
+            _, avg_left, avg_right, split, feature = split_ret
             # Update properties of current node
             node.feature = feature
             node.split = split
             node.left = Node(avg_left)
             node.right = Node(avg_right)
             # Put children of current node in que
-            idx_left = (_data[:, feature] >= split)
-            idx_right = (_data[:, feature] < split)
+            idx_left = (_data[:, feature] < split)
+            idx_right = (_data[:, feature] >= split)
             que.append(
-                (depth + 1, node.left, _data[idx_left], _score[idx_left]))
+                (depth + 1, node.left, deepcopy(_data[idx_left]), deepcopy(_score[idx_left])))
             que.append(
-                (depth + 1, node.right, _data[idx_right], _score[idx_right]))
+                (depth + 1, node.right, deepcopy(_data[idx_right]), deepcopy(_score[idx_right])))
         # Update tree depth and rules
         self.depth = depth
         self._get_rules()
 
-    def _predict(self, Xi):
+    def _predict(self, row: array)->float:
         """Auxiliary function of predict.
 
         Arguments:
-            Xi {list} -- 1D list with int or float
+            row {array} -- 1D list with int or float
 
         Returns:
-            int or float -- prediction of yi
+            float -- prediction of yi
         """
 
-        nd = self.root
-        while nd.left and nd.right:
-            if Xi[nd.feature] < nd.split:
-                nd = nd.left
+        node = self.root
+        while node.left and node.right:
+            if row[node.feature] < node.split:
+                node = node.left
             else:
-                nd = nd.right
-        return nd.score
+                node = node.right
+        return node.score
 
-    def predict(self, X):
+    def predict(self, data: array)->array:
         """Get the prediction of y.
 
         Arguments:
-            X {list} -- 2d list object with int or float
+            data {array} -- 2d list object with int or float
 
         Returns:
-            list -- 1d list object with int or float
+            array -- 1d list object with int or float
         """
 
-        return [self._predict(Xi) for Xi in X]
+        return np.apply_along_axis(self._predict, 1, data)
