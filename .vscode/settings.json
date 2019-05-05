@@ -7,6 +7,8 @@
         "--ignore=E402",
         "--verbose"
     ],
-    "python.linting.pylintEnabled": true,
-    "python.pythonPath": "/Users/Tuzi/miniconda3/bin/python"
+    "python.linting.pylintEnabled": false,
+    "python.pythonPath": "/Users/Tuzi/miniconda3/bin/python",
+    "python.linting.mypyEnabled": true,
+    "python.linting.enabled": true
 }

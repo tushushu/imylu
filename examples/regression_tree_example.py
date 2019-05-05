@@ -3,7 +3,7 @@
 @Author: tushushu
 @Date: 2018-08-21 17:34:18
 @Last Modified by:   tushushu
-@Last Modified time: 2018-08-21 17:34:18
+@Last Modified time: 2019-05-04 17:34:18
 """
 import os
 os.chdir(os.path.split(os.path.realpath(__file__))[0])
@@ -19,19 +19,21 @@ from imylu.utils.utils import run_time
 
 @run_time
 def main():
+    """Tesing the performance of RegressionTree
+    """
     print("Tesing the performance of RegressionTree...")
     # Load data
-    X, y = load_boston_house_prices()
+    data, score = load_boston_house_prices()
     # Split data randomly, train set rate 70%
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, random_state=10)
+    data_train, data_test, score_train, score_test = train_test_split(
+        data, score, random_state=200)
     # Train model
     reg = RegressionTree()
-    reg.fit(X=X_train, y=y_train, max_depth=5)
+    reg.fit(data=data_train, score=score_train, max_depth=5)
     # Show rules
-    reg.rules
+    print(reg)
     # Model evaluation
-    get_r2(reg, X_test, y_test)
+    get_r2(reg, data_test, score_test)
 
 
 if __name__ == "__main__":

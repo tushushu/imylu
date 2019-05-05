@@ -1,12 +1,16 @@
 """
 @Author: tushushu
 @Date: 2019-01-04 15:35:11
+@Last Modified by: tushushu
+@Last Modified time: 2019-05-03 09:13:34
 """
-from numpy.linalg import eig
 import heapq
 
+from numpy import array
+from numpy.linalg import eig
 
-class PCA(object):
+
+class PCA:
     """Principal component analysis (PCA)
 
     Arguments:
@@ -18,89 +22,93 @@ class PCA(object):
     def __init__(self):
         self.n_components = None
         self.eigen_vectors = None
-        self.X_mean = None
+        self.avg = None
 
-    def _normalize(self, X):
+    @staticmethod
+    def _normalize(data: array):
         """Normalize the data by mean subtraction.
 
         Arguments:
-            X {array} -- m * n array with int or float.
+            data {array} -- Training data.
 
         Returns:
-            array -- m * n array with int or float.
-            array -- 1 * m array with int or float.
+            array -- Normalized data with shape(n_rows, n_cols)
+            array -- Mean of data with shape(1, n_cols)
         """
 
-        X_mean = X.mean(axis=0)
-        return X - X_mean, X_mean
+        avg = data.mean(axis=0)
+        return data - avg, avg
 
-    def _get_covariance(self, X):
-        """Calculate the covariance matrix.
+    @staticmethod
+    def _get_covariance(data: array)->array:
+        """Calculate the covariance matrix of data.
 
         Arguments:
-            X {array} -- m * n array with int or float.
+            data {array} -- Training data.
 
         Returns:
-            array -- n * n array with int or float.
+            array -- covariance matrix with shape(n_cols, n_cols)
         """
 
-        m = X.shape[0]
-        return X.T.dot(X) / (m - 1)
+        n_rows = data.shape[0]
+        return data.T.dot(data) / (n_rows - 1)
 
-    def _get_top_eigen_vectors(self, X, n_components):
+    @staticmethod
+    def _get_top_eigen_vectors(data: array, n_components: int)->array:
         """The eigen vectors according to top n_components large eigen values.
 
         Arguments:
-            X {array} -- n * n array with int or float.
+            data {array} -- Training data.
             n_components {int} -- Number of components to keep.
 
         Returns:
-            array -- n * k array with int or float.
+            array -- eigen vectors with shape(n_cols, n_components).
         """
 
         # Calculate eigen values and eigen vectors of covariance matrix.
-        eigen_values, eigen_vectors = eig(X)
+        eigen_values, eigen_vectors = eig(data)
         # The indexes of top n_components large eigen values.
-        indexes = heapq.nlargest(n_components, enumerate(eigen_values),
-                                 key=lambda x: x[1])
-        indexes = [x[0] for x in indexes]
+        _indexes = heapq.nlargest(n_components, enumerate(eigen_values),
+                                  key=lambda x: x[1])
+        indexes = [x[0] for x in _indexes]
         return eigen_vectors[:, indexes]
 
-    def fit(self, X, n_components):
-        """Fit the model with X.
+    def fit(self, data: array, n_components: int):
+        """Fit the model with data.
 
         Arguments:
-            X {array} -- m * n array with int or float.
+            data {array} -- Training data.
             n_components {int} -- Number of components to keep.
         """
 
-        X_norm, self.X_mean = self._normalize(X)
-        X_cov = self._get_covariance(X_norm)
+        data_norm, self.avg = self._normalize(data)
+        data_cov = self._get_covariance(data_norm)
         self.n_components = n_components
-        self.eigen_vectors = self._get_top_eigen_vectors(X_cov, n_components)
+        self.eigen_vectors = self._get_top_eigen_vectors(
+            data_cov, n_components)
 
-    def transform(self, X):
+    def transform(self, data: array)->array:
         """Apply the dimensionality reduction on X.
 
         Arguments:
-            X {array} -- m * n array with int or float.
+            data {array} -- Training data.
 
         Returns:
-            array -- n * k array with int or float.
+            array -- with shape(n_cols, n_components).
         """
 
-        return (X - self.X_mean).dot(self.eigen_vectors)
+        return (data - self.avg).dot(self.eigen_vectors)
 
-    def fit_trasform(self, X, n_components):
-        """Fit the model with X and apply the dimensionality reduction on X.
+    def fit_trasform(self, data: array, n_components: int)->array:
+        """Fit the model with data and apply the dimensionality reduction on data.
 
         Arguments:
-            X {array} -- m * n array with int or float.
+            data {array} -- Training data.
             n_components {int} -- Number of components to keep.
 
         Returns:
-            array -- n * k array with int or float.
+            array -- with shape(n_cols, n_components).
         """
 
-        self.fit(X, n_components)
-        return self.transform(X)
+        self.fit(data, n_components)
+        return self.transform(data)
