@@ -111,8 +111,8 @@ class GaussianNB:
         """
 
         # Caculate the joint probabilities of each feature and each class.
-        posterior = np.apply_along_axis(self._get_posterior, axis=1, arr=data)
-        probs = self.prior * posterior
+        likelihood = np.apply_along_axis(self._get_likelihood, axis=1, arr=data)
+        probs = self.prior * likelihood
         # Scale the probabilities
         probs_sum = probs.sum(axis=1)
         return probs / probs_sum[:, None]

@@ -1,0 +1,14 @@
+{
+    "editor.formatOnSave": false,
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 500,
+    "python.linting.flake8Enabled": false,
+    "python.linting.flake8Args": [
+        "--ignore=E402",
+        "--verbose"
+    ],
+    "python.linting.pylintEnabled": false,
+    "python.pythonPath": "/Users/Tuzi/miniconda3/bin/python",
+    "python.linting.mypyEnabled": true,
+    "python.linting.enabled": true
+}
