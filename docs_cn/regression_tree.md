@@ -1,6 +1,7 @@
 
 提到回归树相信大家应该都不会觉得陌生（不陌生你点进来干嘛[捂脸]），大名鼎鼎的GBDT算法就是用回归树组合而成的。本文就回归树的基本原理进行讲解，并手把手、肩并肩地带您实现这一算法。
 
+
 完整实现代码请参考本人的p...哦不是...github：  
 [regression_tree.py](https://github.com/tushushu/imylu/blob/master/imylu/tree/regression_tree.py)  
 [regression_tree_example.py](https://github.com/tushushu/imylu/blob/master/examples/regression_tree_example.py)  
@@ -55,11 +56,11 @@ $
 熟悉数据结构的同学自然会想到二叉树，这种树被称为回归树，顾名思义利用树形结构求解回归问题。
 
 # 2. 实现篇
-本人用全宇宙最简单的编程语言——Python实现了回归树算法，没有依赖任何第三方库，便于学习和使用。简单说明一下实现过程，更详细的注释请参考本人github上的代码。
+本人用全宇宙最简单的编程语言——Python实现了回归树算法，便于学习和使用。简单说明一下实现过程，更详细的注释请参考本人github上的代码。
 ## 2.1 创建Node类
 初始化，存储预测值、左右结点、特征和分割点
 ```Python
-class Node(object):
+class Node:
     def __init__(self, score=None):
         self.score = score
         self.left = None
@@ -74,81 +75,69 @@ class Node(object):
 class RegressionTree(object):
     def __init__(self):
         self.root = Node()
-        self.height = 0
+        self.depth = 1
+        self._rules = None
 ```
 
 ## 2.3 计算分割点、MSE
-根据自变量X、因变量y、X元素中被取出的行号idx，列号feature以及分割点split，计算分割后的MSE。注意这里为了减少计算量，用到了方差公式：  
-$D(X) = E{[X-E(X)]^2} = E(X^2)-[E(X)]^2$
+根据自变量col、因变量label以及分割点split，计算分割后的MSE。
 ```Python
-def _get_split_mse(self, X, y, idx, feature, split):
-    split_sum = [0, 0]
-    split_cnt = [0, 0]
-    split_sqr_sum = [0, 0]
+@staticmethod
+def _get_split_mse(col: array, score: array, split: float):
+    # Split score.
+    score_left = score[col < split]
+    score_right = score[col >= split]
 
-    for i in idx:
-        xi, yi = X[i][feature], y[i]
-        if xi < split:
-            split_cnt[0] += 1
-            split_sum[0] += yi
-            split_sqr_sum[0] += yi ** 2
-        else:
-            split_cnt[1] += 1
-            split_sum[1] += yi
-            split_sqr_sum[1] += yi ** 2
+    # Calculate the means of score.
+    avg_left = score_left.mean()
+    avg_right = score_right.mean()
 
-    split_avg = [split_sum[0] / split_cnt[0], split_sum[1] / split_cnt[1]]
-    split_mse = [split_sqr_sum[0] - split_sum[0] * split_avg[0],
-                    split_sqr_sum[1] - split_sum[1] * split_avg[1]]
-    return sum(split_mse), split, split_avg
+    # Calculate the mse of score.
+    mse = (((score_left - avg_left) ** 2).sum() +
+            ((score_right - avg_right) ** 2).sum()) / len(score)
+
+    return mse, avg_left, avg_right
 ```
 
 ## 2.4 计算最佳分割点
 遍历特征某一列的所有的不重复的点，找出MSE最小的点作为最佳分割点。如果特征中没有不重复的元素则返回None。
 ```Python
-def _choose_split_point(self, X, y, idx, feature):
-    unique = set([X[i][feature] for i in idx])
+def _choose_split(self, col: array, score: array):
+    # Feature cannot be splitted if there's only one unique element.
+    unique = set(col)
     if len(unique) == 1:
-        return None
-
+        return None, None, None, None
+    # In case of empty split
     unique.remove(min(unique))
-    mse, split, split_avg = min(
-        (self._get_split_mse(X, y, idx, feature, split)
-            for split in unique), key=lambda x: x[0])
-    return mse, feature, split, split_avg
+
+    # Get split point which has min mse
+    ite = map(lambda x: (*self._get_split_mse(col, score, x), x), unique)
+    mse, avg_left, avg_right, split = min(ite, key=lambda x: x[0])
+
+    return mse, avg_left, avg_right, split
 ```
 
 ## 2.5 选择最佳特征
-遍历所有特征，计算最佳分割点对应的MSE，找出MSE最小的特征、对应的分割点，左右子节点对应的均值和行号。如果所有的特征都没有不重复元素则返回None
+遍历所有特征，计算最佳分割点对应的MSE，找出MSE最小的特征、对应的分割点，左右子节点对应的均值。如果所有的特征都没有不重复元素则返回None
 ```Python
-def _choose_feature(self, X, y, idx):
-    m = len(X[0])
-    split_rets = [x for x in map(lambda x: self._choose_split_point(
-        X, y, idx, x), range(m)) if x is not None]
+def _choose_feature(self, data: array, score: array):
+    # Compare the mse of each feature and choose best one.
+    ite = map(lambda x: (*self._choose_split(
+        data[:, x], score), x), range(data.shape[1]))
+    ite = filter(lambda x: x[0] is not None, ite)
 
-    if split_rets == []:
-        return None
-    _, feature, split, split_avg = min(
-        split_rets, key=lambda x: x[0])
-
-    idx_split = [[], []]
-    while idx:
-        i = idx.pop()
-        xi = X[i][feature]
-        if xi < split:
-            idx_split[0].append(i)
-        else:
-            idx_split[1].append(i)
-    return feature, split, split_avg, idx_split
+    # Terminate if no feature can be splitted
+    return min(ite, default=None, key=lambda x: x[0])
 ```
 
 ## 2.6 规则转文字
 将规则用文字表达出来，方便我们查看规则。
 ```Python
-def _expr2literal(self, expr):
-    feature, op, split = expr
-    op = ">=" if op == 1 else "<"
-    return "Feature%d %s %.4f" % (feature, op, split)
+@staticmethod
+def _expr2literal(expr):
+    feature, operation, split = expr
+    operation = ">=" if operation == 1 else "<"
+    return "Feature%d %s %.4f" % (feature, operation, split)
 ```
 
 ## 2.7 获取规则
@@ -156,23 +145,25 @@ def _expr2literal(self, expr):
 ```Python
 def _get_rules(self):
     que = [[self.root, []]]
-    self.rules = []
-
+    self._rules = []
+    # Breadth-First Search
     while que:
-        nd, exprs = que.pop(0)
-        if not(nd.left or nd.right):
+        node, exprs = que.pop(0)
+        # Generate a rule when the current node is leaf node
+        if not(node.left or node.right):
+            # Convert expression to text
             literals = list(map(self._expr2literal, exprs))
-            self.rules.append([literals, nd.score])
-
-        if nd.left:
+            self._rules.append([literals, node.score])
+        # Expand when the current node has left child
+        if node.left:
             rule_left = copy(exprs)
-            rule_left.append([nd.feature, -1, nd.split])
-            que.append([nd.left, rule_left])
-
-        if nd.right:
+            rule_left.append([node.feature, -1, node.split])
+            que.append([node.left, rule_left])
+        # Expand when the current node has right child
+        if node.right:
             rule_right = copy(exprs)
-            rule_right.append([nd.feature, 1, nd.split])
-            que.append([nd.right, rule_right])
+            rule_right.append([node.feature, 1, node.split])
+            que.append([node.right, rule_right])
 ```
 
 ## 2.8 训练模型
@@ -182,80 +173,96 @@ def _get_rules(self):
 3. 叶子结点至少有两个不重复的y值；
 4. 至少有一个特征是没有重复值的。
 ```Python
-def fit(self, X, y, max_depth=5, min_samples_split=2):
-    self.root = Node()
-    que = [[0, self.root, list(range(len(y)))]]
-
+def fit(self, data: array, score: array, max_depth=5, min_samples_split=2):
+    # Initialize with depth, node, indexes
+    self.root.score = score.mean()
+    que = [(self.depth + 1, self.root, data, score)]
+    # Breadth-First Search
     while que:
-        depth, nd, idx = que.pop(0)
-
-        if depth == max_depth:
+        depth, node, _data, _score = que.pop(0)
+        # Terminate loop if tree depth is more than max_depth
+        if depth > max_depth:
+            depth -= 1
             break
-
-        if len(idx) < min_samples_split or \
-                set(map(lambda i: y[i], idx)) == 1:
+        # Stop split when number of node samples is less than
+        # min_samples_split or Node is 100% pure.
+        if len(_score) < min_samples_split or all(_score == score[0]):
             continue
-
-        feature_rets = self._choose_feature(X, y, idx)
-        if feature_rets is None:
+        # Stop split if no feature has more than 2 unique elements
+        split_ret = self._choose_feature(_data, _score)
+        if split_ret is None:
             continue
-
-        nd.feature, nd.split, split_avg, idx_split = feature_rets
-        nd.left = Node(split_avg[0])
-        nd.right = Node(split_avg[1])
-        que.append([depth+1, nd.left, idx_split[0]])
-        que.append([depth+1, nd.right, idx_split[1]])
-
-    self.height = depth
+        # Split
+        _, avg_left, avg_right, split, feature = split_ret
+        # Update properties of current node
+        node.feature = feature
+        node.split = split
+        node.left = Node(avg_left)
+        node.right = Node(avg_right)
+        # Put children of current node in que
+        idx_left = (_data[:, feature] < split)
+        idx_right = (_data[:, feature] >= split)
+        que.append(
+            (depth + 1, node.left, deepcopy(_data[idx_left]), deepcopy(_score[idx_left])))
+        que.append(
+            (depth + 1, node.right, deepcopy(_data[idx_right]), deepcopy(_score[idx_right])))
+    # Update tree depth and rules
+    self.depth = depth
     self._get_rules()
+
 ```
 ## 2.9 打印规则
 模型训练完毕，查看一下模型生成的规则
 ```Python
-def print_rules(self):
-    for i, rule in enumerate(self.rules):
-        literals, score = rule
-        print("Rule %d: " % i, ' | '.join(
-            literals) + ' => split_hat %.4f' % score)
+    def __str__(self):
+        ret = []
+        for i, rule in enumerate(self._rules):
+            literals, score = rule
+
+            ret.append("Rule %d: " % i + ' | '.join(
+                literals) + ' => y_hat %.4f' % score)
+        return "\n".join(ret)
 ```
 
 ## 2.10 预测一个样本
 ```Python
-def _predict(self, row):
-    nd = self.root
-    while nd.left and nd.right:
-        if row[nd.feature] < nd.split:
-            nd = nd.left
+def _predict(self, row: array)->float:
+    node = self.root
+    while node.left and node.right:
+        if row[node.feature] < node.split:
+            node = node.left
         else:
-            nd = nd.right
-    return nd.score
+            node = node.right
+    return node.score
 ```
 
 ## 2.11 预测多个样本
 ```Python
-def predict(self, X):
-    return [self._predict(Xi) for Xi in X]
+def predict(self, data: array)->array:
+    return np.apply_along_axis(self._predict, 1, data)
 ```
 
 # 3 效果评估
 ## 3.1 main函数
 使用著名的波士顿房价数据集，按照7:3的比例拆分为训练集和测试集，训练模型，并统计准确度。
 ```Python
-@run_time
 def main():
-    print("Tesing the accuracy of RegressionTree...")
-    X, y = load_boston_house_prices()
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, random_state=10)
-
+    print("Tesing the performance of RegressionTree...")
+    # Load data
+    data, score = load_boston_house_prices()
+    # Split data randomly, train set rate 70%
+    data_train, data_test, score_train, score_test = train_test_split(
+        data, score, random_state=200)
+    # Train model
     reg = RegressionTree()
-    reg.fit(X=X_train, y=y_train, max_depth=4)
-
-    reg.print_rules()
-    get_r2(reg, X_test, y_test)
+    reg.fit(data=data_train, score=score_train, max_depth=5)
+    # Show rules
+    print(reg)
+    # Model evaluation
+    get_r2(reg, data_test, score_test)
 ```
 ## 3.2 效果展示
-最终生成了15条规则，拟合优度0.801，运行时间1.74秒，效果还算不错~
+最终生成了15条规则，拟合优度0.776，运行时间634毫秒，效果还算不错~
 ![regression_tree](https://github.com/tushushu/imylu/blob/master/pic/regression_tree.png)
 
 ## 3.3 工具函数
