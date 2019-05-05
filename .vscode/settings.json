@@ -8,7 +8,7 @@
         "--verbose"
     ],
     "python.linting.pylintEnabled": false,
-    "python.pythonPath": "/Users/Tuzi/miniconda3/bin/python",
+    "python.pythonPath": "/home/liutienan007/miniconda3/bin/python",
     "python.linting.mypyEnabled": true,
     "python.linting.enabled": true
 }

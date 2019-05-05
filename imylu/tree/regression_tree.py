@@ -8,18 +8,17 @@
 from copy import copy
 import numpy as np
 from numpy import array
-from copy import deepcopy
 
 
 class Node:
     """Node class to build tree leaves.
 
     Attributes:
-        score {float} -- prediction of y (default: {None})
-        left {Node} -- Left child node
-        right {Node} -- Right child node
-        feature {int} -- Column index
-        split {int} --  Split point
+        score {float} -- prediction of score. (default: {None})
+        left {Node} -- Left child node.
+        right {Node} -- Right child node.
+        feature {int} -- Column index.
+        split {int} --  Split point.
     """
 
     def __init__(self, score=None):
@@ -34,8 +33,8 @@ class RegressionTree(object):
     """RegressionTree class.
 
     Attributes:
-        root{Node}: the root node of DecisionTree
-        depth{int}: the depth of DecisionTree
+        root{Node}: Root node of DecisionTree.
+        depth{int}: Depth of DecisionTree.
     """
 
     def __init__(self):
@@ -54,10 +53,10 @@ class RegressionTree(object):
 
     @staticmethod
     def _expr2literal(expr):
-        """Auxiliary function of print_rules.
+        """Auxiliary function of _get_rules.
 
         Arguments:
-            expr {list} -- 1D list like [Feature, op, split]
+            expr {list} -- 1D list like [Feature, op, split].
 
         Returns:
             str
@@ -69,27 +68,27 @@ class RegressionTree(object):
 
     def _get_rules(self):
         """Get the rules of all the decision tree leaf nodes.
-            Expr: 1D list like [Feature, op, split]
-            Rule: 2D list like [[Feature, op, split], score]
-            Op: -1 means less than, 1 means equal or more than
+            Expr: 1D list like [Feature, op, split].
+            Rule: 2D list like [[Feature, op, split], score].
+            Op: -1 means less than, 1 means equal or more than.
         """
 
         que = [[self.root, []]]
         self._rules = []
-        # Breadth-First Search
+        # Breadth-First Search.
         while que:
             node, exprs = que.pop(0)
-            # Generate a rule when the current node is leaf node
+            # Generate a rule when the current node is leaf node.
             if not(node.left or node.right):
-                # Convert expression to text
+                # Convert expression to text.
                 literals = list(map(self._expr2literal, exprs))
                 self._rules.append([literals, node.score])
-            # Expand when the current node has left child
+            # Expand when the current node has left child.
             if node.left:
                 rule_left = copy(exprs)
                 rule_left.append([node.feature, -1, node.split])
                 que.append([node.left, rule_left])
-            # Expand when the current node has right child
+            # Expand when the current node has right child.
             if node.right:
                 rule_right = copy(exprs)
                 rule_right.append([node.feature, 1, node.split])
@@ -97,7 +96,7 @@ class RegressionTree(object):
 
     @staticmethod
     def _get_split_mse(col: array, score: array, split: float):
-        """Calculate the mse of each set when x is splitted into two pieces.
+        """Calculate the mse of score when col is splitted into two pieces.
         MSE as Loss fuction:
         y_hat = Sum(y_i) / n, i <- [1, n]
         Loss(y_hat, y) = Sum((y_hat - y_i) ^ 2), i <- [1, n]
@@ -109,7 +108,7 @@ class RegressionTree(object):
             split {float} -- Split point of column.
 
         Returns:
-            tuple -- MSE and average of splitted x
+            tuple -- MSE of score and average of splitted x
         """
 
         # Split score.
@@ -162,18 +161,18 @@ class RegressionTree(object):
         """
 
         # Compare the mse of each feature and choose best one.
-        ite = map(lambda x: (*self._choose_split(
+        _ite = map(lambda x: (*self._choose_split(
             data[:, x], score), x), range(data.shape[1]))
-        ite = filter(lambda x: x[0] is not None, ite)
+        ite = filter(lambda x: x[0] is not None, _ite)
 
-        # Terminate if no feature can be splitted
+        # Terminate if no feature can be splitted.
         return min(ite, default=None, key=lambda x: x[0])
 
     def fit(self, data: array, score: array, max_depth=5, min_samples_split=2):
         """Build a regression decision tree.
         Note:
-            At least there's one column in X has more than 2 unique elements
-            y cannot be all the same value
+            At least there's one column in data has more than 2 unique elements
+            score cannot be all the same value
 
         Arguments:
             data {array} -- Training data.
@@ -185,13 +184,13 @@ class RegressionTree(object):
             to split an internal node (default: {2})
         """
 
-        # Initialize with depth, node, indexes
+        # Initialize with depth, node, indexes.
         self.root.score = score.mean()
         que = [(self.depth + 1, self.root, data, score)]
-        # Breadth-First Search
+        # Breadth-First Search.
         while que:
             depth, node, _data, _score = que.pop(0)
-            # Terminate loop if tree depth is more than max_depth
+            # Terminate loop if tree depth is more than max_depth.
             if depth > max_depth:
                 depth -= 1
                 break
@@ -199,25 +198,25 @@ class RegressionTree(object):
             # min_samples_split or Node is 100% pure.
             if len(_score) < min_samples_split or all(_score == score[0]):
                 continue
-            # Stop split if no feature has more than 2 unique elements
+            # Stop split if no feature has more than 2 unique elements.
             split_ret = self._choose_feature(_data, _score)
             if split_ret is None:
                 continue
             # Split
             _, avg_left, avg_right, split, feature = split_ret
-            # Update properties of current node
+            # Update properties of current node.
             node.feature = feature
             node.split = split
             node.left = Node(avg_left)
             node.right = Node(avg_right)
-            # Put children of current node in que
+            # Put children of current node in que.
             idx_left = (_data[:, feature] < split)
             idx_right = (_data[:, feature] >= split)
             que.append(
-                (depth + 1, node.left, deepcopy(_data[idx_left]), deepcopy(_score[idx_left])))
+                (depth + 1, node.left, _data[idx_left], _score[idx_left]))
             que.append(
-                (depth + 1, node.right, deepcopy(_data[idx_right]), deepcopy(_score[idx_right])))
-        # Update tree depth and rules
+                (depth + 1, node.right, _data[idx_right], _score[idx_right]))
+        # Update tree depth and rules.
         self.depth = depth
         self._get_rules()
 
@@ -225,10 +224,10 @@ class RegressionTree(object):
         """Auxiliary function of predict.
 
         Arguments:
-            row {array} -- 1D list with int or float
+            row {array} -- A sample of training data.
 
         Returns:
-            float -- prediction of yi
+            float -- Prediction of score.
         """
 
         node = self.root
@@ -240,13 +239,13 @@ class RegressionTree(object):
         return node.score
 
     def predict(self, data: array)->array:
-        """Get the prediction of y.
+        """Get the prediction of score.
 
         Arguments:
-            data {array} -- 2d list object with int or float
+            data {array} -- Training data.
 
         Returns:
-            array -- 1d list object with int or float
+            array -- Prediction of score.
         """
 
         return np.apply_along_axis(self._predict, 1, data)
