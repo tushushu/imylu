@@ -7,7 +7,7 @@
         "--ignore=E402",
         "--verbose"
     ],
-    "python.linting.pylintEnabled": false,
+    "python.linting.pylintEnabled": true,
     "python.pythonPath": "/home/liutienan007/miniconda3/bin/python",
     "python.linting.mypyEnabled": true,
     "python.linting.enabled": true
