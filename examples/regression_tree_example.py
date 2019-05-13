@@ -23,17 +23,17 @@ def main():
     """
     print("Tesing the performance of RegressionTree...")
     # Load data
-    data, score = load_boston_house_prices()
+    data, label = load_boston_house_prices()
     # Split data randomly, train set rate 70%
-    data_train, data_test, score_train, score_test = train_test_split(
-        data, score, random_state=200)
+    data_train, data_test, label_train, label_test = train_test_split(
+        data, label, random_state=200)
     # Train model
     reg = RegressionTree()
-    reg.fit(data=data_train, score=score_train, max_depth=5)
+    reg.fit(data=data_train, label=label_train, max_depth=5)
     # Show rules
     print(reg)
     # Model evaluation
-    get_r2(reg, data_test, score_test)
+    get_r2(reg, data_test, label_test)
 
 
 if __name__ == "__main__":
