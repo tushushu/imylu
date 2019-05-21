@@ -216,8 +216,8 @@ class RegressionTree:
     def fit(self, data: array, label: array, max_depth=5, min_samples_split=2):
         """Build a regression decision tree.
         Note:
-            At least there's one column in data has more than 2 unique elements
-            label cannot be all the same value
+            At least there's one column in data has more than 2 unique elements,
+            and label cannot be all the same value.
 
         Arguments:
             data {array} -- Training data.
@@ -226,7 +226,7 @@ class RegressionTree:
         Keyword Arguments:
             max_depth {int} -- The maximum depth of the tree. (default: {5})
             min_samples_split {int} -- The minimum number of samples required
-            to split an internal node (default: {2})
+            to split an internal node. (default: {2})
         """
 
         # Initialize with depth, node, indexes.

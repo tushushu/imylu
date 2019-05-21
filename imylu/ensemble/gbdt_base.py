@@ -3,34 +3,38 @@
 @Author: tushushu
 @Date: 2018-08-13 10:29:29
 @Last Modified by:   tushushu
-@Last Modified time: 2018-08-13 10:29:29
+@Last Modified time: 2019-05-13 19:29:29
 """
-from ..tree.regression_tree import RegressionTree
-from random import choices
+from numpy import array
+from numpy.random import choice
+from typing import Dict, List
+import numpy as np
+
+from ..tree.regression_tree import RegressionTree, Node
 
 
-class GradientBoostingBase(object):
+class GradientBoostingBase:
+    """GBDT base class.
+    http://statweb.stanford.edu/~jhf/ftp/stobst.pdf
+
+    Attributes:
+        trees {list}: A list of RegressionTree objects.
+        lr {float}: Learning rate.
+        init_val {float}: Initial value to predict.
+        fn {function}: A function wrapper for prediction.
+    """
+
     def __init__(self):
-        """GBDT base class.
-        http://statweb.stanford.edu/~jhf/ftp/stobst.pdf
-
-        Attributes:
-            trees {list}: 1d list with RegressionTree objects.
-            lr {float}: Learning rate.
-            init_val {float}: Initial value to predict.
-            fn {function}: A function wrapper for prediction.
-        """
-
         self.trees = None
-        self.lr = None
+        self.learning_rate = None
         self.init_val = None
         self.fn = lambda x: NotImplemented
 
-    def _get_init_val(self, y):
+    def _get_init_val(self, label: array):
         """Calculate the initial prediction of y.
 
         Arguments:
-            y {list} -- 1D list with int or float.
+            label {array} -- Target values.
 
         Returns:
             NotImplemented
@@ -38,33 +42,35 @@ class GradientBoostingBase(object):
 
         return NotImplemented
 
-    def _match_node(self, row, tree):
+    @staticmethod
+    def _match_node(row: array, tree: RegressionTree) -> Node:
         """Find the leaf node that the sample belongs to.
 
         Arguments:
-            row {list} -- 1D list with int or float.
+            row {array} -- Sample of training data.
             tree {RegressionTree}
 
         Returns:
-            regression_tree.Node
+            Node
         """
 
-        nd = tree.root
-        while nd.left and nd.right:
-            if row[nd.feature] < nd.split:
-                nd = nd.left
+        node = tree.root
+        while node.left and node.right:
+            if row[node.feature] < node.split:
+                node = node.left
             else:
-                nd = nd.right
-        return nd
+                node = node.right
+        return node
 
-    def _get_leaves(self, tree):
+    @staticmethod
+    def _get_leaves(tree) -> list:
         """Gets all leaf nodes of a regression tree.
 
         Arguments:
             tree {RegressionTree}
 
         Returns:
-            list -- 1D list with regression_tree.Node objects.
+            list -- A list of RegressionTree objects.
         """
 
         nodes = []
@@ -74,42 +80,45 @@ class GradientBoostingBase(object):
             if node.left is None or node.right is None:
                 nodes.append(node)
                 continue
-            left_node = node.left
-            right_node = node.right
-            que.append(left_node)
-            que.append(right_node)
+
+            que.append(node.left)
+            que.append(node.right)
+
         return nodes
 
-    def _divide_regions(self, tree, nodes, X):
+    def _divide_regions(self, tree: RegressionTree, nodes: list,
+                        data: array) -> Dict[Node, List[int]]:
         """Divide indexes of the samples into corresponding leaf nodes
         of the regression tree.
 
         Arguments:
             tree {RegressionTree}
-            nodes {list} -- 1D list with regression_tree.Node objects.
-            X {list} -- 2d list object with int or float.
+            nodes {list} -- A list of Node objects.
+            data {array} -- Training data.
 
         Returns:
-            dict -- e.g. {node1: [1, 3, 5], node2: [2, 4, 6]...}
+            Dict[Node, List[int]]-- e.g. {node1: [1, 3, 5], node2: [2, 4, 6]...}
         """
 
-        regions = {node: [] for node in nodes}
-        for i, row in enumerate(X):
+        regions = {node: [] for node in nodes}  # type: Dict[Node, List[int]]
+        for i, row in enumerate(data):
             node = self._match_node(row, tree)
             regions[node].append(i)
+
         return regions
 
-    def _get_score(self, idxs, y_hat, residuals):
-        """Calculate the regression tree leaf node value.
+    def _get_residuals(self, label: array, prediction: array) -> array:
+        """Update residuals for each iteration.
 
         Arguments:
-            idxs {list} -- 1D list with int.
+            label {array} -- Target values.
+            prediction {array} -- Prediction of label.
 
         Returns:
-            NotImplemented
+            array -- residuals
         """
 
-        return NotImplemented
+        return label - self.fn(prediction)
 
     def _update_score(self, tree, X, y_hat, residuals):
         """update the score of regression tree leaf node.
@@ -121,99 +130,68 @@ class GradientBoostingBase(object):
             residuals {list} -- 1d list with float.
         """
 
-        nodes = self._get_leaves(tree)
+        NotImplemented
 
-        regions = self._divide_regions(tree, nodes, X)
-        for node, idxs in regions.items():
-            node.score = self._get_score(idxs, y_hat, residuals)
-        tree._get_rules()
-
-    def _get_residuals(self, y, y_hat):
-        """Update residuals for each iteration.
-
-        Arguments:
-            y {list} -- 1d list with int or float.
-            y_hat {list} -- 1d list with float.
-
-        Returns:
-            list -- residuals
-        """
-
-        return [yi - self.fn(y_hat_i) for yi, y_hat_i in zip(y, y_hat)]
-
-    def fit(self, X, y, n_estimators, lr, max_depth, min_samples_split,
-            subsample=None):
+    def fit(self, data: array, label: array, n_estimators: int, learning_rate: float,
+            max_depth: int, min_samples_split: int, subsample=None):
         """Build a gradient boost decision tree.
 
         Arguments:
-            X {list} -- 2d list with int or float.
-            y {list} -- 1d list object with int or float.
+            data {array} -- Training data.
+            label {array} -- Target values.
             n_estimators {int} -- number of trees.
-            lr {float} -- Learning rate
+            learning_rate {float} -- Learning rate.
             max_depth {int} -- The maximum depth of the tree.
             min_samples_split {int} -- The minimum number of samples required
             to split an internal node.
-
 
         Keyword Arguments:
             subsample {float} -- Subsample rate without replacement.
             (default: {None})
         """
 
-        # Calculate the initial prediction of y
-        self.init_val = self._get_init_val(y)
-        # Initialize y_hat
-        n = len(y)
-        y_hat = [self.init_val] * n
-        # Initialize the residuals
-        residuals = self._get_residuals(y, y_hat)
+        # Calculate the initial prediction of y.
+        self.init_val = self._get_init_val(label)
+        # Initialize y_hat.
+        n_rows = len(label)
+        y_hat = np.full(label.shape, self.init_val)
+        # Initialize the residuals.
+        residuals = self._get_residuals(label, y_hat)
+
         # Train Regression Trees
         self.trees = []
-        self.lr = lr
+        self.learning_rate = learning_rate
         for _ in range(n_estimators):
             # Sampling with replacement
-            idx = range(n)
+            idx = range(n_rows)
             if subsample is not None:
-                k = int(subsample * n)
-                idx = choices(population=idx, k=k)
-            X_sub = [X[i] for i in idx]
-            residuals_sub = [residuals[i] for i in idx]
-            y_hat_sub = [y_hat[i] for i in idx]
+                k = int(subsample * n_rows)
+                idx = choice(idx, k, replace=True)
+            data_sub = data[idx]
+            residuals_sub = residuals[idx]
+            y_hat_sub = y_hat[idx]
             # Train a Regression Tree by sub-sample of X, residuals
             tree = RegressionTree()
-            tree.fit(X_sub, residuals_sub, max_depth, min_samples_split)
+            tree.fit(data_sub, residuals_sub, max_depth, min_samples_split)
             # Update scores of tree leaf nodes
-            self._update_score(tree, X_sub, y_hat_sub, residuals_sub)
+            self._update_score(tree, data_sub, y_hat_sub, residuals_sub)
             # Update y_hat
-            y_hat = [y_hat_i + lr * res_hat_i for y_hat_i,
-                     res_hat_i in zip(y_hat, tree.predict(X))]
+            y_hat = y_hat + learning_rate * tree.predict(data)
             # Update residuals
-            residuals = self._get_residuals(y, y_hat)
+            residuals = self._get_residuals(label, y_hat)
             self.trees.append(tree)
 
-    def _predict(self, Xi):
+    def _predict(self, row: array) -> float:
         """Auxiliary function of predict.
 
         Arguments:
-            Xi {list} -- 1D list with int or float.
+            row {array} -- A sample of training data.
 
         Returns:
-            int or float -- prediction of yi.
+            float -- Prediction of label.
         """
 
         # Sum y_hat with residuals of each tree.
-        ret = self.init_val + sum(self.lr * tree._predict(Xi)
-                                  for tree in self.trees)
-        return self.fn(ret)
-
-    def predict(self, X):
-        """Get the prediction of y.
-
-        Arguments:
-            X {list} -- 2d list object with int or float.
-
-        Returns:
-            NotImplemented
-        """
-
-        return NotImplemented
+        residual = np.sum([self.learning_rate * tree._predict(row)
+                           for tree in self.trees])
+        return self.fn(self.init_val + residual)

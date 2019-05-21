@@ -27,8 +27,8 @@ def main():
         X, y, random_state=10)
     # Train model
     reg = GradientBoostingRegressor()
-    reg.fit(X=X_train, y=y_train, n_estimators=4,
-            lr=0.5, max_depth=3, min_samples_split=2)
+    reg.fit(data=X_train, label=y_train, n_estimators=4,
+            learning_rate=0.5, max_depth=3, min_samples_split=2)
     # Model evaluation
     get_r2(reg, X_test, y_test)
 

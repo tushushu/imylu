@@ -101,6 +101,23 @@ class GradientBoostingClassifier(GradientBoostingBase):
             denominator += y_hat[idx] * (1 - y_hat[idx])
         return numerator / denominator
 
+    def _update_score(self, tree, X, y_hat, residuals):
+        """update the score of regression tree leaf node.
+
+        Arguments:
+            tree {RegressionTree}
+            X {list} -- 2d list with int or float.
+            y_hat {list} -- 1d list with float.
+            residuals {list} -- 1d list with float.
+        """
+
+        nodes = self._get_leaves(tree)
+
+        regions = self._divide_regions(tree, nodes, X)
+        for node, idxs in regions.items():
+            node.score = self._get_score(idxs, y_hat, residuals)
+        tree._get_rules()
+
     def predict(self, X, threshold=0.5):
         """Get the prediction of y.
 

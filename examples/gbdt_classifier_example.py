@@ -27,7 +27,7 @@ def main():
     # Train model
     clf = GradientBoostingClassifier()
     clf.fit(X_train, y_train, n_estimators=2,
-            lr=0.8, max_depth=3, min_samples_split=2)
+            learning_rate=0.8, max_depth=3, min_samples_split=2)
     # Model evaluation
     model_evaluation(clf, X_test, y_test)
 
