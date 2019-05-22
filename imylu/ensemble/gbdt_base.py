@@ -63,7 +63,7 @@ class GradientBoostingBase:
         return node
 
     @staticmethod
-    def _get_leaves(tree) -> list:
+    def _get_leaves(tree: RegressionTree) -> list:
         """Gets all leaf nodes of a regression tree.
 
         Arguments:
@@ -120,14 +120,14 @@ class GradientBoostingBase:
 
         return label - self.fn(prediction)
 
-    def _update_score(self, tree, X, y_hat, residuals):
+    def _update_score(self, tree:RegressionTree, data:array, prediction:array, residuals:array):
         """update the score of regression tree leaf node.
 
         Arguments:
             tree {RegressionTree}
-            X {list} -- 2d list with int or float.
-            y_hat {list} -- 1d list with float.
-            residuals {list} -- 1d list with float.
+            data {array} -- Training data.
+            prediction {array} -- Prediction of label.
+            residuals {array}
         """
 
         NotImplemented
@@ -152,11 +152,11 @@ class GradientBoostingBase:
 
         # Calculate the initial prediction of y.
         self.init_val = self._get_init_val(label)
-        # Initialize y_hat.
+        # Initialize prediction.
         n_rows = len(label)
-        y_hat = np.full(label.shape, self.init_val)
+        prediction = np.full(label.shape, self.init_val)
         # Initialize the residuals.
-        residuals = self._get_residuals(label, y_hat)
+        residuals = self._get_residuals(label, prediction)
 
         # Train Regression Trees
         self.trees = []
@@ -169,16 +169,19 @@ class GradientBoostingBase:
                 idx = choice(idx, k, replace=True)
             data_sub = data[idx]
             residuals_sub = residuals[idx]
-            y_hat_sub = y_hat[idx]
+            prediction_sub = prediction[idx]
+
             # Train a Regression Tree by sub-sample of X, residuals
             tree = RegressionTree()
             tree.fit(data_sub, residuals_sub, max_depth, min_samples_split)
+
             # Update scores of tree leaf nodes
-            self._update_score(tree, data_sub, y_hat_sub, residuals_sub)
-            # Update y_hat
-            y_hat = y_hat + learning_rate * tree.predict(data)
+            self._update_score(tree, data_sub, prediction_sub, residuals_sub)
+            # Update prediction
+            prediction = prediction + learning_rate * tree.predict(data)
             # Update residuals
-            residuals = self._get_residuals(label, y_hat)
+            residuals = self._get_residuals(label, prediction)
+
             self.trees.append(tree)
 
     def _predict(self, row: array) -> float:
@@ -191,7 +194,8 @@ class GradientBoostingBase:
             float -- Prediction of label.
         """
 
-        # Sum y_hat with residuals of each tree.
+        # Sum prediction with residuals of each tree.
         residual = np.sum([self.learning_rate * tree._predict(row)
                            for tree in self.trees])
+
         return self.fn(self.init_val + residual)

@@ -5,16 +5,20 @@
 @Last Modified by: tushushu
 @Last Modified time: 2018-07-05 17:37:34
 """
+import numpy as np
+from numpy import array
 
 from .gbdt_base import GradientBoostingBase
 
 
 class GradientBoostingRegressor(GradientBoostingBase):
+    """Gradient Boosting Regressor"""
+
     def __init__(self):
         GradientBoostingBase.__init__(self)
         self.fn = lambda x: x
 
-    def _get_init_val(self, y):
+    def _get_init_val(self, label: array):
         """Calculate the initial prediction of y
         Set MSE as loss function, yi <- y, and c is a constant:
         L = MSE(y, c) = Sum((yi-c) ^ 2) / n
@@ -31,15 +35,15 @@ class GradientBoostingRegressor(GradientBoostingBase):
         ----------------------------------------------------------------------------------------
 
         Arguments:
-            y {list} -- 1d list object with int or float
+            label {array} -- Target values.
 
         Returns:
             float
         """
 
-        return sum(y) / len(y)
+        return label.mean()
 
-    def _update_score(self, tree, X, y_hat, residuals):
+    def _update_score(self, tree, data:array, y_hat, residuals):
         """update the score of regression tree leaf node
         Fm(xi) = Fm-1(xi) + fm(xi)
 
@@ -68,21 +72,21 @@ class GradientBoostingRegressor(GradientBoostingBase):
 
         Arguments:
             tree {RegressionTree}
-            X {list} -- 2d list with int or float
-            y_hat {list} -- 1d list with float
-            residuals {list} -- 1d list with float
+            data {array} -- Training data.
+            prediction {array} -- Prediction of label.
+            residuals {array}
         """
 
         pass
 
-    def predict(self, X):
-        """Get the prediction of y.
+    def predict(self, data:array)->array:
+        """Get the prediction of label.
 
         Arguments:
-            X {list} -- 2d list object with int or float
+            data {array} -- Training data.
 
         Returns:
-            list -- 1d list object with int or float
+            array -- Prediction of label.
         """
 
-        return [self._predict(Xi) for Xi in X]
+        return np.apply_along_axis(self._predict, axis=1, arr=data)
