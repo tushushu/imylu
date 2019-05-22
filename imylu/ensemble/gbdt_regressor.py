@@ -14,10 +14,6 @@ from .gbdt_base import GradientBoostingBase
 class GradientBoostingRegressor(GradientBoostingBase):
     """Gradient Boosting Regressor"""
 
-    def __init__(self):
-        GradientBoostingBase.__init__(self)
-        self.fn = lambda x: x
-
     def _get_init_val(self, label: array):
         """Calculate the initial prediction of y
         Set MSE as loss function, yi <- y, and c is a constant:
@@ -43,7 +39,7 @@ class GradientBoostingRegressor(GradientBoostingBase):
 
         return label.mean()
 
-    def _update_score(self, tree, data:array, y_hat, residuals):
+    def _update_score(self, tree, data: array, prediction: array, residuals: array):
         """update the score of regression tree leaf node
         Fm(xi) = Fm-1(xi) + fm(xi)
 
@@ -79,7 +75,7 @@ class GradientBoostingRegressor(GradientBoostingBase):
 
         pass
 
-    def predict(self, data:array)->array:
+    def predict(self, data: array) -> array:
         """Get the prediction of label.
 
         Arguments:
@@ -89,4 +85,4 @@ class GradientBoostingRegressor(GradientBoostingBase):
             array -- Prediction of label.
         """
 
-        return np.apply_along_axis(self._predict, axis=1, arr=data)
+        return np.apply_along_axis(self.predict_one, axis=1, arr=data)

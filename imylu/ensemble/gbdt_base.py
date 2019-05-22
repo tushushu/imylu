@@ -5,12 +5,13 @@
 @Last Modified by:   tushushu
 @Last Modified time: 2019-05-13 19:29:29
 """
+from typing import Dict, List
+
+import numpy as np
 from numpy import array
 from numpy.random import choice
-from typing import Dict, List
-import numpy as np
 
-from ..tree.regression_tree import RegressionTree, Node
+from ..tree.regression_tree import Node, RegressionTree
 
 
 class GradientBoostingBase:
@@ -28,7 +29,6 @@ class GradientBoostingBase:
         self.trees = None
         self.learning_rate = None
         self.init_val = None
-        self.fn = lambda x: NotImplemented
 
     def _get_init_val(self, label: array):
         """Calculate the initial prediction of y.
@@ -36,11 +36,11 @@ class GradientBoostingBase:
         Arguments:
             label {array} -- Target values.
 
-        Returns:
-            NotImplemented
+        Raises:
+            NotImplementedError
         """
 
-        return NotImplemented
+        raise NotImplementedError
 
     @staticmethod
     def _match_node(row: array, tree: RegressionTree) -> Node:
@@ -107,7 +107,8 @@ class GradientBoostingBase:
 
         return regions
 
-    def _get_residuals(self, label: array, prediction: array) -> array:
+    @staticmethod
+    def _get_residuals(label: array, prediction: array) -> array:
         """Update residuals for each iteration.
 
         Arguments:
@@ -118,9 +119,9 @@ class GradientBoostingBase:
             array -- residuals
         """
 
-        return label - self.fn(prediction)
+        return label - prediction
 
-    def _update_score(self, tree:RegressionTree, data:array, prediction:array, residuals:array):
+    def _update_score(self, tree: RegressionTree, data: array, prediction: array, residuals: array):
         """update the score of regression tree leaf node.
 
         Arguments:
@@ -128,9 +129,12 @@ class GradientBoostingBase:
             data {array} -- Training data.
             prediction {array} -- Prediction of label.
             residuals {array}
+
+        Raises:
+            NotImplementedError
         """
 
-        NotImplemented
+        raise NotImplementedError
 
     def fit(self, data: array, label: array, n_estimators: int, learning_rate: float,
             max_depth: int, min_samples_split: int, subsample=None):
@@ -184,7 +188,7 @@ class GradientBoostingBase:
 
             self.trees.append(tree)
 
-    def _predict(self, row: array) -> float:
+    def predict_one(self, row: array) -> float:
         """Auxiliary function of predict.
 
         Arguments:
@@ -195,7 +199,7 @@ class GradientBoostingBase:
         """
 
         # Sum prediction with residuals of each tree.
-        residual = np.sum([self.learning_rate * tree._predict(row)
+        residual = np.sum([self.learning_rate * tree.predict_one(row)
                            for tree in self.trees])
 
-        return self.fn(self.init_val + residual)
+        return self.init_val + residual
