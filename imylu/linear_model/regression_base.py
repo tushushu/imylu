@@ -24,29 +24,31 @@ class RegressionBase(object):
         self.bias = None
         self.weights = None
 
+        # define the method to calculate prediction of label in order to get gradient.
+        if self.__class__.__name__ == "LogisticRegression":
+            self._predict = self.predict_prob
+        else:
+            self._predict = self.predict
+
     def __str__(self):
         weights = arr2str(self.weights, 2)
         return "Weights: %s\nBias: %.2f\n" % (weights, self.bias)
 
-    def _get_gradient(self, data: array, score: array):
+    def _get_gradient(self, data: array, label: array):
         """Calculate the gradient of the partial derivative.
 
         Arguments:
             data {array} -- Training data.
-            score {array} -- Target values.
+            label {array} -- Target values.
 
         Returns:
             tuple -- Gradient of bias and weight
         """
 
-        # Use predict_prob method if this is a classifier.
-        if hasattr(self, "predict_prob"):
-            y_hat = self.predict_prob(data)
-        else:
-            y_hat = self.predict(data)
+        y_hat = self._predict(data)
 
-        # Calculate the gradient according to the dimention of data, score.
-        grad_bias = score - y_hat
+        # Calculate the gradient according to the dimention of data, label.
+        grad_bias = label - y_hat
         if data.ndim == 1:
             grad_weights = grad_bias * data
         elif data.ndim == 2:
@@ -58,14 +60,14 @@ class RegressionBase(object):
 
         return grad_bias, grad_weights
 
-    def _batch_gradient_descent(self, data: array, score: array, learning_rate: float, epochs: int):
+    def _batch_gradient_descent(self, data: array, label: array, learning_rate: float, epochs: int):
         """Update the gradient by the whole dataset.
         b = b - learning_rate * 1/m * b_grad_i, b_grad_i <- grad
         W = W - learning_rate * 1/m * w_grad_i, w_grad_i <- grad
 
         Arguments:
             data {array} -- Training data.
-            score {array} -- Target values.
+            label {array} -- Target values.
             learning_rate {float} -- Learning rate.
             epochs {int} -- Number of epochs to update the gradient.
         """
@@ -77,7 +79,7 @@ class RegressionBase(object):
 
         for i in range(epochs):
             # Calculate and sum the gradient delta of each sample.
-            grad_bias, grad_weights = self._get_gradient(data, score)
+            grad_bias, grad_weights = self._get_gradient(data, label)
 
             # Show the gradient of each epoch.
             grad = (grad_bias + grad_weights.mean()) / 2
@@ -86,8 +88,9 @@ class RegressionBase(object):
             # Update the bias and weight by gradient of current epoch
             self.bias += learning_rate * grad_bias
             self.weights += learning_rate * grad_weights
+        print()
 
-    def _stochastic_gradient_descent(self, data: array, score: array, learning_rate: float,
+    def _stochastic_gradient_descent(self, data: array, label: array, learning_rate: float,
                                      epochs: int, sample_rate: float):
         """Update the gradient by the random sample of dataset.
         b = b - learning_rate * b_sample_grad_i, b_sample_grad_i <- sample_grad
@@ -95,7 +98,7 @@ class RegressionBase(object):
 
         Arguments:
             data {array} -- Training data.
-            score {array} -- Target values.
+            label {array} -- Target values.
             learning_rate {float} -- Learning rate.
             epochs {int} -- Number of epochs to update the gradient.
             sample_rate {float} -- Between 0 and 1.
@@ -111,24 +114,26 @@ class RegressionBase(object):
             for idx in choice(range(n_rows), n_sample, replace=False):
                 # Calculate the gradient delta of each sample
                 grad_bias, grad_weights = self._get_gradient(
-                    data[idx], score[idx])
+                    data[idx], label[idx])
 
                 # Update the bias and weight by gradient of current sample
                 self.bias += learning_rate * grad_bias
                 self.weights += learning_rate * grad_weights
 
             # Show the gradient of each epoch.
-            grad_bias, grad_weights = self._get_gradient(data, score)
+            grad_bias, grad_weights = self._get_gradient(data, label)
             grad = (grad_bias + grad_weights.mean()) / 2
             print("Epochs %d gradient %.3f" % (i + 1, grad), flush=True)
 
-    def fit(self, data: array, score: array, learning_rate: float, epochs: int,
+        print()
+
+    def fit(self, data: array, label: array, learning_rate: float, epochs: int,
             method: str = "batch", sample_rate: float = 1.0):
         """Train regression model.
 
         Arguments:
             data {array} -- Training data.
-            score {array} -- Target values.
+            label {array} -- Target values.
             learning_rate {float} -- Learning rate.
             epochs {int} -- Number of epochs to update the gradient.
 
@@ -141,18 +146,18 @@ class RegressionBase(object):
 
         # Batch gradient descent.
         if method == "batch":
-            self._batch_gradient_descent(data, score, learning_rate, epochs)
+            self._batch_gradient_descent(data, label, learning_rate, epochs)
 
         # Stochastic gradient descent.
         if method == "stochastic":
             self._stochastic_gradient_descent(
-                data, score, learning_rate, epochs, sample_rate)
+                data, label, learning_rate, epochs, sample_rate)
 
     def predict_prob(self, data: array):
         """Get the probability of label.
 
         Arguments:
-            data {array} -- Training data.
+            data {array} -- Testing data.
 
         Returns:
             NotImplemented
@@ -161,10 +166,10 @@ class RegressionBase(object):
         return NotImplemented
 
     def predict(self, data: array):
-        """Get the prediction of score.
+        """Get the prediction of label.
 
         Arguments:
-            data {array} -- Training data.
+            data {array} -- Testing data.
 
         Returns:
             NotImplemented

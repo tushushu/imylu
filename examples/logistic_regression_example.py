@@ -26,7 +26,7 @@ def main():
         print("Tesing the performance of LogisticRegression(batch)...")
         # Train model
         clf = LogisticRegression()
-        clf.fit(X=data_train, y=label_train, lr=0.1, epochs=1000)
+        clf.fit(data=data_train, label=label_train, learning_rate=0.1, epochs=1000)
         # Model evaluation
         model_evaluation(clf, data_test, label_test)
         print(clf)
@@ -36,7 +36,7 @@ def main():
         print("Tesing the performance of LogisticRegression(stochastic)...")
         # Train model
         clf = LogisticRegression()
-        clf.fit(X=data_train, y=label_train, lr=0.01, epochs=100,
+        clf.fit(data=data_train, label=label_train, learning_rate=0.01, epochs=100,
                 method="stochastic", sample_rate=0.8)
         # Model evaluation
         model_evaluation(clf, data_test, label_test)

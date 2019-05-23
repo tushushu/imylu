@@ -5,6 +5,8 @@
 @Last Modified by: tushushu
 @Last Modified time: 2018-07-05 16:41:03
 """
+from numpy import array
+
 from .regression_base import RegressionBase
 from ..utils.utils import sigmoid
 
@@ -45,33 +47,30 @@ class LogisticRegression(RegressionBase):
         weights: W
     """
 
-    def __init__(self):
-        RegressionBase.__init__(self)
-
-    def predict_prob(self, X):
-        """Get the probability of y.
+    def predict_prob(self, data: array):
+        """Get the probability of label.
 
         Arguments:
-            X {array} -- 2d array object with int or float
+            data {array} -- Testing data.
 
         Returns:
-            array -- 1d array object with float
+            array -- Probabilities of label.
         """
 
-        return sigmoid(X.dot(self.weights) + self.bias)
+        return sigmoid(data.dot(self.weights) + self.bias)
 
-    def predict(self, X, threshold=0.5):
-        """Get the prediction of y.
+    def predict(self, data: array, threshold=0.5):  # pylint: disable=arguments-differ
+        """Get the prediction of label.
 
         Arguments:
-            X {array} -- 2d array object with int or float
+            data {array} -- Testing data.
 
         Keyword Arguments:
-            threshold {float} -- Prediction = 1 when probability >= threshold
-            (default: {0.5})
+            threshold {float} -- (default: {0.5})
 
         Returns:
-            array -- 1d array object with int
+            array -- Prediction of label.
         """
-        y_prob = self.predict_prob(X)
-        return (y_prob >= threshold).astype(int)
+
+        prob = self.predict_prob(data)
+        return (prob >= threshold).astype(int)
