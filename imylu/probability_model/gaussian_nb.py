@@ -106,12 +106,12 @@ class GaussianNB:
             data {array} -- Testing data.
 
         Returns:
-            array -- Probabilities of label. 
+            array -- Probabilities of label.
             e.g. [[0.02, 0.03, 0.02], [0.02, 0.03, 0.02]]
         """
 
         # Caculate the joint probabilities of each feature and each class.
-        likelihood = np.apply_along_axis(self._get_likelihood, axis=1, arr=data)
+        likelihood = np.apply_along_axis(self._get_posterior, axis=1, arr=data)
         probs = self.prior * likelihood
         # Scale the probabilities
         probs_sum = probs.sum(axis=1)
@@ -121,7 +121,7 @@ class GaussianNB:
         """Get the prediction of label.
 
         Arguments:
-            data {array} -- Training data.
+            data {array} -- Testing data.
 
         Returns:
             array -- Prediction of label.
