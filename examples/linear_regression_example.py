@@ -26,7 +26,7 @@ def main():
         print("Tesing the performance of LinearRegression(batch)...")
         # Train model
         reg = LinearRegression()
-        reg.fit(X=data_train, y=label_train, lr=0.1, epochs=1000)
+        reg.fit(data=data_train, label=label_train, learning_rate=0.1, epochs=1000)
         # Model evaluation
         get_r2(reg, data_test, label_test)
         print(reg)
@@ -36,7 +36,7 @@ def main():
         print("Tesing the performance of LinearRegression(stochastic)...")
         # Train model
         reg = LinearRegression()
-        reg.fit(X=data_train, y=label_train, lr=0.05, epochs=50,
+        reg.fit(data=data_train, label=label_train, learning_rate=0.05, epochs=50,
                 method="stochastic", sample_rate=0.6)
         # Model evaluation
         get_r2(reg, data_test, label_test)

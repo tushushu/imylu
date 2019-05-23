@@ -3,7 +3,7 @@
 @Author: tushushu
 @Date: 2018-07-05 17:51:04
 @Last Modified by: tushushu
-@Last Modified time: 2019-05-03 21:18:04
+@Last Modified time: 2019-05-22 15:42:04
 """
 from copy import copy
 import numpy as np
@@ -82,7 +82,7 @@ class RegressionTree:
 
     @staticmethod
     def _expr2literal(expr: list) -> str:
-        """Auxiliary function of _get_rules.
+        """Auxiliary function of get_rules.
 
         Arguments:
             expr {list} -- 1D list like [Feature, op, split].
@@ -95,7 +95,7 @@ class RegressionTree:
         operation = ">=" if operation == 1 else "<"
         return "Feature%d %s %.4f" % (feature, operation, split)
 
-    def _get_rules(self):
+    def get_rules(self):
         """Get the rules of all the decision tree leaf nodes.
             Expr: 1D list like [Feature, op, split].
             Rule: 2D list like [[Feature, op, split], label].
@@ -216,8 +216,8 @@ class RegressionTree:
     def fit(self, data: array, label: array, max_depth=5, min_samples_split=2):
         """Build a regression decision tree.
         Note:
-            At least there's one column in data has more than 2 unique elements
-            label cannot be all the same value
+            At least there's one column in data has more than 2 unique elements,
+            and label cannot be all the same value.
 
         Arguments:
             data {array} -- Training data.
@@ -226,7 +226,7 @@ class RegressionTree:
         Keyword Arguments:
             max_depth {int} -- The maximum depth of the tree. (default: {5})
             min_samples_split {int} -- The minimum number of samples required
-            to split an internal node (default: {2})
+            to split an internal node. (default: {2})
         """
 
         # Initialize with depth, node, indexes.
@@ -265,13 +265,13 @@ class RegressionTree:
 
         # Update tree depth and rules.
         self.depth = depth
-        self._get_rules()
+        self.get_rules()
 
-    def _predict(self, row: array) -> float:
+    def predict_one(self, row: array) -> float:
         """Auxiliary function of predict.
 
         Arguments:
-            row {array} -- A sample of training data.
+            row {array} -- A sample of testing data.
 
         Returns:
             float -- Prediction of label.
@@ -283,16 +283,17 @@ class RegressionTree:
                 node = node.left
             else:
                 node = node.right
+
         return node.avg
 
     def predict(self, data: array) -> array:
         """Get the prediction of label.
 
         Arguments:
-            data {array} -- Training data.
+            data {array} -- Testing data.
 
         Returns:
             array -- Prediction of label.
         """
 
-        return np.apply_along_axis(self._predict, 1, data)
+        return np.apply_along_axis(self.predict_one, 1, data)

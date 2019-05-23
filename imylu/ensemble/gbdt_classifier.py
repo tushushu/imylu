@@ -5,17 +5,17 @@
 @Last Modified by: tushushu
 @Last Modified time: 2018-07-05 17:37:34
 """
-from math import log
+import numpy as np
+from numpy import array
+
 from ..utils.utils import sigmoid
-from .gbdt_base import GradientBoostingBase
+from .gbdt_base import GradientBoostingBase, RegressionTree
 
 
 class GradientBoostingClassifier(GradientBoostingBase):
-    def __init__(self):
-        GradientBoostingBase.__init__(self)
-        self.fn = sigmoid
+    """Gradient Boosting Classifier"""
 
-    def _get_init_val(self, y):
+    def _get_init_val(self, label: array):
         """Calculate the initial prediction of y
         Estimation function (Maximize the likelihood):
         z = fm(xi)
@@ -50,11 +50,13 @@ class GradientBoostingClassifier(GradientBoostingBase):
             float
         """
 
-        n = len(y)
-        y_sum = sum(y)
-        return log((y_sum) / (n - y_sum))
+        n_rows = len(label)
+        tot = label.sum()
 
-    def _get_score(self, idxs, y_hat, residuals):
+        return np.log(tot / (n_rows - tot))
+
+    @staticmethod
+    def _get_score(idxs, prediction: array, residuals: array):
         """Calculate the regression tree leaf node value
         Estimation function (Maximize the likelihood):
         z = Fm(xi) = Fm-1(xi) + fm(xi)
@@ -87,32 +89,72 @@ class GradientBoostingClassifier(GradientBoostingBase):
         ----------------------------------------------------------------------------------------
 
         Arguments:
-            idxs{list} -- 1d list object with int
-            y_hat {list} -- 1d list object with int or float
-            residuals {list} -- 1d list object with int or float
+            idxs{list} -- Indexes belongs to a leaf node.
+            prediction {array} -- Prediction of label.
+            residuals {array}
 
         Returns:
             float
         """
 
-        numerator = denominator = 0
-        for idx in idxs:
-            numerator += residuals[idx]
-            denominator += y_hat[idx] * (1 - y_hat[idx])
+        numerator = residuals[idxs].sum()
+        denominator = (prediction[idxs] * (1 - prediction[idxs])).sum()
+
         return numerator / denominator
 
-    def predict(self, X, threshold=0.5):
-        """Get the prediction of y.
+    def _update_score(self, tree: RegressionTree, data: array, prediction: array, residuals: array):
+        """update the score of regression tree leaf node.
 
         Arguments:
-            X {list} -- 2d list object with int or float
-
-        Keyword Arguments:
-            threshold {float} -- Prediction = 1 when probability >= threshold
-            (default: {0.5})
-
-        Returns:
-            list -- 1d list object with float
+            tree {RegressionTree}
+            data {array} -- Training data.
+            prediction {array} -- Prediction of label.
+            residuals {array}
         """
 
-        return [int(self._predict(Xi) >= threshold) for Xi in X]
+        nodes = self._get_leaves(tree)
+
+        regions = self._divide_regions(tree, nodes, data)
+        for node, idxs in regions.items():
+            node.avg = self._get_score(idxs, prediction, residuals)
+        tree.get_rules()
+
+    def predict_one_prob(self, row: array) -> float:
+        """Auxiliary function of predict_prob.
+
+        Arguments:
+            row {array} -- A sample of testing data.
+
+        Returns:
+            float -- Prediction of label.
+        """
+
+        return sigmoid(self.predict_one(row))
+
+    def predict_prob(self, data: array) -> array:
+        """Get the probability of label.
+
+        Arguments:
+            data {array} -- Testing data.
+
+        Returns:
+            array -- Probabilities of label.
+        """
+
+        return np.apply_along_axis(self.predict_one_prob, axis=1, arr=data)
+
+    def predict(self, data: array, threshold=0.5):
+        """Get the prediction of label.
+
+        Arguments:
+            data {array} -- Testing data.
+
+        Keyword Arguments:
+            threshold {float} -- (default: {0.5})
+
+        Returns:
+            array -- Prediction of label.
+        """
+
+        prob = self.predict_prob(data)
+        return (prob >= threshold).astype(int)

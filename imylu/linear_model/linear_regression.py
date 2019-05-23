@@ -5,6 +5,7 @@
 @Last Modified by: tushushu
 @Last Modified time: 2018-06-27 11:25:30
 """
+from numpy import array
 from .regression_base import RegressionBase
 
 
@@ -28,17 +29,14 @@ class LinearRegression(RegressionBase):
         weights: W
     """
 
-    def __init__(self):
-        RegressionBase.__init__(self)
-
-    def predict(self, X):
-        """Get the prediction of y.
+    def predict(self, data) -> array:
+        """Get the prediction of label.
 
         Arguments:
-            X {list} -- 2D list with int or float
+            data {array} -- Testing data.
 
         Returns:
-            list -- prediction of y
+            array -- Prediction of label.
         """
 
-        return X.dot(self.weights) + self.bias
+        return data.dot(self.weights) + self.bias
