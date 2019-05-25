@@ -11,10 +11,12 @@ class FullyConnectedLayer:
     """[summary]
     """
 
-    def __init__(self, n_nodes: int, n_inputs: int, next_layer):
+    def __init__(self, n_nodes: int, n_inputs: int, next_layer, activate_fn=None):
         self.n_nodes = n_nodes
         self.n_inputs = n_inputs
         self.next_layer = next_layer
+        self.activate_fn = activate_fn
+
         self.weights = self.init_weights()
         self.inputs = None
         self.inputs_extended = None
@@ -59,6 +61,8 @@ class FullyConnectedLayer:
 
         # Calculate and forward outputs.
         outputs = np.matmul(self.weights, self.inputs_extended)
+        if self.activate_fn:
+            outputs = self.activate_fn(outputs)
         self.next_layer.inputs = outputs
 
     def backward(self):
