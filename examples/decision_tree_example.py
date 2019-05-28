@@ -20,18 +20,20 @@ from imylu.utils.utils import run_time
 
 @run_time
 def main():
+    """Tesing the performance of DecisionTree
+    """
     print("Tesing the performance of DecisionTree...")
     # Load data
-    X, y = load_breast_cancer()
+    data, label = load_breast_cancer()
     # Split data randomly, train set rate 70%
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
+    data_train, data_test, label_train, label_test = train_test_split(data, label, random_state=10)
     # Train model
     clf = DecisionTree()
-    clf.fit(X_train, y_train, max_depth=3)
+    clf.fit(data_train, label_train, max_depth=4)
     # Show rules
-    clf.rules
+    print(clf)
     # Model evaluation
-    model_evaluation(clf, X_test, y_test)
+    model_evaluation(clf, data_test, label_test)
 
 
 if __name__ == "__main__":

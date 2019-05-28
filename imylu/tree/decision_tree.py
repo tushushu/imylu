@@ -3,82 +3,136 @@
 @Author: tushushu
 @Date: 2018-06-13 14:55:11
 @Last Modified by: tushushu
-@Last Modified time: 2018-06-13 14:55:11
+@Last Modified time: 2019-05-28 10:26:11
 """
-
-from math import log2
 from copy import copy
+import numpy as np
+from numpy import array, log
 from ..utils.utils import list_split
 
 
-class Node(object):
-    def __init__(self, prob=None):
-        """Node class to build tree leaves.
+class Node:
+    """Node class to build tree leaves.
 
-        Attributes:
-            prob {float} -- positive probability (default: {None})
-            left {Node} -- Left child node
-            right {Node} -- Right child node
-            feature {int} -- Column index
-            split {int} --  Split point
-        """
+    Attributes:
+        prob {float} -- Prediction of label. (default: {None})
+        left {Node} -- Left child node.
+        right {Node} -- Right child node.
+        feature {int} -- Column index.
+        split {int} --  Split point.
+        gain {float} -- Information gain.
+    """
+
+    attr_names = ("prob", "left", "right", "feature", "split", "gain")
+
+    def __init__(self, prob=None, left=None, right=None, feature=None, split=None, gain=None):
         self.prob = prob
+        self.left = left
+        self.right = right
+        self.feature = feature
+        self.split = split
+        self.gain = gain
 
-        self.left = None
-        self.right = None
-        self.feature = None
-        self.split = None
+    def __str__(self):
+        ret = []
+        for attr_name in self.attr_names:
+            attr = getattr(self, attr_name)
+            # Describe the attribute of Node.
+            if attr is None:
+                continue
+            if isinstance(attr, Node):
+                des = "%s: Node object." % attr_name
+            else:
+                des = "%s: %s" % (attr_name, attr)
+            ret.append(des)
 
+        return "\n".join(ret) + "\n"
 
-class DecisionTree(object):
-    def __init__(self):
-        """DecisionTree class only support binary classification with ID3.
+    def copy(self, node):
+        """Copy the attributes of another Node.
 
-        Attributes:
-            root: the root node of DecisionTree
-            depth: the depth of DecisionTree
+        Arguments:
+            node {Node}
         """
 
+        for attr_name in self.attr_names:
+            attr = getattr(node, attr_name)
+            setattr(self, attr_name, attr)
+
+
+class DecisionTree:
+    """DecisionTree class only support binary classification with ID3.
+
+    Attributes:
+        root {Node} -- Root node of DecisionTree.
+        depth {int} -- Depth of DecisionTree.
+        _rules {list} -- Rules of all the tree nodes.
+    """
+
+    def __init__(self):
         self.root = Node()
         self.depth = 1
         self._rules = None
 
-    def _get_split_effect(self, X, y, idx, feature, split):
-        """List length, positive probability and rate when x is splitted into
-        two pieces.
+    def __str__(self):
+        ret = []
+        for i, rule in enumerate(self._rules):
+            literals, prob = rule
+
+            ret.append("Rule %d: " % i + ' | '.join(
+                literals) + ' => y_hat %.4f' % prob)
+        return "\n".join(ret)
+
+    @staticmethod
+    def _expr2literal(expr: list) -> str:
+        """Auxiliary function of get_rules.
 
         Arguments:
-            X {list} -- 2d list object with int or float
-            y {list} -- 1d list object with int 0 or 1
-            idx {list} -- indexes, 1d list object with int
-            feature {int} -- Feature number
-            split {float} -- Split point of x
+            expr {list} -- 1D list like [Feature, op, split].
 
         Returns:
-            tuple -- prob, rate
+            str
         """
 
-        n = len(idx)
-        pos_cnt = [0, 0]
-        cnt = [0, 0]
+        feature, operation, split = expr
+        operation = ">=" if operation == 1 else "<"
+        return "Feature%d %s %.4f" % (feature, operation, split)
 
-        # Iterate each Xi and compare with the split point
-        for i in idx:
-            xi, yi = X[i][feature], y[i]
-            if xi < split:
-                cnt[0] += 1
-                pos_cnt[0] += yi
-            else:
-                cnt[1] += 1
-                pos_cnt[1] += yi
-        # Calculate the split effect
-        prob = [pos_cnt[0] / cnt[0], pos_cnt[1] / cnt[1]]
-        rate = [cnt[0] / n, cnt[1] / n]
+    def get_rules(self):
+        """Get the rules of all the tree nodes.
+            Expr: 1D list like [Feature, op, split].
+            Rule: 2D list like [[Feature, op, split], label].
+            Op: -1 means less than, 1 means equal or more than.
+        """
 
-        return prob, rate
+        # Breadth-First Search.
+        que = [[self.root, []]]
+        self._rules = []
 
-    def _get_entropy(self, p):
-        """Calculate entropy
+        while que:
+            node, exprs = que.pop(0)
+
+            # Generate a rule when the current node is leaf node.
+            if not(node.left or node.right):
+                # Convert expression to text.
+                literals = list(map(self._expr2literal, exprs))
+                self._rules.append([literals, node.prob])
+
+            # Expand when the current node has left child.
+            if node.left:
+                rule_left = copy(exprs)
+                rule_left.append([node.feature, -1, node.split])
+                que.append([node.left, rule_left])
+
+            # Expand when the current node has right child.
+            if node.right:
+                rule_right = copy(exprs)
+                rule_right.append([node.feature, 1, node.split])
+                que.append([node.right, rule_right])
+
+    @staticmethod
+    def _get_info(prob_pos: float) -> float:
+        """Calculate entropy of label.
         Probability:
         P(X=x_i) = p_i, i <- [1, n]
 
@@ -96,255 +150,231 @@ class DecisionTree(object):
         L / m = Sum(p * logp + (1-p) * log(1-p))
         L / m = H(p)
 
-        So Maximising the Entropy equals to Maximising the likelihood
+        So Maximizing the Entropy equals to Maximizing the likelihood.
         -------------------------------------------------------------
 
         Arguments:
-            p {float} -- Positive probability
+            prob_pos {float} -- Positive prob of label.
 
         Returns:
             float -- Entropy
         """
+
         # According to L'Hospital's rule, 0 * log2(0) equals to zero.
-        if p == 1 or p == 0:
-            return 0
+        if prob_pos in (0, 1):
+            entropy = 0
         else:
-            q = 1 - p
-            return -(p * log2(p) + q * log2(q))
+            prob_neg = 1 - prob_pos
+            entropy = -prob_pos * log(prob_pos) - prob_neg * log(prob_neg)
 
-    def _get_info(self, y, idx):
-        """Calculate info of y
-        Probability:
-        P(y=y_i) = p_i, i <- [1, n]
+        return entropy
 
-        Entropy:
-        Info(y) = H(p) = -Sum(p_i * log(p_i)), i <- [1, n]
-        --------------------------------------------------
-
-        Arguments:
-            y {list} -- 1d list object with int 0 or 1
-            idx {list} -- indexes, 1d list object with int
-
-        Returns:
-            float -- Info of y
-        """
-
-        p = sum(y[i] for i in idx) / len(idx)
-        return self._get_entropy(p)
-
-    def _get_cond_info(self, prob, rate):
+    def _get_cond_info(self, ratio_left: float, prob_left: float, prob_right: float) -> float:
         """Calculate conditonal info of x, y
-        Conditional Probability:
-        Suppose there are k cases:
+        Suppose there are k cases, conditional Probability:
         P(A = A_i), i <- [1, k]
 
         Entropy:
         CondInfo(X, y) = -Sum(p_i * H(y | A = A_i)), i <- [1, k]
-        -------------------------------------------------------
 
         Arguments:
-            prob {list} -- [left node probability, right node probability]
-            rate {list} -- [left node positive rate, right node positive rate]
+            ratio_left {float} -- Conditional probability of left split.
+            prob_left {float} -- Probability of left split.
+            prob_right {float} -- Probability of right split.
 
         Returns:
-            float -- Conditonal info of x
+            float -- Conditonal information.
         """
 
-        info_left = self._get_entropy(prob[0])
-        info_right = self._get_entropy(prob[1])
-        return rate[0] * info_left + rate[1] * info_right
+        info_left = self._get_info(prob_left)
+        info_right = self._get_info(prob_right)
+        return ratio_left * info_left + (1 - ratio_left) * info_right
 
-    def _choose_split(self, X, y, idxs, feature):
-        """Iterate each xi and split x, y into two pieces,
-        and the best split point is the xi when we get max gain.
+    def _get_split_gain(self, col: array, label: array, split: float, info: float) -> Node:
+        """Calculate the information gain of label when col is splitted into two pieces.
         Info gain:
         Gain(X, y) = Info(y) - CondInfo(X, y)
-        ---------------------------------------------------------
+        --------------------------------------------------------------------
 
         Arguments:
-            x {list} -- 1d list object with int or float
-            y {list} -- 1d list object with int 0 or 1
-            idxs {list} -- indexes, 1d list object with int
-            feature {int} -- Feature number
+            col {array} -- A feature of training data.
+            label {array} -- Target values.
+            split {float} -- Split point of column.
+            info {float} -- Entropy of label.
 
         Returns:
-            tuple -- The best choice of gain, feature, split point
-            and probability
+            Node -- Information gain of label and prob of splitted x.
         """
+
+        # Split label.
+        left = col < split
+
+        # Calculate ratio.
+        ratio_left = left.sum() / len(col)
+
+        # Calculate conditional information.
+        prob_left = label[left].mean()
+        prob_right = label[col >= split].mean()
+        info_cond = self._get_cond_info(ratio_left, prob_left, prob_right)
+
+        # Create nodes to store result.
+        node = Node(split=split)
+        node.gain = info - info_cond
+        node.left = Node(prob_left)
+        node.right = Node(prob_right)
+
+        return node
+
+    def _choose_split(self, col: array, label: array) -> Node:
+        """Iterate each xi and split x, y into two pieces, and the best
+        split point is the xi when we get maximum information gain.
+
+        Arguments:
+            col {array} -- A feature of training data.
+            label {array} -- Target values.
+
+        Returns:
+            Node -- The best choice of information gain, split point and prob.
+        """
+
         # Feature cannot be splitted if there's only one unique element.
-        unique = set([X[i][feature] for i in idxs])
+        node = Node()
+        unique = set(col)
         if len(unique) == 1:
-            return None
-        # In case of empty split
+            return node
+
+        # In case of empty split.
         unique.remove(min(unique))
 
-        def f(split):
-            """Auxiliary function of _choose_split_poin
-            """
+        # Calculate info
+        info = self._get_info(label.mean())
 
-            info = self._get_info(y, idxs)
-            prob, rate = self._get_split_effect(
-                X, y, idxs, feature, split)
-            cond_info = self._get_cond_info(prob, rate)
-            gain = info - cond_info
-            return gain, split, prob
-        # Get split point which has max gain
-        gain, split, prob = max((f(split)
-                                 for split in unique), key=lambda x: x[0])
-        return gain, feature, split, prob
+        # Get split point which has max info gain.
+        ite = map(lambda x: self._get_split_gain(col, label, x, info), unique)
+        node = max(ite, key=lambda x: x.gain)
 
-    def _choose_feature(self, X, y, idxs):
-        """Choose the feature which has max info gain.
+        return node
+
+    def _choose_feature(self, data: array, label: array) -> Node:
+        """Choose the feature which has maximum info gain.
 
         Arguments:
-            X {list} -- 2d list object with int or float
-            y {list} -- 1d list object with int 0 or 1
-            idxs {list} -- indexes, 1d list object with int
+            data {array} -- Training data.
+            label {array} -- Target values.
 
         Returns:
-            tuple -- (feature number, split point, probability)
+            Node -- feature number, split point, prob.
         """
 
-        m = len(X[0])
-        # Compare the info gain of each feature and choose best one.
-        split_rets = map(lambda j: self._choose_split(X, y, idxs, j), range(m))
-        split_rets = filter(lambda x: x is not None, split_rets)
-        # Return None if no feature can be splitted
-        return max(split_rets, default=None, key=lambda x: x[0])
+        # Compare the mse of each feature and choose best one.
+        _ite = map(lambda x: (self._choose_split(data[:, x], label), x),
+                   range(data.shape[1]))
+        ite = filter(lambda x: x[0].split is not None, _ite)
 
-    def _expr2literal(self, expr):
-        """Auxiliary function of print_rules.
+        # Return None if no feature can be splitted.
+        node, feature = max(
+            ite, key=lambda x: x[0].gain, default=(Node(), None))
+        node.feature = feature
 
-        Arguments:
-            expr {list} -- 1D list like [Feature, op, split]
+        return node
 
-        Returns:
-            str
-        """
-
-        feature, op, split = expr
-        op = ">=" if op == 1 else "<"
-        return "Feature%d %s %.4f" % (feature, op, split)
-
-    def _get_rules(self):
-        """Get the rules of all the decision tree leaf nodes.
-            Expr: 1D list like [Feature, op, split]
-            Rule: 2D list like [[Feature, op, split], prob]
-            Op: -1 means less than, 1 means equal or more than
-        """
-
-        que = [[self.root, []]]
-        self._rules = []
-        # Breadth-First Search
-        while que:
-            nd, exprs = que.pop(0)
-            # Generate a rule when the current node is leaf node
-            if not(nd.left or nd.right):
-                # Convert expression to text
-                literals = list(map(self._expr2literal, exprs))
-                self._rules.append([literals, nd.prob])
-            # Expand when the current node has left child
-            if nd.left:
-                rule_left = copy(exprs)
-                rule_left.append([nd.feature, -1, nd.split])
-                que.append([nd.left, rule_left])
-            # Expand when the current node has right child
-            if nd.right:
-                rule_right = copy(exprs)
-                rule_right.append([nd.feature, 1, nd.split])
-                que.append([nd.right, rule_right])
-
-    def fit(self, X, y, max_depth=4, min_samples_split=2):
+    def fit(self, data: array, label: array, max_depth=4, min_samples_split=2):
         """Build a decision tree classifier.
         Note:
-            At least there's one column in X has more than 2 unique elements
-            y cannot be all 1 or all 0
+            At least there's one column in data has more than 2 unique elements,
+            and label cannot be all the same value.
 
         Arguments:
-            X {list} -- 2d list object with int or float
-            y {list} -- 1d list object with int 0 or 1
+            data {array} -- Training data.
+            label {array} -- Target values.
 
         Keyword Arguments:
             max_depth {int} -- The maximum depth of the tree. (default: {4})
             min_samples_split {int} -- The minimum number of samples required
-            to split an internal node (default: {2})
+            to split an internal node. (default: {2})
         """
 
-        # Initialize with depth, node, indexes
-        idxs = list(range(len(y)))
-        que = [(self.depth + 1, self.root, idxs)]
-        # Breadth-First Search
+        # Initialize with depth, node, indexes.
+        self.root.prob = label.mean()
+        que = [(self.depth + 1, self.root, data, label)]
+
+        # Breadth-First Search.
         while que:
-            depth, nd, idxs = que.pop(0)
-            # Terminate loop if tree depth is more than max_depth
+            depth, node, _data, _label = que.pop(0)
+
+            # Terminate loop if tree depth is more than max_depth.
             if depth > max_depth:
                 depth -= 1
                 break
+
             # Stop split when number of node samples is less than
             # min_samples_split or Node is 100% pure.
-            if len(idxs) < min_samples_split or nd.prob == 1 or nd.prob == 0:
+            if len(_label) < min_samples_split or all(_label == label[0]):
                 continue
-            # Stop split if no feature has more than 2 unique elements
-            split_ret = self._choose_feature(X, y, idxs)
-            if split_ret is None:
+
+            # Stop split if no feature has more than 2 unique elements.
+            _node = self._choose_feature(_data, _label)
+            if _node.split is None:
                 continue
-            # Split
-            _, feature, split, prob = split_ret
-            # Update properties of current node
-            nd.feature = feature
-            nd.split = split
-            nd.left = Node(prob[0])
-            nd.right = Node(prob[1])
-            # Put children of current node in que
-            idxs_split = list_split(X, idxs, feature, split)
-            que.append((depth + 1, nd.left, idxs_split[0]))
-            que.append((depth + 1, nd.right, idxs_split[1]))
-        # Update tree depth and rules
+
+            # Copy the attributes of _node to node.
+            node.copy(_node)
+
+            # Put children of current node in que.
+            idx_left = (_data[:, node.feature] < node.split)
+            idx_right = (_data[:, node.feature] >= node.split)
+            que.append(
+                (depth + 1, node.left, _data[idx_left], _label[idx_left]))
+            que.append(
+                (depth + 1, node.right, _data[idx_right], _label[idx_right]))
+
+        # Update tree depth and rules.
         self.depth = depth
-        self._get_rules()
+        self.get_rules()
 
-    @property
-    def rules(self):
-        """Print the rules of all the decision tree leaf nodes.
-        """
-
-        for i, rule in enumerate(self._rules):
-            literals, prob = rule
-            print("Rule %d: " % i, ' | '.join(
-                literals) + ' => y_hat %.4f' % prob)
-        print()
-
-    def _predict(self, Xi):
-        """Auxiliary function of predict.
+    def predict_one_prob(self, row: array) -> float:
+        """Auxiliary function of predict_prob.
 
         Arguments:
-            Xi {list} -- 1D list with int or float
+            row {array} -- A sample of testing data.
 
         Returns:
-            float
+            float -- Prediction of label.
         """
 
-        # Search Xi from the DecisionTree until Xi is at an leafnode
-        nd = self.root
-        while nd.left and nd.right:
-            if Xi[nd.feature] < nd.split:
-                nd = nd.left
+        node = self.root
+        while node.left and node.right:
+            if row[node.feature] < node.split:
+                node = node.left
             else:
-                nd = nd.right
-        return nd.prob
+                node = node.right
 
-    def predict(self, X, threshold=0.5):
-        """Get the prediction of y.
+        return node.prob
+
+    def predict_prob(self, data: array) -> array:
+        """Get the probability of label.
 
         Arguments:
-            X {list} -- 2d list object with int or float
+            data {array} -- Testing data.
+
+        Returns:
+            array -- Probabilities of label.
+        """
+
+        return np.apply_along_axis(self.predict_one_prob, axis=1, arr=data)
+
+    def predict(self, data: array, threshold=0.5):
+        """Get the prediction of label.
+
+        Arguments:
+            data {array} -- Testing data.
 
         Keyword Arguments:
-            threshold {float} -- Prediction = 1 when probability >= threshold
-            (default: {0.5})
+            threshold {float} -- (default: {0.5})
 
         Returns:
-            list -- 1d list object with float
+            array -- Prediction of label.
         """
 
-        return [int(self._predict(Xi) >= threshold) for Xi in X]
+        prob = self.predict_prob(data)
+        return (prob >= threshold).astype(int)

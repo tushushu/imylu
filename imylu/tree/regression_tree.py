@@ -5,6 +5,7 @@
 @Last Modified by: tushushu
 @Last Modified time: 2019-05-22 15:42:04
 """
+
 from copy import copy
 import numpy as np
 from numpy import array
@@ -19,6 +20,7 @@ class Node:
         right {Node} -- Right child node.
         feature {int} -- Column index.
         split {int} --  Split point.
+        mse {float} --  Mean square error.
     """
 
     attr_names = ("avg", "left", "right", "feature", "split", "mse")
@@ -62,8 +64,9 @@ class RegressionTree:
     """RegressionTree class.
 
     Attributes:
-        root{Node}: Root node of DecisionTree.
-        depth{int}: Depth of DecisionTree.
+        root {Node} -- Root node of RegressionTree.
+        depth {int} -- Depth of RegressionTree.
+        _rules {list} -- Rules of all the tree nodes.
     """
 
     def __init__(self):
@@ -74,10 +77,10 @@ class RegressionTree:
     def __str__(self):
         ret = []
         for i, rule in enumerate(self._rules):
-            literals, label = rule
+            literals, avg = rule
 
             ret.append("Rule %d: " % i + ' | '.join(
-                literals) + ' => y_hat %.4f' % label)
+                literals) + ' => y_hat %.4f' % avg)
         return "\n".join(ret)
 
     @staticmethod
@@ -96,7 +99,7 @@ class RegressionTree:
         return "Feature%d %s %.4f" % (feature, operation, split)
 
     def get_rules(self):
-        """Get the rules of all the decision tree leaf nodes.
+        """Get the rules of all the tree nodes.
             Expr: 1D list like [Feature, op, split].
             Rule: 2D list like [[Feature, op, split], label].
             Op: -1 means less than, 1 means equal or more than.
