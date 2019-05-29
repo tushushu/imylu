@@ -10,39 +10,50 @@ import numpy as np
 from numpy.random import choice, seed
 
 
-def train_test_split(X, y=None, prob=0.7, random_state=None):
-    """Split X, y into train set and test set.
+def train_test_split(data, label=None, prob=0.7, random_state=None):
+    """Split data, label into train set and test set.
 
     Arguments:
-        X {array} -- 2d array object with int or float.
+        data {array} -- Training data.
 
     Keyword Arguments:
-        y {array} -- 1d array object with int or float.
+        label {array} -- Target values.
         prob {float} -- Train data expected rate between 0 and 1.
         (default: {0.7})
         random_state {int} -- Random seed. (default: {None})
 
     Returns:
-        X_train {array} -- 2d array object with int or float.
-        X_test {array} -- 2d array object with int or float.
-        y_train {array} -- 1d array object with int 0 or 1.
-        y_test {array} -- 1d array object with int 0 or 1.
+        data_train {array}
+        data_test {array}
+        label_train {array}
+        y_test {array}
     """
 
+    # Set random state.
     if random_state is not None:
         seed(random_state)
-    m, n = X.shape
-    k = int(m * prob)
-    train_indexes = choice(range(m), size=k, replace=False)
-    test_indexes = np.array([i for i in range(m) if i not in train_indexes])
-    X_train = X[train_indexes]
-    X_test = X[test_indexes]
-    if y is not None:
-        y_train = y[train_indexes]
-        y_test = y[test_indexes]
-        return X_train, X_test, y_train, y_test
+
+    # Split data
+    n_rows, _ = data.shape
+    k = int(n_rows * prob)
+    train_indexes = choice(range(n_rows), size=k, replace=False)
+    test_indexes = np.array([i for i in range(n_rows) if i not in train_indexes])
+    data_train = data[train_indexes]
+    data_test = data[test_indexes]
+
+    # Split label.
+    if label is not None:
+        label_train = label[train_indexes]
+        label_test = label[test_indexes]
+        ret = (data_train, data_test, label_train, label_test)
     else:
-        return X_train, X_test
+        ret = (data_train, data_test)
+
+    # Cancel random state.
+    if random_state is not None:
+        seed(None)
+
+    return ret
 
 
 def get_r2(reg, X, y):

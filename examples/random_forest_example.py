@@ -19,17 +19,19 @@ from imylu.utils.utils import run_time
 
 @run_time
 def main():
+    """Tesing the performance of RandomForest...
+    """
     print("Tesing the performance of RandomForest...")
     # Load data
-    X, y = load_breast_cancer()
+    data, label = load_breast_cancer()
     # Split data randomly, train set rate 70%
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=40)
+    data_train, data_test, label_train, label_test = train_test_split(data, label, random_state=40)
 
     # Train model
-    rf = RandomForest()
-    rf.fit(X_train, y_train, n_samples=300, max_depth=3, n_estimators=20)
+    clf = RandomForest()
+    clf.fit(data_train, label_train, n_estimators=50, max_depth=5, random_state=10)
     # Model evaluation
-    model_evaluation(rf, X_test, y_test)
+    model_evaluation(clf, data_test, label_test)
 
 
 if __name__ == "__main__":
