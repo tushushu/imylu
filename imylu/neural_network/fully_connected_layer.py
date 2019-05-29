@@ -5,65 +5,40 @@
 """
 import numpy as np
 from numpy import array
+from .base_layer import BaseLayer
 
 
-class FullyConnectedLayer:
+class FullyConnectedLayer(BaseLayer):
     """[summary]
     """
 
-    def __init__(self, n_nodes: int, n_inputs: int, next_layer, activate_fn=None):
-        self.n_nodes = n_nodes
-        self.n_inputs = n_inputs
-        self.next_layer = next_layer
+    def __init__(self, name: str, input_size: int, output_size: int, activate_fn=None):
+        super(FullyConnectedLayer, self).__init__(name, input_size, output_size)
         self.activate_fn = activate_fn
-
         self.weights = self.init_weights()
-        self.inputs = None
-        self.inputs_extended = None
 
-    def init_weights(self)->array:
+    def init_weights(self) -> array:
         """[summary]
 
         Returns:
             array -- [description]
         """
 
-        size = (self.n_nodes + 1, self.n_inputs)
+        size = (self.output_size, self.input_size)
         return np.random.normal(size=size)
-
-    @staticmethod
-    def extend_inputs(inputs: array)->array:
-        """[summary]
-
-        Arguments:
-            inputs {array} -- [description]
-
-        Returns:
-            array -- [description]
-        """
-
-        bias_size = 1 if inputs.dim == 1 else inputs.shape[1]
-        bias = np.ones(shape=(bias_size, None))
-        return np.append(inputs, bias, axis=1)
 
     def forward(self):
         """[summary]
         """
 
-        # Inputs inspection.
-        inputs = self.inputs
-        assert isinstance(inputs, array), "Inputs has to be a numpy array!"
-        assert inputs.shape[0] == self.n_inputs, "Except a (%d, any) array, but got a %s one!" % (
-            self.n_inputs, inputs.shape)
-
-        # Extend inputs with ones.
-        self.inputs_extended = self.extend_inputs(inputs)
-
-        # Calculate and forward outputs.
-        outputs = np.matmul(self.weights, self.inputs_extended)
+        # Calculate outputs.
+        inputs = np.concatenate(x for x in self.inputs.values())
+        outputs = np.matmul(self.weights, inputs)
         if self.activate_fn:
             outputs = self.activate_fn(outputs)
-        self.next_layer.inputs = outputs
+
+        # Forward outputs.
+        self.output_layer.inputs[self.name] = outputs
 
     def backward(self):
         """[summary]
