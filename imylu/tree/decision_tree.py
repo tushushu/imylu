@@ -6,9 +6,7 @@
 @Last Modified time: 2019-05-28 10:26:11
 """
 from copy import copy
-import numpy as np
-from numpy import array, log
-from ..utils.utils import list_split
+from numpy import array, log, apply_along_axis
 
 
 class Node:
@@ -361,7 +359,7 @@ class DecisionTree:
             array -- Probabilities of label.
         """
 
-        return np.apply_along_axis(self.predict_one_prob, axis=1, arr=data)
+        return apply_along_axis(self.predict_one_prob, axis=1, arr=data)
 
     def predict(self, data: array, threshold=0.5):
         """Get the prediction of label.
