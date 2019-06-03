@@ -58,15 +58,17 @@ def load_tagged_speech():
         y {list} -- 1d list object with str.
     """
 
-    file_names = ["observations", "states"]
-
     def data_process(file_name):
         path = os.path.join(BASE_PATH, "dataset", "%s.csv" % file_name)
         f = open(path)
         data = [line[:-1].split("|") for line in f]
         f.close()
         return data
-    return [data_process(file_name) for file_name in file_names]
+
+    X = data_process("observations")
+    y = data_process("states")
+
+    return X, y
 
 
 def load_movie_ratings():
@@ -86,6 +88,7 @@ def load_movie_ratings():
              for i, x in enumerate(line[:-1].split(",")[:-1])]
             for line in lines]
     f.close()
+
     return data
 
 
