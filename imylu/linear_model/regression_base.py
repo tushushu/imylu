@@ -6,7 +6,7 @@
 @Last Modified time: 2018-06-27 11:25:30
 """
 import numpy as np
-from numpy.random import choice
+from numpy.random import choice, seed
 from numpy import array
 from ..utils.utils import arr2str
 
@@ -91,7 +91,7 @@ class RegressionBase(object):
         print()
 
     def _stochastic_gradient_descent(self, data: array, label: array, learning_rate: float,
-                                     epochs: int, sample_rate: float):
+                                     epochs: int, sample_rate: float, random_state):
         """Update the gradient by the random sample of dataset.
         b = b - learning_rate * b_sample_grad_i, b_sample_grad_i <- sample_grad
         W = W - learning_rate * w_sample_grad_i, w_sample_grad_i <- sample_grad
@@ -102,7 +102,13 @@ class RegressionBase(object):
             learning_rate {float} -- Learning rate.
             epochs {int} -- Number of epochs to update the gradient.
             sample_rate {float} -- Between 0 and 1.
+            random_state {int} -- The seed used by the random number generator. (default: {None})
+
         """
+
+        # Set random state.
+        if random_state is not None:
+            seed(random_state)
 
         # Initialize the bias and weights.
         n_rows, n_cols = data.shape
@@ -127,8 +133,12 @@ class RegressionBase(object):
 
         print()
 
+        # Cancel random state.
+        if random_state is not None:
+            seed(None)
+
     def fit(self, data: array, label: array, learning_rate: float, epochs: int,
-            method: str = "batch", sample_rate: float = 1.0):
+            method="batch", sample_rate=1.0, random_state=None):
         """Train regression model.
 
         Arguments:
@@ -140,9 +150,10 @@ class RegressionBase(object):
         Keyword Arguments:
             method {str} -- "batch" or "stochastic" (default: {"batch"})
             sample_rate {float} -- Between 0 and 1 (default: {1.0})
+            random_state {int} -- The seed used by the random number generator. (default: {None})
         """
 
-        assert method in ("batch", "stochastic")
+        assert method in ("batch", "stochastic"), str(method)
 
         # Batch gradient descent.
         if method == "batch":
@@ -151,7 +162,7 @@ class RegressionBase(object):
         # Stochastic gradient descent.
         if method == "stochastic":
             self._stochastic_gradient_descent(
-                data, label, learning_rate, epochs, sample_rate)
+                data, label, learning_rate, epochs, sample_rate, random_state)
 
     def predict_prob(self, data: array):
         """Get the probability of label.
