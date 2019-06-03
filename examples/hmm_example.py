@@ -14,7 +14,7 @@ sys.path.append(os.path.abspath(".."))
 
 from imylu.probability_model.hmm import HMM
 from imylu.utils.load_data import load_tagged_speech
-from imylu.utils.model_selection import train_test_split
+from imylu.utils.model_selection import train_test_split_list
 from imylu.utils.utils import run_time
 from itertools import chain
 
@@ -24,7 +24,7 @@ def main():
     print("Tesing the performance of HMM...")
     # Load data
     X, y = load_tagged_speech()
-    X_train, X_test, y_train, y_test = train_test_split(
+    X_train, X_test, y_train, y_test = train_test_split_list(
         X, y, random_state=40)
     # Train model
     model = HMM()
