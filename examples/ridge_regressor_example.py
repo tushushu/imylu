@@ -20,18 +20,20 @@ from imylu.utils.utils import run_time
 
 @run_time
 def main():
+    """Tesing the performance of Ridge Regressor(stochastic)
+    """
     print("Tesing the performance of Ridge Regressor(stochastic)...")
     # Load data
-    X, y = load_boston_house_prices()
-    X = min_max_scale(X)
+    data, label = load_boston_house_prices()
+    data = min_max_scale(data)
     # Split data randomly, train set rate 70%
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
+    data_train, data_test, label_train, label_test = train_test_split(data, label, random_state=10)
     # Train model
     reg = Ridge()
-    reg.fit(X=X_train, y=y_train, lr=0.001, epochs=1000,
-            method="stochastic", sample_rate=0.5, alpha=1e-7)
+    reg.fit(data=data_train, label=label_train, learning_rate=0.001, epochs=1000,
+            alpha=1e-7, method="stochastic", sample_rate=0.5, random_state=10)
     # Model evaluation
-    get_r2(reg, X_test, y_test)
+    get_r2(reg, data_test, label_test)
 
 
 if __name__ == "__main__":

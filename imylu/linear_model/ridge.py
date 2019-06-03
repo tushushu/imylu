@@ -5,6 +5,8 @@
 @Last Modified by: tushushu
 @Last Modified time: 2018-06-27 11:25:30
 """
+from numpy import array
+
 from .linear_regression import LinearRegression
 
 
@@ -30,48 +32,45 @@ class Ridge(LinearRegression):
     """
 
     def __init__(self):
-        LinearRegression.__init__(self)
+        super(Ridge, self).__init__()
         self.alpha = None
 
-    def _get_gradient(self, X, y):
+    def _get_gradient(self, data, label):
         """Calculate the gradient of the partial derivative.
 
         Arguments:
-            X {array} -- 2d array object with int.
-            y {float}
+            data {array} -- Training data.
+            label {array} -- Target values.
 
         Returns:
             tuple -- Gradient of bias and weight
         """
 
-        y_hat = self.predict(X)
-        bias_grad = y - y_hat - self.alpha * self.bias
-        try:
-            weights_grad = (y - y_hat)[:, None] * X - self.alpha * self.weights
-        except IndexError:
-            weights_grad = (y - y_hat) * X - self.alpha * self.weights
-        return bias_grad, weights_grad
+        grad_bias, grad_weights = LinearRegression._get_gradient(
+            self, data, label)
+        grad_bias -= self.alpha * self.bias
+        grad_weights -= self.alpha * self.weights
 
-    def fit(self, X, y, lr, epochs, alpha, method="batch", sample_rate=1.0):
+        return grad_bias, grad_weights
+
+    def fit(self, data: array, label: array, learning_rate: float, epochs: int,
+            alpha: float, method="batch", sample_rate=1.0, random_state=None):
         """Train regression model.
 
         Arguments:
-            X {list} -- 2D list with int or float.
-            y {list} -- 1D list with int or float.
-            lr {float} -- Learning rate.
+            data {array} -- Training data.
+            label {array} -- Target values.
+            learning_rate {float} -- Learning rate.
             epochs {int} -- Number of epochs to update the gradient.
             alpha {float} -- Regularization strength.
 
         Keyword Arguments:
             method {str} -- "batch" or "stochastic" (default: {"batch"})
             sample_rate {float} -- Between 0 and 1 (default: {1.0})
+            random_state {int} -- The seed used by the random number generator. (default: {None})
         """
 
         self.alpha = alpha
-        assert method in ("batch", "stochastic")
-        # batch gradient descent
-        if method == "batch":
-            self._batch_gradient_descent(X, y, lr, epochs)
-        # stochastic gradient descent
-        if method == "stochastic":
-            self._stochastic_gradient_descent(X, y, lr, epochs, sample_rate)
+        LinearRegression.fit(self, data=data, label=label, learning_rate=learning_rate,
+                             epochs=epochs, method=method, sample_rate=sample_rate,
+                             random_state=random_state)

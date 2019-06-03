@@ -105,7 +105,7 @@ class RandomForest:
             clf = RandomTree(max_features)
             clf.fit(data_sub, label_sub, max_depth, min_samples_split)
             self.trees.append(clf)
-        
+
         # Cancel random state.
         if random_state is not None:
             seed(None)
