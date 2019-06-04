@@ -6,7 +6,7 @@
 @Last Modified time: 2018-07-05 17:37:34
 """
 import numpy as np
-from numpy import array
+from numpy import ndarray
 
 from .gbdt_base import GradientBoostingBase
 
@@ -14,7 +14,7 @@ from .gbdt_base import GradientBoostingBase
 class GradientBoostingRegressor(GradientBoostingBase):
     """Gradient Boosting Regressor"""
 
-    def _get_init_val(self, label: array):
+    def _get_init_val(self, label: ndarray):
         """Calculate the initial prediction of y
         Set MSE as loss function, yi <- y, and c is a constant:
         L = MSE(y, c) = Sum((yi-c) ^ 2) / n
@@ -31,7 +31,7 @@ class GradientBoostingRegressor(GradientBoostingBase):
         ----------------------------------------------------------------------------------------
 
         Arguments:
-            label {array} -- Target values.
+            label {ndarray} -- Target values.
 
         Returns:
             float
@@ -39,7 +39,7 @@ class GradientBoostingRegressor(GradientBoostingBase):
 
         return label.mean()
 
-    def _update_score(self, tree, data: array, prediction: array, residuals: array):
+    def _update_score(self, tree, data: ndarray, prediction: ndarray, residuals: ndarray):
         """update the score of regression tree leaf node
         Fm(xi) = Fm-1(xi) + fm(xi)
 
@@ -68,21 +68,21 @@ class GradientBoostingRegressor(GradientBoostingBase):
 
         Arguments:
             tree {RegressionTree}
-            data {array} -- Training data.
-            prediction {array} -- Prediction of label.
-            residuals {array}
+            data {ndarray} -- Training data.
+            prediction {ndarray} -- Prediction of label.
+            residuals {ndarray}
         """
 
         pass
 
-    def predict(self, data: array) -> array:
+    def predict(self, data: ndarray) -> ndarray:
         """Get the prediction of label.
 
         Arguments:
-            data {array} -- Training data.
+            data {ndarray} -- Training data.
 
         Returns:
-            array -- Prediction of label.
+            ndarray -- Prediction of label.
         """
 
         return np.apply_along_axis(self.predict_one, axis=1, arr=data)

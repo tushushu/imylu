@@ -9,7 +9,7 @@
 from collections import Counter
 
 import numpy as np
-from numpy import array, exp, pi, sqrt
+from numpy import ndarray, exp, pi, sqrt
 
 
 class GaussianNB:
@@ -29,11 +29,11 @@ class GaussianNB:
         self.n_class = None
 
     @staticmethod
-    def _get_prior(label: array) -> array:
+    def _get_prior(label: ndarray) -> ndarray:
         """Calculate prior probability.
 
         Arguments:
-            label {array} -- Target values.
+            label {ndarray} -- Target values.
 
         Returns:
             array
@@ -43,12 +43,12 @@ class GaussianNB:
         prior = np.array([cnt[i] / len(label) for i in range(len(cnt))])
         return prior
 
-    def _get_avgs(self, data: array, label: array) -> array:
+    def _get_avgs(self, data: ndarray, label: ndarray) -> ndarray:
         """Calculate means of training data.
 
         Arguments:
-            data {array} -- Training data.
-            label {array} -- Target values.
+            data {ndarray} -- Training data.
+            label {ndarray} -- Target values.
 
         Returns:
             array
@@ -56,12 +56,12 @@ class GaussianNB:
         return np.array([data[label == i].mean(axis=0)
                          for i in range(self.n_class)])
 
-    def _get_vars(self, data: array, label: array) -> array:
+    def _get_vars(self, data: ndarray, label: ndarray) -> ndarray:
         """Calculate variances of training data.
 
         Arguments:
-            data {array} -- Training data.
-            label {array} -- Target values.
+            data {ndarray} -- Training data.
+            label {ndarray} -- Target values.
 
         Returns:
             array
@@ -69,11 +69,11 @@ class GaussianNB:
         return np.array([data[label == i].var(axis=0)
                          for i in range(self.n_class)])
 
-    def _get_posterior(self, row: array) -> array:
+    def _get_posterior(self, row: ndarray) -> ndarray:
         """Calculate posterior probability
 
         Arguments:
-            row {array} -- Sample of training data.
+            row {ndarray} -- Sample of training data.
 
         Returns:
             array
@@ -82,12 +82,12 @@ class GaussianNB:
         return (1 / sqrt(2 * pi * self.vars) * exp(
             -(row - self.avgs)**2 / (2 * self.vars))).prod(axis=1)
 
-    def fit(self, data: array, label: array):
+    def fit(self, data: ndarray, label: ndarray):
         """Build a Gauss naive bayes classifier.
 
         Arguments:
-            data {array} -- Training data.
-            label {array} -- Target values.
+            data {ndarray} -- Training data.
+            label {ndarray} -- Target values.
         """
 
         # Calculate prior probability.
@@ -99,14 +99,14 @@ class GaussianNB:
         # Calculate the variance.
         self.vars = self._get_vars(data, label)
 
-    def predict_prob(self, data: array) -> array:
+    def predict_prob(self, data: ndarray) -> ndarray:
         """Get the probability of label.
 
         Arguments:
-            data {array} -- Testing data.
+            data {ndarray} -- Testing data.
 
         Returns:
-            array -- Probabilities of label.
+            ndarray -- Probabilities of label.
             e.g. [[0.02, 0.03, 0.02], [0.02, 0.03, 0.02]]
         """
 
@@ -117,14 +117,14 @@ class GaussianNB:
         probs_sum = probs.sum(axis=1)
         return probs / probs_sum[:, None]
 
-    def predict(self, data: array) -> array:
+    def predict(self, data: ndarray) -> ndarray:
         """Get the prediction of label.
 
         Arguments:
-            data {array} -- Testing data.
+            data {ndarray} -- Testing data.
 
         Returns:
-            array -- Prediction of label.
+            ndarray -- Prediction of label.
         """
 
         # Choose the class which has the maximum probability

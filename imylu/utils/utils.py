@@ -8,13 +8,13 @@
 
 from copy import copy
 from itertools import tee
-from numpy import exp, array
+from numpy import exp, ndarray
 from random import randint
 from statistics import median
 from time import time
 
 
-def arr2str(arr: array, n_digits: int)->str:
+def arr2str(arr: ndarray, n_digits: int)->str:
     ret = ", ".join(map(lambda x: str(round(x, n_digits)), arr))
     return "[%s]" % ret
 

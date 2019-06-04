@@ -83,7 +83,7 @@ class RegressionTree(object):
 根据自变量col、因变量label以及分割点split，计算分割后的MSE。
 ```Python
 @staticmethod
-def _get_split_mse(col: array, score: array, split: float):
+def _get_split_mse(col: ndarray, score: ndarray, split: float):
     # Split score.
     score_left = score[col < split]
     score_right = score[col >= split]
@@ -102,7 +102,7 @@ def _get_split_mse(col: array, score: array, split: float):
 ## 2.4 计算最佳分割点
 遍历特征某一列的所有的不重复的点，找出MSE最小的点作为最佳分割点。如果特征中没有不重复的元素则返回None。
 ```Python
-def _choose_split(self, col: array, score: array):
+def _choose_split(self, col: ndarray, score: ndarray):
     # Feature cannot be splitted if there's only one unique element.
     unique = set(col)
     if len(unique) == 1:
@@ -120,7 +120,7 @@ def _choose_split(self, col: array, score: array):
 ## 2.5 选择最佳特征
 遍历所有特征，计算最佳分割点对应的MSE，找出MSE最小的特征、对应的分割点，左右子节点对应的均值。如果所有的特征都没有不重复元素则返回None
 ```Python
-def _choose_feature(self, data: array, score: array):
+def _choose_feature(self, data: ndarray, score: ndarray):
     # Compare the mse of each feature and choose best one.
     ite = map(lambda x: (*self._choose_split(
         data[:, x], score), x), range(data.shape[1]))
@@ -173,7 +173,7 @@ def _get_rules(self):
 3. 叶子结点至少有两个不重复的y值；
 4. 至少有一个特征是没有重复值的。
 ```Python
-def fit(self, data: array, score: array, max_depth=5, min_samples_split=2):
+def fit(self, data: ndarray, score: ndarray, max_depth=5, min_samples_split=2):
     # Initialize with depth, node, indexes
     self.root.score = score.mean()
     que = [(self.depth + 1, self.root, data, score)]
@@ -226,7 +226,7 @@ def fit(self, data: array, score: array, max_depth=5, min_samples_split=2):
 
 ## 2.10 预测一个样本
 ```Python
-def _predict(self, row: array)->float:
+def _predict(self, row: ndarray)->float:
     node = self.root
     while node.left and node.right:
         if row[node.feature] < node.split:
@@ -238,7 +238,7 @@ def _predict(self, row: array)->float:
 
 ## 2.11 预测多个样本
 ```Python
-def predict(self, data: array)->array:
+def predict(self, data: ndarray)->ndarray:
     return np.apply_along_axis(self._predict, 1, data)
 ```
 

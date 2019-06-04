@@ -15,19 +15,19 @@ def train_test_split(data, label=None, prob=0.7, random_state=None):
     """Split data, label into train set and test set.
 
     Arguments:
-        data {array} -- Training data.
+        data {ndarray} -- Training data.
 
     Keyword Arguments:
-        label {array} -- Target values.
+        label {ndarray} -- Target values.
         prob {float} -- Train data expected rate between 0 and 1.
         (default: {0.7})
         random_state {int} -- Random seed. (default: {None})
 
     Returns:
-        data_train {array}
-        data_test {array}
-        label_train {array}
-        y_test {array}
+        data_train {ndarray}
+        data_test {ndarray}
+        label_train {ndarray}
+        y_test {ndarray}
     """
 
     # Set random state.
@@ -98,8 +98,8 @@ def get_r2(reg, X, y):
 
     Arguments:
         reg {model} -- regression model.
-        X {array} -- 2d array object with int or float.
-        y {array} -- 1d array object with int.
+        X {ndarray} -- 2d array object with int or float.
+        y {ndarray} -- 1d array object with int.
 
     Returns:
         float
@@ -117,8 +117,8 @@ def model_evaluation(clf, X, y):
 
     Arguments:
         clf {model} -- classification model.
-        X {array} -- 2d array object with int or float.
-        y {array} -- 1d array object with int.
+        X {ndarray} -- 2d array object with int or float.
+        y {ndarray} -- 1d array object with int.
 
     Returns:
         dict
@@ -143,13 +143,13 @@ def _get_r2(y, y_hat):
     """Calculate the goodness of fit.
 
     Arguments:
-        y {array} -- 1d array object with int.
-        y_hat {array} -- 1d array object with int.
+        y {ndarray} -- 1d array object with int.
+        y_hat {ndarray} -- 1d array object with int.
 
     Returns:
         float
     """
-
+    
     m = y.shape[0]
     n = y_hat.shape[0]
     assert m == n, "Lengths of two arrays do not match!"
@@ -176,8 +176,8 @@ def _get_acc(y, y_hat):
     """Calculate the prediction accuracy.
 
     Arguments:
-        y {array} -- 1d array object with int.
-        y_hat {array} -- 1d array object with int.
+        y {ndarray} -- 1d array object with int.
+        y_hat {ndarray} -- 1d array object with int.
 
     Returns:
         float
@@ -191,8 +191,8 @@ def _get_precision(y, y_hat):
     """Calculate the prediction precision.
 
     Arguments:
-        y {array} -- 1d array object with int.
-        y_hat {array} -- 1d array object with int.
+        y {ndarray} -- 1d array object with int.
+        y_hat {ndarray} -- 1d array object with int.
 
     Returns:
         float
@@ -208,8 +208,8 @@ def _get_recall(y, y_hat):
     """Calculate the prediction recall.
 
     Arguments:
-        y {array} -- 1d array object with int.
-        y_hat {array} -- 1d array object with int.
+        y {ndarray} -- 1d array object with int.
+        y_hat {ndarray} -- 1d array object with int.
 
     Returns:
         float
@@ -222,8 +222,8 @@ def _get_tpr(y, y_hat):
     """Calculate the prediction TPR.
 
     Arguments:
-        y {array} -- 1d array object with int.
-        y_hat {array} -- 1d array object with int.
+        y {ndarray} -- 1d array object with int.
+        y_hat {ndarray} -- 1d array object with int.
 
     Returns:
         float
@@ -239,8 +239,8 @@ def _get_tnr(y, y_hat):
     """Calculate the prediction TNR.
 
     Arguments:
-        y {array} -- 1d array object with int.
-        y_hat {array} -- 1d array object with int.
+        y {ndarray} -- 1d array object with int.
+        y_hat {ndarray} -- 1d array object with int.
 
     Returns:
         float
@@ -256,8 +256,8 @@ def _get_auc(y, y_hat_prob):
     """Calculate the prediction AUC.
 
     Arguments:
-        y {array} -- 1d array object with int.
-        y_hat_prob {array} -- 1d array object with int.
+        y {ndarray} -- 1d array object with int.
+        y_hat_prob {ndarray} -- 1d array object with int.
 
     Returns:
         float
@@ -277,8 +277,8 @@ def _get_roc(y, y_hat_prob):
     """Calculate the points of ROC.
 
     Arguments:
-        y {array} -- 1d array object with int.
-        y_hat_prob {array} -- 1d array object with int.
+        y {ndarray} -- 1d array object with int.
+        y_hat_prob {ndarray} -- 1d array object with int.
 
     Returns:
         array

@@ -11,10 +11,10 @@ def min_max_scale(X):
     """Scale the element of X into an interval [0, 1].
 
     Arguments:
-        X {array} -- 2d array object with int or float
+        X {ndarray} -- 2d array object with int or float
 
     Returns:
-        array -- 2d array object with float
+        ndarray -- 2d array object with float
     """
 
     X_max = X.max(axis=0)

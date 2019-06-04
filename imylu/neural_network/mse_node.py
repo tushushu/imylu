@@ -3,7 +3,7 @@
 @Date: 2019-05-30 14:46:27
 """
 import numpy as np
-from numpy import array
+from numpy import ndarray
 from .base_node import Node
 
 

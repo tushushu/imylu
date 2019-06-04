@@ -6,7 +6,7 @@
 @Last Modified time: 2018-07-05 17:37:34
 """
 import numpy as np
-from numpy import array
+from numpy import ndarray
 
 from ..utils.utils import sigmoid
 from .gbdt_base import GradientBoostingBase, RegressionTree
@@ -15,7 +15,7 @@ from .gbdt_base import GradientBoostingBase, RegressionTree
 class GradientBoostingClassifier(GradientBoostingBase):
     """Gradient Boosting Classifier"""
 
-    def _get_init_val(self, label: array):
+    def _get_init_val(self, label: ndarray):
         """Calculate the initial prediction of y
         Estimation function (Maximize the likelihood):
         z = fm(xi)
@@ -56,7 +56,7 @@ class GradientBoostingClassifier(GradientBoostingBase):
         return np.log(tot / (n_rows - tot))
 
     @staticmethod
-    def _get_score(idxs, prediction: array, residuals: array):
+    def _get_score(idxs, prediction: ndarray, residuals: ndarray):
         """Calculate the regression tree leaf node value
         Estimation function (Maximize the likelihood):
         z = Fm(xi) = Fm-1(xi) + fm(xi)
@@ -90,8 +90,8 @@ class GradientBoostingClassifier(GradientBoostingBase):
 
         Arguments:
             idxs{list} -- Indexes belongs to a leaf node.
-            prediction {array} -- Prediction of label.
-            residuals {array}
+            prediction {ndarray} -- Prediction of label.
+            residuals {ndarray}
 
         Returns:
             float
@@ -102,14 +102,14 @@ class GradientBoostingClassifier(GradientBoostingBase):
 
         return numerator / denominator
 
-    def _update_score(self, tree: RegressionTree, data: array, prediction: array, residuals: array):
+    def _update_score(self, tree: RegressionTree, data: ndarray, prediction: ndarray, residuals: ndarray):
         """update the score of regression tree leaf node.
 
         Arguments:
             tree {RegressionTree}
-            data {array} -- Training data.
-            prediction {array} -- Prediction of label.
-            residuals {array}
+            data {ndarray} -- Training data.
+            prediction {ndarray} -- Prediction of label.
+            residuals {ndarray}
         """
 
         nodes = self._get_leaves(tree)
@@ -119,11 +119,11 @@ class GradientBoostingClassifier(GradientBoostingBase):
             node.avg = self._get_score(idxs, prediction, residuals)
         tree.get_rules()
 
-    def predict_one_prob(self, row: array) -> float:
+    def predict_one_prob(self, row: ndarray) -> float:
         """Auxiliary function of predict_prob.
 
         Arguments:
-            row {array} -- A sample of testing data.
+            row {ndarray} -- A sample of testing data.
 
         Returns:
             float -- Prediction of label.
@@ -131,29 +131,29 @@ class GradientBoostingClassifier(GradientBoostingBase):
 
         return sigmoid(self.predict_one(row))
 
-    def predict_prob(self, data: array) -> array:
+    def predict_prob(self, data: ndarray) -> ndarray:
         """Get the probability of label.
 
         Arguments:
-            data {array} -- Testing data.
+            data {ndarray} -- Testing data.
 
         Returns:
-            array -- Probabilities of label.
+            ndarray -- Probabilities of label.
         """
 
         return np.apply_along_axis(self.predict_one_prob, axis=1, arr=data)
 
-    def predict(self, data: array, threshold=0.5):
+    def predict(self, data: ndarray, threshold=0.5):
         """Get the prediction of label.
 
         Arguments:
-            data {array} -- Testing data.
+            data {ndarray} -- Testing data.
 
         Keyword Arguments:
             threshold {float} -- (default: {0.5})
 
         Returns:
-            array -- Prediction of label.
+            ndarray -- Prediction of label.
         """
 
         prob = self.predict_prob(data)

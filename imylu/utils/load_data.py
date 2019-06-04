@@ -18,8 +18,8 @@ def _load_data(file_name):
         file_name {str} -- csv file name
 
     Returns:
-        X {array} -- 2d array object with int or float
-        y {array} -- 1d array object with int or float
+        X {ndarray} -- 2d array object with int or float
+        y {ndarray} -- 1d array object with int or float
     """
 
     path = os.path.join(BASE_PATH, "dataset", "%s.csv" % file_name)
