@@ -8,7 +8,7 @@
 
 from copy import copy
 import numpy as np
-from numpy import array
+from numpy import ndarray
 
 
 class Node:
@@ -131,7 +131,7 @@ class RegressionTree:
                 que.append([node.right, rule_right])
 
     @staticmethod
-    def _get_split_mse(col: array, label: array, split: float) -> Node:
+    def _get_split_mse(col: ndarray, label: ndarray, split: float) -> Node:
         """Calculate the mse of label when col is splitted into two pieces.
         MSE as Loss fuction:
         y_hat = Sum(y_i) / n, i <- [1, n]
@@ -139,8 +139,8 @@ class RegressionTree:
         --------------------------------------------------------------------
 
         Arguments:
-            col {array} -- A feature of training data.
-            label {array} -- Target values.
+            col {ndarray} -- A feature of training data.
+            label {ndarray} -- Target values.
             split {float} -- Split point of column.
 
         Returns:
@@ -166,13 +166,13 @@ class RegressionTree:
 
         return node
 
-    def _choose_split(self, col: array, label: array) -> Node:
+    def _choose_split(self, col: ndarray, label: ndarray) -> Node:
         """Iterate each xi and split x, y into two pieces,
         and the best split point is the xi when we get minimum mse.
 
         Arguments:
-            col {array} -- A feature of training data.
-            label {array} -- Target values.
+            col {ndarray} -- A feature of training data.
+            label {ndarray} -- Target values.
 
         Returns:
             Node -- The best choice of mse, split point and average.
@@ -193,12 +193,12 @@ class RegressionTree:
 
         return node
 
-    def _choose_feature(self, data: array, label: array) -> Node:
+    def _choose_feature(self, data: ndarray, label: ndarray) -> Node:
         """Choose the feature which has minimum mse.
 
         Arguments:
-            data {array} -- Training data.
-            label {array} -- Target values.
+            data {ndarray} -- Training data.
+            label {ndarray} -- Target values.
 
         Returns:
             Node -- feature number, split point, average.
@@ -216,15 +216,15 @@ class RegressionTree:
 
         return node
 
-    def fit(self, data: array, label: array, max_depth=5, min_samples_split=2):
+    def fit(self, data: ndarray, label: ndarray, max_depth=5, min_samples_split=2):
         """Build a regression decision tree.
         Note:
             At least there's one column in data has more than 2 unique elements,
             and label cannot be all the same value.
 
         Arguments:
-            data {array} -- Training data.
-            label {array} -- Target values.
+            data {ndarray} -- Training data.
+            label {ndarray} -- Target values.
 
         Keyword Arguments:
             max_depth {int} -- The maximum depth of the tree. (default: {5})
@@ -270,11 +270,11 @@ class RegressionTree:
         self.depth = depth
         self.get_rules()
 
-    def predict_one(self, row: array) -> float:
+    def predict_one(self, row: ndarray) -> float:
         """Auxiliary function of predict.
 
         Arguments:
-            row {array} -- A sample of testing data.
+            row {ndarray} -- A sample of testing data.
 
         Returns:
             float -- Prediction of label.
@@ -289,14 +289,14 @@ class RegressionTree:
 
         return node.avg
 
-    def predict(self, data: array) -> array:
+    def predict(self, data: ndarray) -> ndarray:
         """Get the prediction of label.
 
         Arguments:
-            data {array} -- Testing data.
+            data {ndarray} -- Testing data.
 
         Returns:
-            array -- Prediction of label.
+            ndarray -- Prediction of label.
         """
 
         return np.apply_along_axis(self.predict_one, 1, data)

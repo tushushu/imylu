@@ -5,7 +5,7 @@
 @Last Modified by: tushushu
 @Last Modified time: 2018-07-05 16:41:03
 """
-from numpy import array
+from numpy import ndarray
 
 from .regression_base import RegressionBase
 from ..utils.utils import sigmoid
@@ -47,29 +47,29 @@ class LogisticRegression(RegressionBase):
         weights: W
     """
 
-    def predict_prob(self, data: array):
+    def predict_prob(self, data: ndarray):
         """Get the probability of label.
 
         Arguments:
-            data {array} -- Testing data.
+            data {ndarray} -- Testing data.
 
         Returns:
-            array -- Probabilities of label.
+            ndarray -- Probabilities of label.
         """
 
         return sigmoid(data.dot(self.weights) + self.bias)
 
-    def predict(self, data: array, threshold=0.5):  # pylint: disable=arguments-differ
+    def predict(self, data: ndarray, threshold=0.5):  # pylint: disable=arguments-differ
         """Get the prediction of label.
 
         Arguments:
-            data {array} -- Testing data.
+            data {ndarray} -- Testing data.
 
         Keyword Arguments:
             threshold {float} -- (default: {0.5})
 
         Returns:
-            array -- Prediction of label.
+            ndarray -- Prediction of label.
         """
 
         prob = self.predict_prob(data)

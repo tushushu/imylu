@@ -7,7 +7,7 @@
 """
 import numpy as np
 from numpy.random import choice, seed
-from numpy import array
+from numpy import ndarray
 from ..utils.utils import arr2str
 
 
@@ -34,12 +34,12 @@ class RegressionBase(object):
         weights = arr2str(self.weights, 2)
         return "Weights: %s\nBias: %.2f\n" % (weights, self.bias)
 
-    def _get_gradient(self, data: array, label: array):
+    def _get_gradient(self, data: ndarray, label: ndarray):
         """Calculate the gradient of the partial derivative.
 
         Arguments:
-            data {array} -- Training data.
-            label {array} -- Target values.
+            data {ndarray} -- Training data.
+            label {ndarray} -- Target values.
 
         Returns:
             tuple -- Gradient of bias and weight
@@ -60,14 +60,14 @@ class RegressionBase(object):
 
         return grad_bias, grad_weights
 
-    def _batch_gradient_descent(self, data: array, label: array, learning_rate: float, epochs: int):
+    def _batch_gradient_descent(self, data: ndarray, label: ndarray, learning_rate: float, epochs: int):
         """Update the gradient by the whole dataset.
         b = b - learning_rate * 1/m * b_grad_i, b_grad_i <- grad
         W = W - learning_rate * 1/m * w_grad_i, w_grad_i <- grad
 
         Arguments:
-            data {array} -- Training data.
-            label {array} -- Target values.
+            data {ndarray} -- Training data.
+            label {ndarray} -- Target values.
             learning_rate {float} -- Learning rate.
             epochs {int} -- Number of epochs to update the gradient.
         """
@@ -90,15 +90,15 @@ class RegressionBase(object):
             self.weights += learning_rate * grad_weights
         print()
 
-    def _stochastic_gradient_descent(self, data: array, label: array, learning_rate: float,
+    def _stochastic_gradient_descent(self, data: ndarray, label: ndarray, learning_rate: float,
                                      epochs: int, sample_rate: float, random_state):
         """Update the gradient by the random sample of dataset.
         b = b - learning_rate * b_sample_grad_i, b_sample_grad_i <- sample_grad
         W = W - learning_rate * w_sample_grad_i, w_sample_grad_i <- sample_grad
 
         Arguments:
-            data {array} -- Training data.
-            label {array} -- Target values.
+            data {ndarray} -- Training data.
+            label {ndarray} -- Target values.
             learning_rate {float} -- Learning rate.
             epochs {int} -- Number of epochs to update the gradient.
             sample_rate {float} -- Between 0 and 1.
@@ -137,13 +137,13 @@ class RegressionBase(object):
         if random_state is not None:
             seed(None)
 
-    def fit(self, data: array, label: array, learning_rate: float, epochs: int,
+    def fit(self, data: ndarray, label: ndarray, learning_rate: float, epochs: int,
             method="batch", sample_rate=1.0, random_state=None):
         """Train regression model.
 
         Arguments:
-            data {array} -- Training data.
-            label {array} -- Target values.
+            data {ndarray} -- Training data.
+            label {ndarray} -- Target values.
             learning_rate {float} -- Learning rate.
             epochs {int} -- Number of epochs to update the gradient.
 
@@ -164,11 +164,11 @@ class RegressionBase(object):
             self._stochastic_gradient_descent(
                 data, label, learning_rate, epochs, sample_rate, random_state)
 
-    def predict_prob(self, data: array):
+    def predict_prob(self, data: ndarray):
         """Get the probability of label.
 
         Arguments:
-            data {array} -- Testing data.
+            data {ndarray} -- Testing data.
 
         Returns:
             NotImplemented
@@ -176,11 +176,11 @@ class RegressionBase(object):
 
         return NotImplemented
 
-    def predict(self, data: array):
+    def predict(self, data: ndarray):
         """Get the prediction of label.
 
         Arguments:
-            data {array} -- Testing data.
+            data {ndarray} -- Testing data.
 
         Returns:
             NotImplemented

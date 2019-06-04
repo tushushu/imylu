@@ -3,7 +3,7 @@
 @Date: 2019-05-09 13:30:58
 """
 import numpy as np
-from numpy import array
+from numpy import ndarray
 from itertools import chain
 from collections import Counter
 from typing import List, Dict
@@ -35,11 +35,11 @@ class TFIDF:
         return {word: i for i, word in word2num.items()}
 
     @staticmethod
-    def get_word_cnt(data: array) -> Counter:
+    def get_word_cnt(data: ndarray) -> Counter:
         """[summary]
 
         Arguments:
-            data {array} -- [description]
+            data {ndarray} -- [description]
 
         Returns:
             Counter -- [description]
@@ -47,5 +47,5 @@ class TFIDF:
 
         return Counter(data.flatten())
 
-    def fit(self, data: array):
+    def fit(self, data: ndarray):
         raise NotImplementedError

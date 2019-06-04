@@ -5,7 +5,7 @@
 @Last Modified by: tushushu
 @Last Modified time: 2018-06-27 11:25:30
 """
-from numpy import array
+from numpy import ndarray
 
 from .linear_regression import LinearRegression
 
@@ -39,8 +39,8 @@ class Ridge(LinearRegression):
         """Calculate the gradient of the partial derivative.
 
         Arguments:
-            data {array} -- Training data.
-            label {array} -- Target values.
+            data {ndarray} -- Training data.
+            label {ndarray} -- Target values.
 
         Returns:
             tuple -- Gradient of bias and weight
@@ -53,13 +53,13 @@ class Ridge(LinearRegression):
 
         return grad_bias, grad_weights
 
-    def fit(self, data: array, label: array, learning_rate: float, epochs: int,
+    def fit(self, data: ndarray, label: ndarray, learning_rate: float, epochs: int,
             alpha: float, method="batch", sample_rate=1.0, random_state=None):
         """Train regression model.
 
         Arguments:
-            data {array} -- Training data.
-            label {array} -- Target values.
+            data {ndarray} -- Training data.
+            label {ndarray} -- Target values.
             learning_rate {float} -- Learning rate.
             epochs {int} -- Number of epochs to update the gradient.
             alpha {float} -- Regularization strength.

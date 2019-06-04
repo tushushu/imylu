@@ -5,7 +5,7 @@
 @Last Modified by: tushushu
 @Last Modified time: 2018-06-27 11:25:30
 """
-from numpy import array
+from numpy import ndarray
 from .regression_base import RegressionBase
 
 
@@ -29,14 +29,14 @@ class LinearRegression(RegressionBase):
         weights: W
     """
 
-    def predict(self, data) -> array:
+    def predict(self, data) -> ndarray:
         """Get the prediction of label.
 
         Arguments:
-            data {array} -- Testing data.
+            data {ndarray} -- Testing data.
 
         Returns:
-            array -- Prediction of label.
+            ndarray -- Prediction of label.
         """
 
         return data.dot(self.weights) + self.bias

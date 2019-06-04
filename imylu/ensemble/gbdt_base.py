@@ -8,7 +8,7 @@
 from typing import Dict, List
 
 import numpy as np
-from numpy import array
+from numpy import ndarray
 from numpy.random import choice
 
 from ..tree.regression_tree import Node, RegressionTree
@@ -30,11 +30,11 @@ class GradientBoostingBase:
         self.learning_rate = None
         self.init_val = None
 
-    def _get_init_val(self, label: array):
+    def _get_init_val(self, label: ndarray):
         """Calculate the initial prediction of y.
 
         Arguments:
-            label {array} -- Target values.
+            label {ndarray} -- Target values.
 
         Raises:
             NotImplementedError
@@ -43,11 +43,11 @@ class GradientBoostingBase:
         raise NotImplementedError
 
     @staticmethod
-    def _match_node(row: array, tree: RegressionTree) -> Node:
+    def _match_node(row: ndarray, tree: RegressionTree) -> Node:
         """Find the leaf node that the sample belongs to.
 
         Arguments:
-            row {array} -- Sample of training data.
+            row {ndarray} -- Sample of training data.
             tree {RegressionTree}
 
         Returns:
@@ -87,14 +87,14 @@ class GradientBoostingBase:
         return nodes
 
     def _divide_regions(self, tree: RegressionTree, nodes: list,
-                        data: array) -> Dict[Node, List[int]]:
+                        data: ndarray) -> Dict[Node, List[int]]:
         """Divide indexes of the samples into corresponding leaf nodes
         of the regression tree.
 
         Arguments:
             tree {RegressionTree}
             nodes {list} -- A list of Node objects.
-            data {array} -- Training data.
+            data {ndarray} -- Training data.
 
         Returns:
             Dict[Node, List[int]]-- e.g. {node1: [1, 3, 5], node2: [2, 4, 6]...}
@@ -108,27 +108,27 @@ class GradientBoostingBase:
         return regions
 
     @staticmethod
-    def _get_residuals(label: array, prediction: array) -> array:
+    def _get_residuals(label: ndarray, prediction: ndarray) -> ndarray:
         """Update residuals for each iteration.
 
         Arguments:
-            label {array} -- Target values.
-            prediction {array} -- Prediction of label.
+            label {ndarray} -- Target values.
+            prediction {ndarray} -- Prediction of label.
 
         Returns:
-            array -- residuals
+            ndarray -- residuals
         """
 
         return label - prediction
 
-    def _update_score(self, tree: RegressionTree, data: array, prediction: array, residuals: array):
+    def _update_score(self, tree: RegressionTree, data: ndarray, prediction: ndarray, residuals: ndarray):
         """update the score of regression tree leaf node.
 
         Arguments:
             tree {RegressionTree}
-            data {array} -- Training data.
-            prediction {array} -- Prediction of label.
-            residuals {array}
+            data {ndarray} -- Training data.
+            prediction {ndarray} -- Prediction of label.
+            residuals {ndarray}
 
         Raises:
             NotImplementedError
@@ -136,13 +136,13 @@ class GradientBoostingBase:
 
         raise NotImplementedError
 
-    def fit(self, data: array, label: array, n_estimators: int, learning_rate: float,
+    def fit(self, data: ndarray, label: ndarray, n_estimators: int, learning_rate: float,
             max_depth: int, min_samples_split: int, subsample=None):
         """Build a gradient boost decision tree.
 
         Arguments:
-            data {array} -- Training data.
-            label {array} -- Target values.
+            data {ndarray} -- Training data.
+            label {ndarray} -- Target values.
             n_estimators {int} -- number of trees.
             learning_rate {float} -- Learning rate.
             max_depth {int} -- The maximum depth of the tree.
@@ -188,11 +188,11 @@ class GradientBoostingBase:
 
             self.trees.append(tree)
 
-    def predict_one(self, row: array) -> float:
+    def predict_one(self, row: ndarray) -> float:
         """Auxiliary function of predict.
 
         Arguments:
-            row {array} -- A sample of training data.
+            row {ndarray} -- A sample of training data.
 
         Returns:
             float -- Prediction of label.

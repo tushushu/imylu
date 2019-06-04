@@ -6,7 +6,7 @@
 @Last Modified time: 2019-05-28 19:41:08
 """
 
-from numpy import array, mean, apply_along_axis
+from numpy import ndarray, mean, apply_along_axis
 from numpy.random import choice, seed
 from ..tree.decision_tree import DecisionTree, Node
 
@@ -25,12 +25,12 @@ class RandomTree(DecisionTree):
         super(RandomTree, self).__init__()
         self.max_features = max_features
 
-    def _choose_feature(self, data: array, label: array) -> Node:
+    def _choose_feature(self, data: ndarray, label: ndarray) -> Node:
         """Choose the feature which has maximum info gain randomly.
 
         Arguments:
-            data {array} -- Training data.
-            label {array} -- Target values.
+            data {ndarray} -- Training data.
+            label {ndarray} -- Target values.
 
         Returns:
             Node -- feature number, split point, prob.
@@ -63,13 +63,13 @@ class RandomForest:
     def __init__(self):
         self.trees = None
 
-    def fit(self, data: array, label: array, n_estimators=10, max_depth=3, min_samples_split=2,
+    def fit(self, data: ndarray, label: ndarray, n_estimators=10, max_depth=3, min_samples_split=2,
             max_features=None, random_state=None):
         """Build a RandomForest classifier.
 
         Arguments:
-            data {array} -- Training data.
-            label {array} -- Target values.
+            data {ndarray} -- Training data.
+            label {ndarray} -- Target values.
 
         Keyword Arguments:
             n_estimators {int} -- Number of trees. (default: {5})
@@ -110,11 +110,11 @@ class RandomForest:
         if random_state is not None:
             seed(None)
 
-    def predict_one_prob(self, row: array) -> float:
+    def predict_one_prob(self, row: ndarray) -> float:
         """Auxiliary function of predict_prob.
 
         Arguments:
-            row {array} -- A sample of testing data.
+            row {ndarray} -- A sample of testing data.
 
         Returns:
             float -- Prediction of label.
@@ -122,29 +122,29 @@ class RandomForest:
 
         return mean([tree.predict_one_prob(row) for tree in self.trees])
 
-    def predict_prob(self, data: array) -> array:
+    def predict_prob(self, data: ndarray) -> ndarray:
         """Get the probability of label.
 
         Arguments:
-            data {array} -- Testing data.
+            data {ndarray} -- Testing data.
 
         Returns:
-            array -- Probabilities of label.
+            ndarray -- Probabilities of label.
         """
 
         return apply_along_axis(self.predict_one_prob, axis=1, arr=data)
 
-    def predict(self, data: array, threshold=0.5):
+    def predict(self, data: ndarray, threshold=0.5):
         """Get the prediction of label.
 
         Arguments:
-            data {array} -- Testing data.
+            data {ndarray} -- Testing data.
 
         Keyword Arguments:
             threshold {float} -- (default: {0.5})
 
         Returns:
-            array -- Prediction of label.
+            ndarray -- Prediction of label.
         """
 
         prob = self.predict_prob(data)

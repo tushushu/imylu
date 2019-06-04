@@ -4,7 +4,7 @@
 @Date: 2019-05-25 20:18:14
 """
 import numpy as np
-from numpy import array
+from numpy import ndarray
 from .base_node import Node
 
 

@@ -6,7 +6,7 @@
 @Last Modified time: 2019-05-28 10:26:11
 """
 from copy import copy
-from numpy import array, log, apply_along_axis
+from numpy import ndarray, log, apply_along_axis
 
 
 class Node:
@@ -188,15 +188,15 @@ class DecisionTree:
         info_right = self._get_info(prob_right)
         return ratio_left * info_left + (1 - ratio_left) * info_right
 
-    def _get_split_gain(self, col: array, label: array, split: float, info: float) -> Node:
+    def _get_split_gain(self, col: ndarray, label: ndarray, split: float, info: float) -> Node:
         """Calculate the information gain of label when col is splitted into two pieces.
         Info gain:
         Gain(X, y) = Info(y) - CondInfo(X, y)
         --------------------------------------------------------------------
 
         Arguments:
-            col {array} -- A feature of training data.
-            label {array} -- Target values.
+            col {ndarray} -- A feature of training data.
+            label {ndarray} -- Target values.
             split {float} -- Split point of column.
             info {float} -- Entropy of label.
 
@@ -223,13 +223,13 @@ class DecisionTree:
 
         return node
 
-    def _choose_split(self, col: array, label: array) -> Node:
+    def _choose_split(self, col: ndarray, label: ndarray) -> Node:
         """Iterate each xi and split x, y into two pieces, and the best
         split point is the xi when we get maximum information gain.
 
         Arguments:
-            col {array} -- A feature of training data.
-            label {array} -- Target values.
+            col {ndarray} -- A feature of training data.
+            label {ndarray} -- Target values.
 
         Returns:
             Node -- The best choice of information gain, split point and prob.
@@ -253,12 +253,12 @@ class DecisionTree:
 
         return node
 
-    def _choose_feature(self, data: array, label: array) -> Node:
+    def _choose_feature(self, data: ndarray, label: ndarray) -> Node:
         """Choose the feature which has maximum info gain.
 
         Arguments:
-            data {array} -- Training data.
-            label {array} -- Target values.
+            data {ndarray} -- Training data.
+            label {ndarray} -- Target values.
 
         Returns:
             Node -- feature number, split point, prob.
@@ -276,15 +276,15 @@ class DecisionTree:
 
         return node
 
-    def fit(self, data: array, label: array, max_depth=4, min_samples_split=2):
+    def fit(self, data: ndarray, label: ndarray, max_depth=4, min_samples_split=2):
         """Build a decision tree classifier.
         Note:
             At least there's one column in data has more than 2 unique elements,
             and label cannot be all the same value.
 
         Arguments:
-            data {array} -- Training data.
-            label {array} -- Target values.
+            data {ndarray} -- Training data.
+            label {ndarray} -- Target values.
 
         Keyword Arguments:
             max_depth {int} -- The maximum depth of the tree. (default: {4})
@@ -330,11 +330,11 @@ class DecisionTree:
         self.depth = depth
         self.get_rules()
 
-    def predict_one_prob(self, row: array) -> float:
+    def predict_one_prob(self, row: ndarray) -> float:
         """Auxiliary function of predict_prob.
 
         Arguments:
-            row {array} -- A sample of testing data.
+            row {ndarray} -- A sample of testing data.
 
         Returns:
             float -- Prediction of label.
@@ -349,29 +349,29 @@ class DecisionTree:
 
         return node.prob
 
-    def predict_prob(self, data: array) -> array:
+    def predict_prob(self, data: ndarray) -> ndarray:
         """Get the probability of label.
 
         Arguments:
-            data {array} -- Testing data.
+            data {ndarray} -- Testing data.
 
         Returns:
-            array -- Probabilities of label.
+            ndarray -- Probabilities of label.
         """
 
         return apply_along_axis(self.predict_one_prob, axis=1, arr=data)
 
-    def predict(self, data: array, threshold=0.5):
+    def predict(self, data: ndarray, threshold=0.5):
         """Get the prediction of label.
 
         Arguments:
-            data {array} -- Testing data.
+            data {ndarray} -- Testing data.
 
         Keyword Arguments:
             threshold {float} -- (default: {0.5})
 
         Returns:
-            array -- Prediction of label.
+            ndarray -- Prediction of label.
         """
 
         prob = self.predict_prob(data)

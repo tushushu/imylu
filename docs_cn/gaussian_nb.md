@@ -65,7 +65,7 @@ class GaussianNB:
 ### 2.2 计算先验概率
 通过Python自带的Counter计算每个类别的占比，再将结果存储到numpy数组中。
 ```Python
-def _get_prior(label: array)->array:
+def _get_prior(label: ndarray)->ndarray:
     cnt = Counter(label)
     prior = np.array([cnt[i] / len(label) for i in range(len(cnt))])
     return prior
@@ -74,28 +74,28 @@ def _get_prior(label: array)->array:
 ### 2.3 计算训练集均值
 每个label类别分别计算均值。
 ```Python
-def _get_avgs(self, data: array, label: array)->array:
+def _get_avgs(self, data: ndarray, label: ndarray)->ndarray:
     return np.array([data[label == i].mean(axis=0) for i in range(self.n_class)])
 ```
 
 ### 2.4 计算训练集方差
 每个label类别分别计算方差。
 ```Python
-def _get_vars(self, data: array, label: array)->array:
+def _get_vars(self, data: ndarray, label: ndarray)->ndarray:
     return np.array([data[label == i].var(axis=0) for i in range(self.n_class)])
 ```
 
 ### 2.5 计算似然度
 通过高斯分布的概率密度函数计算出似然再连乘得到似然度。
 ```Python
-def _get_likelihood(self, row: array)->array:
+def _get_likelihood(self, row: ndarray)->ndarray:
     return (1 / sqrt(2 * pi * self.vars) * exp(
         -(row - self.avgs)**2 / (2 * self.vars))).prod(axis=1)
 ```
 
 ### 2.6 训练模型
 ```Python
-def fit(self, data: array, label: array):
+def fit(self, data: ndarray, label: ndarray):
     self.prior = self._get_prior(label)
     self.n_class = len(self.prior)
     self.avgs = self._get_avgs(data, label)
@@ -105,7 +105,7 @@ def fit(self, data: array, label: array):
 ### 2.8 预测prob
 用先验概率乘以似然度再归一化得到每个label的prob。
 ```Python
-def predict_prob(self, data: array)->array:
+def predict_prob(self, data: ndarray)->ndarray:
     likelihood = np.apply_along_axis(self._get_likelihood, axis=1, arr=data)
     probs = self.prior * likelihood
     probs_sum = probs.sum(axis=1)
@@ -115,7 +115,7 @@ def predict_prob(self, data: array)->array:
 ### 2.9 预测label
 对于单个样本，取prob最大值所对应的类别，就是label的预测值。
 ```Python
-def predict(self, data: array)->array:
+def predict(self, data: ndarray)->ndarray:
     return self.predict_prob(data).argmax(axis=1)
 ```
 

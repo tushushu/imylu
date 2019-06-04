@@ -6,7 +6,7 @@
 """
 import heapq
 
-from numpy import array
+from numpy import ndarray
 from numpy.linalg import eig
 
 
@@ -15,7 +15,7 @@ class PCA:
 
     Arguments:
         n_components {int} -- Number of components to keep.
-        eigen_vectors {array} -- The eigen vectors according to
+        eigen_vectors {ndarray} -- The eigen vectors according to
         top n_components large eigen values.
     """
 
@@ -25,44 +25,44 @@ class PCA:
         self.avg = None
 
     @staticmethod
-    def _normalize(data: array):
+    def _normalize(data: ndarray):
         """Normalize the data by mean subtraction.
 
         Arguments:
-            data {array} -- Training data.
+            data {ndarray} -- Training data.
 
         Returns:
-            array -- Normalized data with shape(n_rows, n_cols)
-            array -- Mean of data with shape(1, n_cols)
+            ndarray -- Normalized data with shape(n_rows, n_cols)
+            ndarray -- Mean of data with shape(1, n_cols)
         """
 
         avg = data.mean(axis=0)
         return data - avg, avg
 
     @staticmethod
-    def _get_covariance(data: array)->array:
+    def _get_covariance(data: ndarray) -> ndarray:
         """Calculate the covariance matrix of data.
 
         Arguments:
-            data {array} -- Training data.
+            data {ndarray} -- Training data.
 
         Returns:
-            array -- covariance matrix with shape(n_cols, n_cols)
+            ndarray -- covariance matrix with shape(n_cols, n_cols)
         """
 
         n_rows = data.shape[0]
         return data.T.dot(data) / (n_rows - 1)
 
     @staticmethod
-    def _get_top_eigen_vectors(data: array, n_components: int)->array:
+    def _get_top_eigen_vectors(data: ndarray, n_components: int) -> ndarray:
         """The eigen vectors according to top n_components large eigen values.
 
         Arguments:
-            data {array} -- Training data.
+            data {ndarray} -- Training data.
             n_components {int} -- Number of components to keep.
 
         Returns:
-            array -- eigen vectors with shape(n_cols, n_components).
+            ndarray -- eigen vectors with shape(n_cols, n_components).
         """
 
         # Calculate eigen values and eigen vectors of covariance matrix.
@@ -73,11 +73,11 @@ class PCA:
         indexes = [x[0] for x in _indexes]
         return eigen_vectors[:, indexes]
 
-    def fit(self, data: array, n_components: int):
+    def fit(self, data: ndarray, n_components: int):
         """Fit the model with data.
 
         Arguments:
-            data {array} -- Training data.
+            data {ndarray} -- Training data.
             n_components {int} -- Number of components to keep.
         """
 
@@ -87,27 +87,27 @@ class PCA:
         self.eigen_vectors = self._get_top_eigen_vectors(
             data_cov, n_components)
 
-    def transform(self, data: array)->array:
+    def transform(self, data: ndarray) -> ndarray:
         """Apply the dimensionality reduction on X.
 
         Arguments:
-            data {array} -- Training data.
+            data {ndarray} -- Training data.
 
         Returns:
-            array -- with shape(n_cols, n_components).
+            ndarray -- with shape(n_cols, n_components).
         """
 
         return (data - self.avg).dot(self.eigen_vectors)
 
-    def fit_trasform(self, data: array, n_components: int)->array:
+    def fit_trasform(self, data: ndarray, n_components: int) -> ndarray:
         """Fit the model with data and apply the dimensionality reduction on data.
 
         Arguments:
-            data {array} -- Training data.
+            data {ndarray} -- Training data.
             n_components {int} -- Number of components to keep.
 
         Returns:
-            array -- with shape(n_cols, n_components).
+            ndarray -- with shape(n_cols, n_components).
         """
 
         self.fit(data, n_components)
