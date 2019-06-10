@@ -22,7 +22,6 @@ class GradientBoostingBase:
         trees {list}: A list of RegressionTree objects.
         lr {float}: Learning rate.
         init_val {float}: Initial value to predict.
-        fn {function}: A function wrapper for prediction.
     """
 
     def __init__(self):
@@ -121,7 +120,8 @@ class GradientBoostingBase:
 
         return label - prediction
 
-    def _update_score(self, tree: RegressionTree, data: ndarray, prediction: ndarray, residuals: ndarray):
+    def _update_score(self, tree: RegressionTree, data: ndarray, prediction: ndarray,
+                      residuals: ndarray):
         """update the score of regression tree leaf node.
 
         Arguments:
