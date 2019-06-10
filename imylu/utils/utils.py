@@ -14,7 +14,7 @@ from statistics import median
 from time import time
 
 
-def arr2str(arr: ndarray, n_digits: int)->str:
+def arr2str(arr: ndarray, n_digits: int) -> str:
     ret = ", ".join(map(lambda x: str(round(x, n_digits)), arr))
     return "[%s]" % ret
 
@@ -155,16 +155,18 @@ def _test_split_list(iterations=10**4, max_n_samples=1000, max_n_features=10,
           (iterations, time_2))
 
 
-def get_euclidean_distance(arr1, arr2):
-    """Calculate the Euclidean distance of two vectors.
+def get_euclidean_distance(arr1: ndarray, arr2: ndarray) -> float:
+    """"Calculate the Euclidean distance of two vectors.
+
     Arguments:
-        arr1 {list} -- 1d list object with int or float
-        arr2 {list} -- 1d list object with int or float
+        arr1 {ndarray}
+        arr2 {ndarray}
+
     Returns:
-        float -- Euclidean distance
+        float
     """
 
-    return sum((x1 - x2) ** 2 for x1, x2 in zip(arr1, arr2)) ** 0.5
+    return ((arr1 - arr2) ** 2).sum() ** 0.5
 
 
 def get_cosine_distance(arr1, arr2):
