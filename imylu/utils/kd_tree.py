@@ -5,15 +5,20 @@
 @Last Modified by:   tushushu
 @Last Modified time: 2018-08-21 19:19:52
 """
-from ..utils.utils import get_euclidean_distance
+from .utils import get_euclidean_distance
+from numpy import ndarray
+import numpy as np
 
 
-class Node(object):
+class Node:
+    """[summary]
+    """
+
     def __init__(self):
         """Node class to build tree leaves.
         """
 
-        self.father = None
+        self.parent = None
         self.left = None
         self.right = None
         self.feature = None
@@ -29,17 +34,17 @@ class Node(object):
         Returns:
             node -- Brother node.
         """
-        if not self.father:
+        if not self.parent:
             ret = None
         else:
-            if self.father.left is self:
-                ret = self.father.right
+            if self.parent.left is self:
+                ret = self.parent.right
             else:
-                ret = self.father.left
+                ret = self.parent.left
         return ret
 
 
-class KDTree(object):
+class KDTree:
     def __init__(self):
         """KD Tree class to improve search efficiency in KNN.
 
@@ -68,30 +73,24 @@ class KDTree(object):
             i += 1
         return "\n".join(ret)
 
-    def _get_median_idx(self, X, idxs, feature):
-        """Calculate the median of a column of data.
+    def _get_median_idx(self, col: ndarray) -> int:
+        """Calculate the index of median of a column of data.
 
         Arguments:
-            X {list} -- 2d list object with int or float.
-            idxs {list} -- 1D list with int.
-            feature {int} -- Feature number.
-            sorted_idxs_2d {list} -- 2D list with int.
+            col {ndarray} -- [description]
 
         Returns:
-            list -- The row index corresponding to the median of this column.
+            int -- [description]
         """
 
-        n = len(idxs)
-        # Ignoring the number of column elements is odd and even.
-        k = n // 2
-        # Get all the indexes and elements of column j as tuples.
-        col = map(lambda i: (i, X[i][feature]), idxs)
-        # Sort the tuples by the elements' values
-        # and get the corresponding indexes.
-        sorted_idxs = map(lambda x: x[0], sorted(col, key=lambda x: x[1]))
-        # Search the median value.
-        median_idx = list(sorted_idxs)[k]
-        return median_idx
+        n_rows = len(col)
+        assert n_rows > 0, "col cannot be an empty array!"
+        if n_rows % 2 == 0:
+            _col = col[:-1]
+        median = np.median(_col)
+        ret = np.where(col == median)[0][0]
+
+        return ret
 
     def _get_variance(self, X, idxs, feature):
         """Calculate the variance of a column of data.
