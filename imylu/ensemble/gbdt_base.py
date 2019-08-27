@@ -22,7 +22,6 @@ class GradientBoostingBase:
         trees {list}: A list of RegressionTree objects.
         lr {float}: Learning rate.
         init_val {float}: Initial value to predict.
-        fn {function}: A function wrapper for prediction.
     """
 
     def __init__(self):
@@ -63,14 +62,14 @@ class GradientBoostingBase:
         return node
 
     @staticmethod
-    def _get_leaves(tree: RegressionTree) -> list:
+    def _get_leaves(tree: RegressionTree) -> List[Node]:
         """Gets all leaf nodes of a regression tree.
 
         Arguments:
             tree {RegressionTree}
 
         Returns:
-            list -- A list of RegressionTree objects.
+            List[Node] -- A list of RegressionTree objects.
         """
 
         nodes = []
@@ -86,14 +85,14 @@ class GradientBoostingBase:
 
         return nodes
 
-    def _divide_regions(self, tree: RegressionTree, nodes: list,
+    def _divide_regions(self, tree: RegressionTree, nodes: List[Node],
                         data: ndarray) -> Dict[Node, List[int]]:
         """Divide indexes of the samples into corresponding leaf nodes
         of the regression tree.
 
         Arguments:
             tree {RegressionTree}
-            nodes {list} -- A list of Node objects.
+            nodes {List[Node]} -- A list of Node objects.
             data {ndarray} -- Training data.
 
         Returns:
@@ -121,7 +120,8 @@ class GradientBoostingBase:
 
         return label - prediction
 
-    def _update_score(self, tree: RegressionTree, data: ndarray, prediction: ndarray, residuals: ndarray):
+    def _update_score(self, tree: RegressionTree, data: ndarray, prediction: ndarray,
+                      residuals: ndarray):
         """update the score of regression tree leaf node.
 
         Arguments:

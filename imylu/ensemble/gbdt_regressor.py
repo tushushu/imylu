@@ -55,13 +55,13 @@ class GradientBoostingRegressor(GradientBoostingBase):
         Loss'(yi, Fm(xi)) = -2 * Sum(yi - Fm(xi)) / n
 
         2nd derivative:
-        Loss"(yi, Fm(xi)) = -2
+        Loss"(yi, Fm(xi)) = 2
 
         So,
         Loss'(yi, Fm(xi)) = Loss'(yi, Fm-1(xi) + fm(xi))
         = Loss'(yi, Fm-1(xi)) + Loss"(yi, Fm-1(xi)) *  fm(xi) = 0
         fm(xi) = - Loss'(yi, Fm-1(xi)) / Loss"(yi, Fm-1(xi))
-        fm(xi) = -2 * Sum(yi - Fm-1(xi) / n / -2
+        fm(xi) = 2 * Sum(yi - Fm-1(xi) / n / 2
         fm(xi) = Sum(yi - Fm-1(xi)) / n
         fm(xi) = Mean(yi - Fm-1(xi))
         ----------------------------------------------------------------------------------------

@@ -3,62 +3,30 @@
 @Date: 2019-05-29 15:23:35
 """
 
-from typing import Dict
+from typing import List, Dict
 
 
-class Node:
-    """Support multiple inputs and multiple outputs.
+class BaseNode:
     """
+    BaseNode class.
 
-    def __init__(self, name: str):
-        self.name = name
-        self.inbound_nodes = dict()  # type: Dict[str, Node]
-        self.outbound_nodes = dict()  # type: Dict[str, Node]
-        self.gradients = dict()  # type: Dict[str, Node]
-
-    @property
-    def inbound_node_names(self):
-        """[summary]
-
-        Returns:
-            [type] -- [description]
-        """
-
-        return self.inbound_nodes.keys()
-
-    @property
-    def outbound_node_names(self):
-        """[summary]
-
-        Returns:
-            [type] -- [description]
-        """
-
-        return self.outbound_nodes.keys()
-
-    def add(self, node: Node):
-        """[summary]
-
-        Arguments:
-            node {Node} -- [description]
-        """
-
-        # Current node name inspection.
-        err_msg = "Node name %s already in use!" % self.name
-        assert self.name not in node.inbound_node_names, err_msg
-
-        # Outbound node name inspection.
-        err_msg = "Node name %s already in use!" % node.name
-        assert node.name not in self.outbound_node_names, err_msg
-
-        # Connect current node and outbound node.
-        self.outbound_nodes[node.name] = node
-        node.inbound_nodes[self.name] = self
+    Arguments:
+        value {Optional[float]} -- The value of BaseNode.
+        inbound_nodes {List[BaseNode]]} -- inbound nodes.
+        outbound_nodes {List[BaseNode]} -- outbound nodes.
+        gradients {Dict[BaseNode, float]} -- Keys: inbound nodes, Values: gradients.
+    """
+    def __init__(self, *inbound_nodes):
+        self.value = None
+        self.inbound_nodes = list(inbound_nodes) if inbound_nodes else []  # type: List[BaseNode]
+        self.outbound_nodes = []  # type: List[BaseNode]
+        self.gradients = dict()  # type: Dict[BaseNode, float]
+        for node in self.inbound_nodes:
+            node.outbound_nodes.append(self)
 
     def forward(self):
         """[summary]
         """
-
         raise NotImplementedError
 
     def backward(self):

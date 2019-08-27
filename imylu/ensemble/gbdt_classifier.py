@@ -5,6 +5,7 @@
 @Last Modified by: tushushu
 @Last Modified time: 2018-07-05 17:37:34
 """
+from typing import List
 import numpy as np
 from numpy import ndarray
 
@@ -56,7 +57,7 @@ class GradientBoostingClassifier(GradientBoostingBase):
         return np.log(tot / (n_rows - tot))
 
     @staticmethod
-    def _get_score(idxs, prediction: ndarray, residuals: ndarray):
+    def _get_score(idxs: List[int], prediction: ndarray, residuals: ndarray) -> float:
         """Calculate the regression tree leaf node value
         Estimation function (Maximize the likelihood):
         z = Fm(xi) = Fm-1(xi) + fm(xi)
@@ -89,7 +90,7 @@ class GradientBoostingClassifier(GradientBoostingBase):
         ----------------------------------------------------------------------------------------
 
         Arguments:
-            idxs{list} -- Indexes belongs to a leaf node.
+            idxs{List[int]} -- Indexes belongs to a leaf node.
             prediction {ndarray} -- Prediction of label.
             residuals {ndarray}
 
@@ -102,7 +103,8 @@ class GradientBoostingClassifier(GradientBoostingBase):
 
         return numerator / denominator
 
-    def _update_score(self, tree: RegressionTree, data: ndarray, prediction: ndarray, residuals: ndarray):
+    def _update_score(self, tree: RegressionTree, data: ndarray,
+                      prediction: ndarray, residuals: ndarray):
         """update the score of regression tree leaf node.
 
         Arguments:
@@ -143,7 +145,7 @@ class GradientBoostingClassifier(GradientBoostingBase):
 
         return np.apply_along_axis(self.predict_one_prob, axis=1, arr=data)
 
-    def predict(self, data: ndarray, threshold=0.5):
+    def predict(self, data: ndarray, threshold=0.5) -> ndarray:
         """Get the prediction of label.
 
         Arguments:

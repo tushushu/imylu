@@ -3,20 +3,30 @@
 @Date: 2019-05-30 14:44:33
 """
 import numpy as np
-from .base_node import Node
+from .base_node import BaseNode
 
 
-class Sigmoid(Node):
-    def _sigmoid(self, x):
-        return 1. / (1. + np.exp(-x))
+class Sigmoid(BaseNode):
+    """[summary]
+    """
+    def __init__(self, input_node):
+        BaseNode.__init__(self, input_node)
+
+    @staticmethod
+    def _sigmoid(arr):
+        return 1. / (1. + np.exp(-arr))
+
+    @staticmethod
+    def _derivative(arr):
+        return arr * (1 - arr)
 
     def forward(self):
-        input_value = self.inbound_nodes[0].value
-        self.value = self._sigmoid(input_value)
+        input_node = self.inbound_nodes[0]
+        self.value = self._sigmoid(input_node.value)
 
     def backward(self):
-        self.gradients = {n: np.zeros_like(n.value) for n in self.inbound_nodes}
-        for n in self.outbound_nodes:
-            grad_cost = n.gradients[self]
-            sigmoid = self.value
-            self.gradients[self.inbound_nodes[0]] += sigmoid * (1 - sigmoid) * grad_cost
+        input_node = self.inbound_nodes[0]
+        self.gradients = {input_node: np.zeros_like(input_node.value)}
+        for output_node in self.outbound_nodes:
+            grad_cost = output_node.gradients[self]
+            self.gradients[input_node] += self._derivative(self.value) * grad_cost
