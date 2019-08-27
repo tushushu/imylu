@@ -146,49 +146,50 @@ $f_m(X) = \Large\frac{\sum_{i=0}^{m}(y_i-p_i)}{\sum_{i=0}^{m}p_i * (1-p_i)}$
 
 # 2. 实现篇
 本人用全宇宙最简单的编程语言——Python实现了GBDT分类算法，没有依赖任何第三方库，便于学习和使用。简单说明一下实现过程，更详细的注释请参考本人github上的代码。
-## 2.1 导入回归树类
+## 2.1 导入节点类、回归树类
 回归树是我之前已经写好的一个类，在之前的文章详细介绍过，代码请参考：
 [regression_tree.py](https://github.com/tushushu/imylu/blob/master/imylu/tree/regression_tree.py)
 ```Python
-from ..tree.regression_tree import RegressionTree
+from ..tree.regression_tree import Node, RegressionTree
 ```
 ## 2.2 创建GradientBoostingBase类
 初始化，存储回归树、学习率、初始预测值和变换函数。
 ```Python
-class GradientBoostingBase(object):
+class GradientBoostingBase:
     def __init__(self):
         self.trees = None
-        self.lr = None
+        self.learning_rate = None
         self.init_val = None
-        self.fn = lambda x: sigmoid(x)
 ```
 
 ## 2.3 计算初始预测值
 初始预测值，见1.7式10。
 ```Python
-def _get_init_val(self, y):
-    n = len(y)
-    y_sum = sum(y)
-    return log((y_sum) / (n - y_sum))
+def _get_init_val(self, label: ndarray):
+    n_rows = len(label)
+    tot = label.sum()
+    return np.log(tot / (n_rows - tot))
 ```
 
 ## 2.4 匹配叶结点
 计算训练样本属于回归树的哪个叶子结点。
 ```Python
-def _match_node(self, row, tree):
-    nd = tree.root
-    while nd.left and nd.right:
-        if row[nd.feature] < nd.split:
-            nd = nd.left
+@staticmethod
+def _match_node(row: ndarray, tree: RegressionTree) -> Node:
+    node = tree.root
+    while node.left and node.right:
+        if row[node.feature] < node.split:
+            node = node.left
         else:
-            nd = nd.right
-    return nd
+            node = node.right
+    return node
 ```
 
 ## 2.5 获取叶节点
 获取一颗回归树的所有叶子结点。
 ```Python
-def _get_leaves(self, tree):
+@staticmethod
+def _get_leaves(tree: RegressionTree) -> List[Node]:
     nodes = []
     que = [tree.root]
     while que:
@@ -196,19 +197,18 @@ def _get_leaves(self, tree):
         if node.left is None or node.right is None:
             nodes.append(node)
             continue
-        left_node = node.left
-        right_node = node.right
-        que.append(left_node)
-        que.append(right_node)
+        que.append(node.left)
+        que.append(node.right)
     return nodes
 ```
 
 ## 2.6 划分区域
 将回归树的叶子结点，其对应的所有训练样本存入字典。
 ```Python
-def _divide_regions(self, tree, nodes, X):
+def _divide_regions(self, tree: RegressionTree, nodes: List[Node],
+                    data: ndarray) -> Dict[Node, List[int]]:
     regions = {node: [] for node in nodes}
-    for i, row in enumerate(X):
+    for i, row in enumerate(data):
         node = self._match_node(row, tree)
         regions[node].append(i)
     return regions
@@ -217,29 +217,30 @@ def _divide_regions(self, tree, nodes, X):
 ## 2.7 计算预测值
 见1.7式11。
 ```Python
-def _get_score(self, idxs, y_hat, residuals):
-    numerator = denominator = 0
-    for idx in idxs:
-        numerator += residuals[idx]
-        denominator += y_hat[idx] * (1 - y_hat[idx])
+@staticmethod
+def _get_score(idxs: List[int], prediction: ndarray, residuals: ndarray) -> float:
+    numerator = residuals[idxs].sum()
+    denominator = (prediction[idxs] * (1 - prediction[idxs])).sum()
     return numerator / denominator
 ```
 
 ## 2.8 更新预测值
 更新回归树各个叶节点的预测值。
 ```Python
-def _update_score(self, tree, X, y_hat, residuals):
+def _update_score(self, tree: RegressionTree, data: ndarray,
+                    prediction: ndarray, residuals: ndarray):
     nodes = self._get_leaves(tree)
-    regions = self._divide_regions(tree, nodes, X)
+    regions = self._divide_regions(tree, nodes, data)
     for node, idxs in regions.items():
-        node.score = self._get_score(idxs, y_hat, residuals)
-    tree._get_rules()
+        node.avg = self._get_score(idxs, prediction, residuals)
+    tree.get_rules()
 ```
 
 ## 2.9 计算残差
 ```Python
-def _get_residuals(self, y, y_hat):
-    return [yi - self.fn(y_hat_i) for yi, y_hat_i in zip(y, y_hat)]
+@staticmethod
+def _get_residuals(label: ndarray, prediction: ndarray) -> ndarray:
+    return label - prediction
 ```
 
 ## 2.10 训练模型
@@ -249,46 +250,55 @@ def _get_residuals(self, y, y_hat):
 3. 训练每一棵回归树的时候要乘以一个学习率lr，防止模型过拟合；
 4. 对样本进行抽样的时候要采用有放回的抽样方式。
 ```Python
-def fit(self, X, y, n_estimators, lr, max_depth, min_samples_split, subsample=None):
-    self.init_val = self._get_init_val(y)
-
-    n = len(y)
-    y_hat = [self.init_val] * n
-    residuals = self._get_residuals(y, y_hat)
-
+def fit(self, data: ndarray, label: ndarray, n_estimators: int, learning_rate: float,
+        max_depth: int, min_samples_split: int, subsample=None):
+    self.init_val = self._get_init_val(label)
+    n_rows = len(label)
+    prediction = np.full(label.shape, self.init_val)
+    residuals = self._get_residuals(label, prediction)
     self.trees = []
-    self.lr = lr
+    self.learning_rate = learning_rate
     for _ in range(n_estimators):
-        idx = range(n)
+        idx = range(n_rows)
         if subsample is not None:
-            k = int(subsample * n)
-            idx = choices(population=idx, k=k)
-        X_sub = [X[i] for i in idx]
-        residuals_sub = [residuals[i] for i in idx]
-        y_hat_sub = [y_hat[i] for i in idx]
-
+            k = int(subsample * n_rows)
+            idx = choice(idx, k, replace=True)
+        data_sub = data[idx]
+        residuals_sub = residuals[idx]
+        prediction_sub = prediction[idx]
         tree = RegressionTree()
-        tree.fit(X_sub, residuals_sub, max_depth, min_samples_split)
-
-        self._update_score(tree, X_sub, y_hat_sub, residuals_sub)
-
-        y_hat = [y_hat_i + lr * res_hat_i for y_hat_i,
-                    res_hat_i in zip(y_hat, tree.predict(X))]
-
-        residuals = self._get_residuals(y, y_hat)
+        tree.fit(data_sub, residuals_sub, max_depth, min_samples_split)
+        self._update_score(tree, data_sub, prediction_sub, residuals_sub)
+        prediction = prediction + learning_rate * tree.predict(data)
+        residuals = self._get_residuals(label, prediction)
         self.trees.append(tree)
 ```
 
-## 2.11 预测一个样本
+## 2.11 预测一个样本的分数
 ```Python
-def _predict(self, Xi):
-    return self.fn(self.init_val + sum(self.lr * tree._predict(Xi) for tree in self.trees))
+def predict_one(self, row: ndarray) -> float:
+    residual = np.sum([self.learning_rate * tree.predict_one(row)
+                        for tree in self.trees])
+    return self.init_val + residual
 ```
 
-## 2.12 预测多个样本
+## 2.12 预测一个样本的概率
 ```Python
-def predict(self, X):
-    return [int(self._predict(Xi) >= threshold) for Xi in X]
+def predict_one_prob(self, row: ndarray) -> float:
+    return sigmoid(self.predict_one(row))
+```
+
+## 2.13 预测多个样本的概率
+```Python
+def predict_prob(self, data: ndarray) -> ndarray:
+    return np.apply_along_axis(self.predict_one_prob, axis=1, arr=data)
+```
+
+## 2.14 预测多个样本
+```Python
+def predict(self, data: ndarray, threshold=0.5) -> ndarray:
+    prob = self.predict_prob(data)
+    return (prob >= threshold).astype(int)
 ```
 
 # 3 效果评估
@@ -297,21 +307,16 @@ def predict(self, X):
 ```Python
 @run_time
 def main():
-
-    print("Tesing the accuracy of GBDT classifier...")
-
-    X, y = load_breast_cancer()
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=20)
-
+    print("Tesing the performance of GBDT classifier...")
+    data, label = load_breast_cancer()
+    data_train, data_test, label_train, label_test = train_test_split(data, label, random_state=20)
     clf = GradientBoostingClassifier()
-    clf.fit(X_train, y_train, n_estimators=2,
-            lr=0.8, max_depth=3, min_samples_split=2)
-
-    get_acc(clf, X_test, y_test)
+    clf.fit(data_train, label_train, n_estimators=2,
+            learning_rate=0.8, max_depth=3, min_samples_split=2)
+    model_evaluation(clf, data_test, label_test)
 ```
 ## 3.2 效果展示
-最终准确度93.082%，运行时间14.9秒，效果还算不错~
+最终准确度91.2%，运行时间14.9秒，效果还算不错~
 ![gbdt_classifier.png](https://github.com/tushushu/imylu/blob/master/pic/gbdt_classifier.png)
 
 ## 3.3 工具函数
@@ -320,7 +325,7 @@ def main():
 1. run_time - 测试函数运行时间  
 2. load_breast_cancer - 加载乳腺癌数据  
 3. train_test_split - 拆分训练集、测试集  
-4. get_acc - 计算准确度
+4. model_evaluation - 计算准确率、精确率、召回率和AUC
 
 
 # 总结
