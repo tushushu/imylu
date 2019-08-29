@@ -7,16 +7,16 @@ from typing import List, Dict
 
 
 class BaseNode:
-    """
-    BaseNode class.
+    """BaseNode class.
 
     Arguments:
-        value {Optional[float]} -- The value of BaseNode.
-        inbound_nodes {List[BaseNode]]} -- inbound nodes.
-        outbound_nodes {List[BaseNode]} -- outbound nodes.
-        gradients {Dict[BaseNode, float]} -- Keys: inbound nodes, Values: gradients.
+        value {Optional[float]} -- The value of Node.
+        inbound_nodes {List[Node]]} -- inbound nodes.
+        outbound_nodes {List[Node]} -- outbound nodes.
+        gradients {Dict[Node, float]} -- Keys: inbound nodes, Values: gradients.
     """
     def __init__(self, *inbound_nodes):
+        """Initialize a node instance and connect inbound nodes to this instance."""
         self.value = None
         self.inbound_nodes = list(inbound_nodes) if inbound_nodes else []  # type: List[BaseNode]
         self.outbound_nodes = []  # type: List[BaseNode]
@@ -25,11 +25,9 @@ class BaseNode:
             node.outbound_nodes.append(self)
 
     def forward(self):
-        """[summary]
-        """
+        """Forward the input of inbound_nodes."""
         raise NotImplementedError
 
     def backward(self):
-        """[summary]
-        """
+        """Backard the gradient of outbound_nodes."""
         raise NotImplementedError

@@ -8,20 +8,40 @@ from .base_node import BaseNode
 from .input_node import InputNode
 
 
-class Linear(BaseNode):
-    """[summary]
+class LinearNode(BaseNode):
+    """Linear node class.
 
     Arguments:
-        BaseNode {[type]} -- [description]
+        value {Optional[float]} -- The value of Node.
+        inbound_nodes {List[Node]]} -- inbound nodes.
+        outbound_nodes {List[Node]} -- outbound nodes.
+        gradients {Dict[Node, float]} -- Keys: inbound nodes, Values: gradients.
     """
     def __init__(self, data: InputNode, weights: InputNode, bias: InputNode):
+        """Initialize a node instance and connect inbound nodes to this instance.
+
+        Arguments:
+            data {InputNode} -- The value of data is an ndarray with shape(m, n).
+            weights {InputNode} -- The value of weights is an ndarray with shape(n, k).
+            bias {InputNode} -- The value of bias is an ndarray with shape(1, k).
+        """
         BaseNode.__init__(self, data, weights, bias)
 
     def forward(self):
+        """Forward the input of inbound_nodes.
+
+        Y = WX + Bias
+        """
         data, weights, bias = self.inbound_nodes
         self.value = np.dot(data.value, weights.value) + bias.value
 
     def backward(self):
+        """Backard the gradient of outbound_nodes.
+
+        dY / dX = W
+        dY / dW = X
+        dY / dBias = 1
+        """
         data, weights, bias = self.inbound_nodes
         self.gradients = {node: np.zeros_like(node.value) for node in self.inbound_nodes}
         for node in self.outbound_nodes:
