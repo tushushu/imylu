@@ -5,27 +5,28 @@
 """
 import numpy as np
 from .base_node import BaseNode
-from .input_node import InputNode
+from .weight_node import WeightNode
 
 
 class LinearNode(BaseNode):
     """Linear node class.
 
-    Arguments:
+    Attributes:
+        name {str} -- The name of Node.
         value {Optional[float]} -- The value of Node.
-        inbound_nodes {List[Node]]} -- inbound nodes.
+        inbound_nodes {List[Node]]} -- inbound nodes.`
         outbound_nodes {List[Node]} -- outbound nodes.
         gradients {Dict[Node, float]} -- Keys: inbound nodes, Values: gradients.
     """
-    def __init__(self, data: InputNode, weights: InputNode, bias: InputNode):
+    def __init__(self, data: BaseNode, weights: WeightNode, bias: WeightNode, name=None):
         """Initialize a node instance and connect inbound nodes to this instance.
 
         Arguments:
-            data {InputNode} -- The value of data is an ndarray with shape(m, n).
-            weights {InputNode} -- The value of weights is an ndarray with shape(n, k).
-            bias {InputNode} -- The value of bias is an ndarray with shape(1, k).
+            data {BaseNode} -- The value of data is an ndarray with shape(m, n).
+            weights {WeightNode} -- The value of weights is an ndarray with shape(n, k).
+            bias {WeightNode} -- The value of bias is an ndarray with shape(1, k).
         """
-        BaseNode.__init__(self, data, weights, bias)
+        BaseNode.__init__(self, data, weights, bias, name=name)
 
     def forward(self):
         """Forward the input of inbound_nodes.
@@ -36,7 +37,7 @@ class LinearNode(BaseNode):
         self.value = np.dot(data.value, weights.value) + bias.value
 
     def backward(self):
-        """Backard the gradient of outbound_nodes.
+        """Backward the gradient of outbound_nodes.
 
         dY / dX = W
         dY / dW = X
