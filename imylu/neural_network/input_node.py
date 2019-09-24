@@ -42,7 +42,7 @@ class InputNode(BaseNode):
 
     def forward(self):
         """Forward the input of inbound_nodes."""
-        pass
+        return
 
     def backward(self):
         """Backward the gradient of outbound_nodes."""

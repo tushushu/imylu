@@ -2,12 +2,12 @@
 @Author: tushushu
 @Date: 2019-05-29 15:23:35
 """
-
+from abc import abstractmethod, ABC
 from typing import List, Dict
 from numpy import ndarray
 
 
-class BaseNode:
+class BaseNode(ABC):
     """BaseNode class.
 
     Attributes:
@@ -51,10 +51,12 @@ class BaseNode:
         assert isinstance(value, (ndarray, int, float)), err_msg
         self._value = value
 
+    @abstractmethod
     def forward(self):
         """Forward the input of inbound_nodes."""
-        raise NotImplementedError
+        return
 
+    @abstractmethod
     def backward(self):
         """Backward the gradient of outbound_nodes."""
-        raise NotImplementedError
+        return

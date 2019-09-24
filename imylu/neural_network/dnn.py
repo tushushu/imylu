@@ -18,6 +18,8 @@ class DNN:
     Attributes:
         nodes_sorted {list} -- All the nodes of nerual-network sorted for training.
         learning_rate {float} -- Learning rate.
+        data {Optional(InputNode)} -- Features data.
+        prediction {Optional(LinearNode)} -- Predction data.
     """
 
     def __init__(self):
@@ -25,6 +27,18 @@ class DNN:
         self._learning_rate = None
         self.data = None
         self.prediction = None
+        self.label = None
+
+    def __str__(self):
+        if not self.nodes_sorted:
+            return "Network has not be trained yet!"
+        print("Network informantion:\n")
+        ret = ["learning rate:", str(self._learning_rate), "\n"]
+        for node in self.nodes_sorted:
+            ret.append(node.name)
+            ret.append(str(node.value.shape))
+            ret.append("\n")
+        return " ".join(ret)
 
     @property
     def learning_rate(self) -> float:
@@ -46,7 +60,7 @@ class DNN:
         """Sort the nodes of nerual-network so as to forward and backward.
 
         Arguments:
-            input_nodes {List[InputNode]}
+            input_nodes {List[InputNode]} -- All the input nodes without inbound_nodes.
         """
         nodes_sorted = []
         que = copy(input_nodes)
@@ -80,6 +94,62 @@ class DNN:
         self.forward()
         self.backward()
 
+    def build_network(self, data: ndarray, label: ndarray, n_hidden: int, n_feature: int):
+        """[summary]
+
+        Arguments:
+            data {ndarray} -- [description]
+            label {ndarray} -- [description]
+            n_hidden {int} -- [description]
+            n_feature {int} -- [description]
+        """
+        weight_node1 = WeightNode(shape=(n_feature, n_hidden), name="W1")
+        bias_node1 = WeightNode(shape=n_hidden, name="b1")
+        weight_node2 = WeightNode(shape=(n_hidden, 1), name="W2")
+        bias_node2 = WeightNode(shape=1, name="b2")
+        self.data = InputNode(data, name="X")
+        self.label = InputNode(label, name="y")
+        linear_node1 = LinearNode(
+            self.data, weight_node1, bias_node1, name="l1")
+        sigmoid_node1 = SigmoidNode(linear_node1, name="s1")
+        self.prediction = LinearNode(
+            sigmoid_node1, weight_node2, bias_node2, name="prediction")
+        MseNode(self.label, self.prediction, name="mse")
+        input_nodes = [weight_node1, bias_node1,
+                       weight_node2, bias_node2, self.data, self.label]
+        self.topological_sort(input_nodes)
+
+    def train_network(self, label: ndarray, epochs: int, n_sample: int, batch_size: int):
+        """[summary]
+
+        Arguments:
+            label {ndarray} -- [description]
+            epochs {int} -- [description]
+            n_sample {int} -- [description]
+            batch_size {int} -- [description]
+        """
+        steps_per_epoch = n_sample // batch_size
+        for i in range(epochs):
+            loss = 0
+            for _ in range(steps_per_epoch):
+                indexes = choice(n_sample, batch_size, replace=True)
+                self.data.indexes = indexes
+                self.label.indexes = indexes
+                self.forward_and_backward()
+                loss += self.nodes_sorted[-1].value
+            print("Epoch: {}, Loss: {:.3f}".format(
+                i + 1, loss / steps_per_epoch))
+        print()
+
+    def pop_unused_nodes(self):
+        """[summary]
+        """
+        for _ in range(len(self.nodes_sorted)):
+            node = self.nodes_sorted.pop(0)
+            if node.name in ("mse", "y"):
+                continue
+            self.nodes_sorted.append(node)
+
     def fit(self, data: ndarray, label: ndarray, n_hidden: int, epochs: int,
             batch_size: int, learning_rate: float):
         """Train DNN model.
@@ -95,49 +165,26 @@ class DNN:
 
         label = label.reshape(-1, 1)
         n_sample, n_feature = data.shape
-        steps_per_epoch = n_sample // batch_size
-        W1 = WeightNode(shape=(n_feature, n_hidden), name="W1")
-        b1 = WeightNode(shape=n_hidden, name="b1")
-        W2 = WeightNode(shape=(n_hidden, 1), name="W2")
-        b2 = WeightNode(shape=1, name="b2")
-        self.data = InputNode(data, name="X")
-        y = InputNode(label, name="y")
-        l1 = LinearNode(self.data, W1, b1, name="l1")
-        s1 = SigmoidNode(l1, name="s1")
-        self.prediction = LinearNode(s1, W2, b2, name="prediction")
-        mse = MseNode(y, self.prediction, name="mse")
-        input_nodes = [W1, b1, W2, b2, self.data, y]
-        self.topological_sort(input_nodes)
+        # Construct nerual network.
+        self.build_network(data, label, n_hidden, n_feature)
         self.learning_rate = learning_rate
         print("Total number of samples = {}".format(n_sample))
-
-        for i in range(epochs):
-            loss = 0
-            for _ in range(steps_per_epoch):
-                indexes = choice(n_sample, batch_size, replace=True)
-                self.data.indexes = indexes
-                y.indexes = indexes
-                self.forward_and_backward()
-                loss += self.nodes_sorted[-1].value
-            print("Epoch: {}, Loss: {:.3f}".format(
-                i + 1, loss / steps_per_epoch))
-
-        for _ in range(len(self.nodes_sorted)):
-            node = self.nodes_sorted.pop(0)
-            if node.name in ("mse", "prediction"):
-                continue
-            self.nodes_sorted.append(node)
+        # Train network.
+        self.train_network(label, epochs, n_sample, batch_size)
+        # Pop unused node for predition.
+        self.pop_unused_nodes()
 
     def predict(self, data: ndarray) -> ndarray:
-        """[summary]
+        """Get the prediction of label.
 
         Arguments:
-            data {ndarray} -- [description]
+            data {ndarray} -- Testing data.
 
         Returns:
-            ndarray -- [description]
+            ndarray -- Prediction of label.
         """
 
-        self.data = InputNode(data, name="X")
+        self.data.value = data
+        self.data.indexes = range(data.shape[0])
         self.forward()
-        return self.prediction
+        return self.prediction.value.flatten()

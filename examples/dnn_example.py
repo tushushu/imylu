@@ -30,14 +30,11 @@ def main():
         data, label, random_state=20)
     # Train model
     reg = DNN()
-    reg.fit(data=data_train, label=label_train, n_hidden=10,
-            epochs=10000, batch_size=64, learning_rate=0.0001)
+    reg.fit(data=data_train, label=label_train, n_hidden=8,
+            epochs=1000, batch_size=8, learning_rate=0.0008)
     # Model evaluation
-    # get_r2(reg, data_test, label_test)
-    # print(reg)
-
-
-
+    get_r2(reg, data_test, label_test)
+    print(reg)
 
 
 if __name__ == "__main__":
