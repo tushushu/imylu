@@ -4,7 +4,7 @@
 """
 from copy import copy
 from numpy import ndarray
-from numpy.random import choice
+from numpy.random import choice, seed
 from .input_node import InputNode
 from .linear_node import LinearNode
 from .sigmoid_node import SigmoidNode
@@ -161,7 +161,6 @@ class MLP:
             batch_size {int} -- Batch size for mini-batch training.
             learning_rate {float} -- Learning rate for training.
         """
-
         label = label.reshape(-1, 1)
         n_sample, n_feature = data.shape
         self.build_network(data, label, n_hidden, n_feature)

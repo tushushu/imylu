@@ -31,7 +31,7 @@ def main():
     # Train model
     reg = MLP()
     reg.fit(data=data_train, label=label_train, n_hidden=8,
-            epochs=1000, batch_size=8, learning_rate=0.0008)
+            epochs=500, batch_size=8, learning_rate=0.0008)
     # Model evaluation
     get_r2(reg, data_test, label_test)
     print(reg)

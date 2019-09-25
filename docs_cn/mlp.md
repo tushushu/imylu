@@ -9,34 +9,57 @@
 我们用人话而不是大段的数学公式来讲讲全连接神经网络是怎么一回事。
 
 ## 1.1 网络结构
+灵魂画师用PPT画个粗糙的网络结构图如下：
+![mlp1.png](https://github.com/tushushu/imylu/blob/master/pic/mlp1.png)
 
 ## 1.2 Simoid函数
+Sigmoid函数的表达式是：  
+$f(x) = \Large\frac{1}{1 + e^{-x}}$  
+
+不难得出：  
+$\lim\limits_{x\rightarrow{-\infty}}\Large\frac{1}{1 + e^{-x}}\normalsize = 0$  
+
+$\lim\limits_{x\rightarrow{+\infty}}\Large\frac{1}{1 + e^{-x}}\normalsize = 1$  
+
+$f'(x) = f(x) * (1 - f(x))$  
+
+所以，Sigmoid函数的值域是(0, 1)，导数为y * (1 - y)
 
 ## 1.3 链式求导
+z = f(y)  
+y = g(x)  
+
+dz / dy = f'(y)  
+dy / dx = g'(x)  
+
+dz / dz = dz / dy * dy / dx = f'(y) * g'(x)
 
 ## 1.4 向前传播
-
+将当前节点的所有输入执行当前节点的计算，作为当前节点的输出节点的输入。
 ## 1.5 反向传播
-
-## 1.6 算法用到的导数
-
-## 1.7 拓扑排序
-
+将当前节点的输出节点对当前节点的梯度损失，乘以当前节点对输入节点的偏导数，作为当前节点的输入节点的梯度损失。
+## 1.6 拓扑排序
+假设我们的神经网络中有k个节点，任意一个节点都有可能有多个输入，需要考虑节点执行的先后顺序，原则就是当前节点的输入节点全部执行之后，才可以执行当前节点。
 
 
 # 2. 实现篇
-本人用全宇宙最简单的编程语言——Python实现了全连接神经网络算法，便于学习和使用。简单说明一下实现过程，更详细的注释请参考本人github上的代码。
+本人用全宇宙最简单的编程语言——Python实现了全连接神经网络，便于学习和使用。简单说明一下实现过程，更详细的注释请参考本人github上的代码。
 
 ## 2.1 创建BaseNode抽象类
-作为各种类型Node的父类。
+将BaseNode作为各种类型Node的父类。包括如下属性：  
+1. name -- 节点名称
+2. value -- 节点数据
+3. inbound_nodes -- 输入节点
+4. outbound_nodes -- 输出节点
+5. gradients -- 对于输入节点的梯度
 ```Python
 class BaseNode(ABC):
     def __init__(self, *inbound_nodes, name=None):
         self.name = name
         self._value = None
-        self.inbound_nodes = [x for x in inbound_nodes]  # type: List[BaseNode]
-        self.outbound_nodes = []  # type: List[BaseNode]
-        self.gradients = dict()  # type: Dict[BaseNode, float]
+        self.inbound_nodes = [x for x in inbound_nodes]
+        self.outbound_nodes = []
+        self.gradients = dict()
         for node in self.inbound_nodes:
             node.outbound_nodes.append(self)
 
@@ -64,7 +87,7 @@ class BaseNode(ABC):
 ```
 
 ## 2.2 创建InputNode类
-初始化，继承BaseNode类。
+用于存储训练、测试数据。其中indexes属性用来存储每个Batch中的数据下标。
 ```Python
 class InputNode(BaseNode):
     def __init__(self, value: ndarray, name=None):
@@ -92,7 +115,11 @@ class InputNode(BaseNode):
 ```
 
 ## 2.3 创建LinearNode类
-初始化，继承BaseNode类。
+用于执行线性运算。
+1. Y = WX + Bias
+2. dY / dX = W
+3. dY / dW = X
+4. dY / dBias = 1
 ```Python
 class LinearNode(BaseNode):
     def __init__(self, data: BaseNode, weights: WeightNode, bias: WeightNode, name=None):
@@ -113,7 +140,10 @@ class LinearNode(BaseNode):
 ```
 
 ## 2.4 创建MseNode类
-初始化，继承BaseNode类。
+用于计算预测值与实际值的差异。
+1. MSE = (label - prediction) ^ 2 / n_label
+2. dMSE / dLabel = 2 * (label - prediction) / n_label
+3. dMSE / dPrediction = -2 * (label - prediction) / n_label
 ```Python
 class MseNode(BaseNode):
     def __init__(self, label: InputNode, pred: LinearNode, name=None):
@@ -134,7 +164,9 @@ class MseNode(BaseNode):
 ```
 
 ## 2.5 创建SigmoidNode类
-初始化，继承BaseNode类。
+用于计算Sigmoid值。
+1. Y = 1 / (1 + e^(-X))
+2. dY / dX = Y * (1 - Y)
 ```Python
 class SigmoidNode(BaseNode):
     def __init__(self, input_node: LinearNode, name=None):
@@ -161,7 +193,7 @@ class SigmoidNode(BaseNode):
 ```
 
 ## 2.6 创建WeightNode类
-初始化，继承BaseNode类。
+用于存储、更新权重。
 ```Python
 class WeightNode(BaseNode):
     def __init__(self, shape: Union[Tuple[int, int], int], name=None, learning_rate=None):
@@ -183,8 +215,7 @@ class WeightNode(BaseNode):
         self.value -= partial * self.learning_rate
 ```
 
-## 2.7 
-
+## 2.7 创建全连接神经网络类
 ```Python
 class MLP:
     def __init__(self):
@@ -195,8 +226,7 @@ class MLP:
         self.label = None
 ```
 
-## 2.8 
-
+## 2.8 网络结构
 ```Python
 def __str__(self):
     if not self.nodes_sorted:
@@ -210,8 +240,8 @@ def __str__(self):
     return " ".join(ret)
 ```
 
-## 2.9 
-
+## 2.9 学习率
+存储学习率，并赋值给所有权重节点。
 ```Python
 @property
 def learning_rate(self) -> float:
@@ -225,8 +255,8 @@ def learning_rate(self, learning_rate):
             node.learning_rate = learning_rate
 ```
 
-## 2.10 
-
+## 2.10 拓扑排序  
+实现拓扑排序，将节点按照更新顺序排列。
 ```Python
 def topological_sort(self, input_nodes):
     nodes_sorted = []
@@ -242,8 +272,7 @@ def topological_sort(self, input_nodes):
     self.nodes_sorted = nodes_sorted
 ```
 
-## 2.11 
-
+## 2.11 前向传播和反向传播
 ```Python
 def forward(self):
     assert self.nodes_sorted is not None, "nodes_sorted is empty!"
@@ -260,8 +289,7 @@ def forward_and_backward(self):
     self.backward()
 ```
 
-## 2.12 
-
+## 2.12 建立全连接神经网络
 ```Python
 def build_network(self, data: ndarray, label: ndarray, n_hidden: int, n_feature: int):
     weight_node1 = WeightNode(shape=(n_feature, n_hidden), name="W1")
@@ -281,10 +309,10 @@ def build_network(self, data: ndarray, label: ndarray, n_hidden: int, n_feature:
     self.topological_sort(input_nodes)
 ```
 
-## 2.13 
-
+## 2.13 训练模型
+使用随机梯度下降训练模型。
 ```Python
-def train_network(self, epochs: int, n_sample: int, batch_size: int):
+def train_network(self, epochs: int, n_sample: int, batch_size: int, random_state: int):
     steps_per_epoch = n_sample // batch_size
     for i in range(epochs):
         loss = 0
@@ -294,13 +322,12 @@ def train_network(self, epochs: int, n_sample: int, batch_size: int):
             self.label.indexes = indexes
             self.forward_and_backward()
             loss += self.nodes_sorted[-1].value
-        print("Epoch: {}, Loss: {:.3f}".format(
-            i + 1, loss / steps_per_epoch))
+        print("Epoch: {}, Loss: {:.3f}".format(i + 1, loss / steps_per_epoch))
     print()
 ```
 
-## 2.14 
-
+## 2.14 移除无用节点
+模型训练结束后，将mse和label节点移除。
 ```Python
 def pop_unused_nodes(self):
     for _ in range(len(self.nodes_sorted)):
@@ -311,7 +338,6 @@ def pop_unused_nodes(self):
 ```
 
 ## 2.15 训练模型
-使用批量梯度下降或随机梯度下降训练模型。
 ```Python
 def fit(self, data: ndarray, label: ndarray, n_hidden: int, epochs: int,
         batch_size: int, learning_rate: float):
@@ -352,22 +378,22 @@ def main():
 ```
 
 ## 3.2 效果展示
-随机梯度下降拟合优度0.991，运行时间258.5毫秒。
+拟合优度0.803，运行时间6.9秒。  
 效果还算不错~
-![linear_regression.png](https://github.com/tushushu/imylu/blob/0.2/pic/linear_regression.png)
+![mlp.png](https://github.com/tushushu/imylu/blob/master/pic/mlp.png)
 
 ## 3.3 工具函数
 本人自定义了一些工具函数，可以在github上查看  
-[utils](https://github.com/tushushu/imylu/tree/0.2/imylu/utils)  
+[utils](https://github.com/tushushu/imylu/tree/master/imylu/utils)  
 
 1. run_time - 测试函数运行时间  
 2. load_boston_house_prices - 加载波士顿房价数据  
 3. train_test_split - 拆分训练集、测试集  
 4. get_r2 - 计算拟合优度 
-5. array2str - 数组转字符串
-6. min_max_scale - 归一化
 
 
 # 总结
-全连接神经网络的原理：
-全连接神经网络的实现：
+矩阵乘法  
+链式求导  
+拓扑排序  
+梯度下降  
