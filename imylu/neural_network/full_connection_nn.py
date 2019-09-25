@@ -12,8 +12,8 @@ from .mse_node import MseNode
 from .weight_node import WeightNode
 
 
-class DNN:
-    """DNN class.
+class MLP:
+    """Multi-Layer Perception class.
 
     Attributes:
         nodes_sorted {list} -- All the nodes of nerual-network sorted for training.
@@ -95,13 +95,13 @@ class DNN:
         self.backward()
 
     def build_network(self, data: ndarray, label: ndarray, n_hidden: int, n_feature: int):
-        """[summary]
+        """Create and connnect all the nodes needed.
 
         Arguments:
-            data {ndarray} -- [description]
-            label {ndarray} -- [description]
-            n_hidden {int} -- [description]
-            n_feature {int} -- [description]
+            data {ndarray} -- Features, 2d ndarray.
+            label {ndarray} -- Label, 1d ndarray.
+            n_hidden {int} -- Number of hidden nodes.
+            n_feature {int} -- Number of features.
         """
         weight_node1 = WeightNode(shape=(n_feature, n_hidden), name="W1")
         bias_node1 = WeightNode(shape=n_hidden, name="b1")
@@ -119,14 +119,13 @@ class DNN:
                        weight_node2, bias_node2, self.data, self.label]
         self.topological_sort(input_nodes)
 
-    def train_network(self, label: ndarray, epochs: int, n_sample: int, batch_size: int):
-        """[summary]
+    def train_network(self, epochs: int, n_sample: int, batch_size: int):
+        """Train network.
 
         Arguments:
-            label {ndarray} -- [description]
-            epochs {int} -- [description]
-            n_sample {int} -- [description]
-            batch_size {int} -- [description]
+            epochs {int} -- Number of training iterations.
+            n_sample {int} -- Number of samples.
+            batch_size {int} -- Batch size of each epoch.
         """
         steps_per_epoch = n_sample // batch_size
         for i in range(epochs):
@@ -142,7 +141,7 @@ class DNN:
         print()
 
     def pop_unused_nodes(self):
-        """[summary]
+        """Pop MSE node and label node after training.
         """
         for _ in range(len(self.nodes_sorted)):
             node = self.nodes_sorted.pop(0)
@@ -165,13 +164,10 @@ class DNN:
 
         label = label.reshape(-1, 1)
         n_sample, n_feature = data.shape
-        # Construct nerual network.
         self.build_network(data, label, n_hidden, n_feature)
         self.learning_rate = learning_rate
         print("Total number of samples = {}".format(n_sample))
-        # Train network.
-        self.train_network(label, epochs, n_sample, batch_size)
-        # Pop unused node for predition.
+        self.train_network(epochs, n_sample, batch_size)
         self.pop_unused_nodes()
 
     def predict(self, data: ndarray) -> ndarray:
