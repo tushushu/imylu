@@ -104,8 +104,11 @@ def get_r2(reg, X, y):
     Returns:
         float
     """
-
+    if isinstance(y, list):
+        y = np.array(y)
     y_hat = reg.predict(X)
+    if isinstance(y_hat, list):
+        y_hat = np.array(y_hat)
     r2 = _get_r2(y, y_hat)
     print("Test r2 is %.3f!\n" % r2)
     return r2
@@ -126,7 +129,10 @@ def model_evaluation(clf, X, y):
 
     y_hat = clf.predict(X)
     y_hat_prob = clf.predict_prob(X)
-
+    if isinstance(y_hat, list):
+        y_hat = np.array(y_hat)
+    if isinstance(y_hat_prob, list):
+        y_hat_prob = np.array(y_hat_prob)
     ret = dict()
     ret["Accuracy"] = _get_acc(y, y_hat)
     ret["Recall"] = _get_recall(y, y_hat)
@@ -149,7 +155,7 @@ def _get_r2(y, y_hat):
     Returns:
         float
     """
-    
+
     m = y.shape[0]
     n = y_hat.shape[0]
     assert m == n, "Lengths of two arrays do not match!"

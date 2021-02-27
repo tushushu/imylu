@@ -67,11 +67,11 @@ class KNeighborsBase(object):
                 if nd_cur.brother and \
                         (not heap or
                          heap.items[0].dist >
-                         tree._get_hyper_plane_dist(Xi, nd_cur.parent)):
+                         tree._get_hyper_plane_dist(Xi, nd_cur.father)):
                     _nd = tree._search(Xi, nd_cur.brother)
                     que.append((nd_cur.brother, _nd))
                 # Back track.
-                nd_cur = nd_cur.parent
+                nd_cur = nd_cur.father
         return heap
 
     def _predict(self, Xi):

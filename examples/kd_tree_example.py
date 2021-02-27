@@ -13,7 +13,7 @@ sys.path.append(os.path.abspath(".."))
 
 from imylu.utils.kd_tree import KDTree
 from imylu.utils.load_data import gen_data
-from imylu.utils.utils import get_euclidean_distance
+from imylu.utils.utils import get_eu_dist
 from time import time
 
 
@@ -31,7 +31,7 @@ def exhausted_search(X, Xi):
     dist_best = float('inf')
     row_best = None
     for row in X:
-        dist = get_euclidean_distance(Xi, row)
+        dist = get_eu_dist(Xi, row)
         if dist < dist_best:
             dist_best = dist
             row_best = row
@@ -60,13 +60,13 @@ def main():
         start = time()
         nd = tree.nearest_neighbour_search(Xi)
         run_time_1 += time() - start
-        ret1 = get_euclidean_distance(Xi, nd.split[0])
+        ret1 = get_eu_dist(Xi, nd.split[0])
 
         # Exhausted search
         start = time()
         row = exhausted_search(X, Xi)
         run_time_2 += time() - start
-        ret2 = get_euclidean_distance(Xi, row)
+        ret2 = get_eu_dist(Xi, row)
 
         # Compare result
         assert ret1 == ret2, "target:%s\nrestult1:%s\nrestult2:%s\ntree:\n%s" \

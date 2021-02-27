@@ -13,7 +13,7 @@ sys.path.append(os.path.abspath(".."))
 
 from imylu.neighbors.knn_base import KNeighborsBase
 from imylu.utils.load_data import gen_data
-from imylu.utils.utils import get_euclidean_distance
+from imylu.utils.utils import get_eu_dist
 from time import time
 
 
@@ -36,7 +36,7 @@ def exhausted_search(X, Xi, k):
         for i, row in enumerate(X):
             if i in idxs:
                 continue
-            dist = get_euclidean_distance(Xi, row)
+            dist = get_eu_dist(Xi, row)
             if dist < best_dist:
                 best_dist = dist
                 idxs[-1] = i
@@ -82,14 +82,14 @@ def main():
         start = time()
         heap = model._knn_search(Xi)
         run_time_1 += time() - start
-        ret1 = [get_euclidean_distance(Xi, nd.split[0]) for nd in heap.items]
+        ret1 = [get_eu_dist(Xi, nd.split[0]) for nd in heap.items]
         ret1.sort()
 
         # Exhausted search
         start = time()
         ret2 = exhausted_search(X, Xi, k)
         run_time_2 += time() - start
-        ret2 = [get_euclidean_distance(Xi, row) for row in ret2]
+        ret2 = [get_eu_dist(Xi, row) for row in ret2]
         ret2.sort()
 
         # Compare result

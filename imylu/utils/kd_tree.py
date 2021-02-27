@@ -5,7 +5,7 @@
 @Last Modified by:   tushushu
 @Last Modified time: 2018-08-21 19:19:52
 """
-from ..utils.utils import get_euclidean_distance
+from ..utils.utils import get_eu_dist
 
 
 class Node(object):
@@ -228,7 +228,7 @@ class KDTree(object):
         """
 
         X0 = nd.split[0]
-        return get_euclidean_distance(Xi, X0)
+        return get_eu_dist(Xi, X0)
 
     def _get_hyper_plane_dist(self, Xi, nd):
         """Calculate euclidean distance between Xi and hyper plane.
@@ -273,7 +273,7 @@ class KDTree(object):
                 if dist < dist_best:
                     dist_best, nd_best = dist, nd_cur
                 # If it's necessary to visit brother node.
-                if nd_cur.brother and dist > \
+                if nd_cur.brother and dist_best > \
                         self._get_hyper_plane_dist(Xi, nd_cur.father):
                     _nd_best = self._search(Xi, nd_cur.brother)
                     que.append((nd_cur.brother, _nd_best))

@@ -12,6 +12,7 @@ from numpy import exp, ndarray
 from random import randint
 from statistics import median
 from time import time
+from typing import List
 
 
 def arr2str(arr: ndarray, n_digits: int) -> str:
@@ -167,6 +168,17 @@ def get_euclidean_distance(arr1: ndarray, arr2: ndarray) -> float:
     """
 
     return ((arr1 - arr2) ** 2).sum() ** 0.5
+
+def get_eu_dist(arr1: List, arr2: List) -> float:
+    """Calculate the Euclidean distance of two vectors.
+    Arguments:
+        arr1 {list} -- 1d list object with int or float
+        arr2 {list} -- 1d list object with int or float
+    Returns:
+        float -- Euclidean distance
+    """
+
+    return sum((x1 - x2) ** 2 for x1, x2 in zip(arr1, arr2)) ** 0.5
 
 
 def get_cosine_distance(arr1, arr2):
